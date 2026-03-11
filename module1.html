@@ -1070,7 +1070,7 @@
     <div class="chain-container">
       <div class="chain-header">
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text2)">
-          Underlying: <span style="color:var(--accent)" id="chainSpot">--</span> &nbsp;|&nbsp; Lot Size: <span style="color:var(--text)">250 shares</span> &nbsp;|&nbsp; Expiry: <span style="color:var(--accent2)">Last Tuesday</span>
+          Underlying: <span style="color:var(--accent)" id="chainSpot">--</span> &nbsp;|&nbsp; Lot Size: <span style="color:var(--text)">500 shares</span> &nbsp;|&nbsp; Expiry: <span style="color:var(--accent2)">Last Tuesday</span>
         </div>
         <div class="expiry-selector" id="expirySelector"></div>
       </div>
@@ -1123,7 +1123,7 @@
         </div>
         <div class="contract-line" onclick="highlightField('lot')" id="field-lot">
           <span class="field-name">Lot Size</span>
-          <span class="field-value">250 Shares</span>
+          <span class="field-value">500 Shares</span>
         </div>
         <div class="contract-line" onclick="highlightField('ltp')" id="field-ltp">
           <span class="field-name">Last Traded Price</span>
@@ -1135,7 +1135,7 @@
         </div>
         <div class="contract-line" onclick="highlightField('margin')" id="field-margin">
           <span class="field-name">Initial Margin</span>
-          <span class="field-value">~₹41,763 (≈13% of CV)</span>
+          <span class="field-value">~₹83,525 (≈13% of CV)</span>
         </div>
         <div class="contract-line" onclick="highlightField('settlement')" id="field-settlement">
           <span class="field-name">Settlement</span>
@@ -1282,7 +1282,7 @@ const fieldExplanations = {
   underlying: {
     title: "Underlying Asset",
     text: "The asset on which the derivative contract is based. For stock futures, it is the actual equity share — in this case Reliance Industries Ltd (NSE: RELIANCE), India's largest company by market capitalisation (~₹17 lakh crore). The futures price moves in sync with the Reliance share price. You never own the shares directly — you hold a contract that derives its value from them.",
-    formula: "Futures Value = Futures Price × Lot Size = ₹1,298.75 × 250 = ₹3,24,688",
+    formula: "Futures Value = Futures Price × Lot Size = ₹1,298.75 × 500 = ₹6,49,375",
     insight: "💡 Stock futures (FUTSTK) differ from index futures — they have physical delivery obligation in some cases. Reliance is one of the most actively traded stock futures on NSE."
   },
   type: {
@@ -1299,9 +1299,9 @@ const fieldExplanations = {
   },
   lot: {
     title: "Lot Size",
-    text: "The minimum quantity per contract set by NSE/SEBI. For Reliance: 250 shares per lot. This creates leverage: with Reliance at ₹1,285, one lot controls ₹3,21,250 worth of exposure. Lot sizes are periodically revised by SEBI based on stock price to maintain contract values in a standard range (₹5–10 lakh).",
-    formula: "Contract Value = LTP × Lot Size = ₹1,285 × 250 = ₹3,21,250",
-    insight: "💡 Leverage cuts both ways. A ₹40,000 margin controls ₹3.2L exposure (~8x leverage). A 5% adverse move = ₹16,000 loss on ₹40,000 margin = 40% margin erosion."
+    text: "The minimum quantity per contract set by NSE/SEBI. For Reliance: 500 shares per lot. This creates leverage: with Reliance at ₹1,285, one lot controls ₹6,42,500 worth of exposure. Lot sizes are periodically revised by SEBI based on stock price to maintain contract values in a standard range (₹5–10 lakh).",
+    formula: "Contract Value = LTP × Lot Size = ₹1,285 × 500 = ₹6,42,500",
+    insight: "💡 Leverage cuts both ways. A ₹83,525 margin controls ₹6.43L exposure (~7.7x leverage). A 5% adverse move = ₹32,125 loss on ₹83,525 margin = 38% margin erosion."
   },
   ltp: {
     title: "Last Traded Price (LTP)",
@@ -1318,12 +1318,12 @@ const fieldExplanations = {
   margin: {
     title: "Initial Margin",
     text: "The deposit required by NSE to carry a Reliance futures position. Calculated by NSCCL using SPAN methodology. For Reliance, initial margin is typically 12–15% of contract value due to its volatility profile. If your margin account falls below the maintenance margin level, you receive a margin call and must top up within the same day.",
-    formula: "Initial Margin ≈ 13% × ₹3,21,250 = ₹41,763 per lot",
+    formula: "Initial Margin ≈ 13% × ₹6,42,500 = ₹83,525 per lot",
     insight: "💡 Margin % is higher for volatile stocks and lower for large-cap stable stocks. SEBI mandates a minimum VaR + ELM margin for all stock futures."
   },
   settlement: {
     title: "Settlement",
-    text: "Reliance stock futures are compulsorily deliverable at expiry (since October 2019, SEBI mandated physical delivery for all stock F&O). If you hold a position to the last Tuesday expiry, you must deliver (if short) or accept delivery (if long) of 250 Reliance shares. Intraday and squared-off positions are cash settled via MTM.",
+    text: "Reliance stock futures are compulsorily deliverable at expiry (since October 2019, SEBI mandated physical delivery for all stock F&O). If you hold a position to the last Tuesday expiry, you must deliver (if short) or accept delivery (if long) of 500 Reliance shares. Intraday and squared-off positions are cash settled via MTM.",
     formula: "Daily MTM = (Today's Settlement − Yesterday's Settlement) × Lot Size × No. of Lots",
     insight: "💡 Physical delivery risk is REAL — many retail traders get surprised at expiry. Always square off stock futures positions before expiry if you don't want physical shares."
   },
@@ -1345,7 +1345,7 @@ const glossaryTerms = [
   { term: "Backwardation", hint: "Inverted market", def: "A condition where futures prices are below the current spot price. Occurs when dividends or convenience yield exceed interest rates. Common in some commodity futures. Signals strong current demand." },
   { term: "Mark-to-Market", hint: "Daily settlement", def: "The daily process of revaluing open futures positions at the day's settlement price and crediting/debiting P&L. This prevents large accumulated losses and is why futures eliminate counterparty risk." },
   { term: "Cost of Carry", hint: "Pricing foundation", def: "The cost of holding the underlying asset until the futures expiry — primarily interest cost minus dividends received. Theoretical Futures Price = Spot × e^(r-d)T. Forms the basis of futures pricing." },
-  { term: "Lot Size", hint: "Contract unit", def: "The standardized minimum quantity per futures contract set by NSE/SEBI. For Reliance: 250 shares. For Nifty: 25 units. For BankNifty: 15 units. SEBI periodically revises lot sizes to keep contract values in a standard range of ₹5–10 lakh." },
+  { term: "Lot Size", hint: "Contract unit", def: "The standardized minimum quantity per futures contract set by NSE/SEBI. For Reliance: 500 shares. For Nifty: 25 units. For BankNifty: 15 units. SEBI periodically revises lot sizes to keep contract values in a standard range of ₹5–10 lakh." },
   { term: "Arbitrage", hint: "Risk-free profit", def: "Simultaneously buying and selling equivalent assets in different markets to profit from price discrepancies. In derivatives: if Futures > theoretical price, buy spot and sell futures. Risk-free profit locked in at expiry." },
   { term: "Hedging", hint: "Risk reduction", def: "Taking an offsetting derivative position to reduce the risk of an existing exposure. Example: A portfolio manager with ₹5Cr in equities sells Nifty futures to protect against market decline." },
 ];
@@ -1380,7 +1380,7 @@ const scenarios = {
       { letter: "C", text: "Buy Reliance call options to protect upside", correct: false },
       { letter: "D", text: "Do nothing — physical shares are safe from futures movements", correct: false },
     ],
-    correctExplanation: "✅ Correct! Priya is acting as a Hedger. She should SELL Reliance futures. Contracts needed = 5,000 shares ÷ 250 (lot size) = 20 contracts. If Reliance falls ₹100/share, her portfolio loses ₹5L but her short futures gain ₹100 × 250 × 20 = ₹5L — risk neutralised. She's a classic hedger.",
+    correctExplanation: "✅ Correct! Priya is acting as a Hedger. She should SELL Reliance futures. Contracts needed = 5,000 shares ÷ 500 (lot size) = 10 contracts. If Reliance falls ₹100/share, her portfolio loses ₹5L but her short futures gain ₹100 × 500 × 10 = ₹5L — risk neutralised. She's a classic hedger.",
     wrongExplanation: "❌ Incorrect. A hedger with a LONG share position must take the offsetting SHORT position in futures. Buying futures would double her risk (long shares + long futures). Buying calls gives upside protection but doesn't hedge downside. The textbook short hedge = sell futures against your physical holding."
   },
   speculation: {
@@ -1406,7 +1406,7 @@ const scenarios = {
       { letter: "C", text: "Fairly priced → No arbitrage exists", correct: false },
       { letter: "D", text: "Cannot arbitrage — physical delivery risk makes it too complex", correct: false },
     ],
-    correctExplanation: "✅ Correct! Theoretical F = 1285 × (1 + (0.065 − 0.006) × 20/365) = 1285 × 1.00323 = ₹1,289.15. Actual futures = ₹1,310 > ₹1,289.15 → OVERPRICED by ₹20.85. Cash-and-Carry: Buy 250 Reliance shares (1 lot) at ₹1,285, sell 1 Mar 2026 futures at ₹1,310. At expiry (30-MAR-2026): profit = ₹20.85 × 250 = ₹5,213 per lot, risk-free (before transaction costs).",
+    correctExplanation: "✅ Correct! Theoretical F = 1285 × (1 + (0.065 − 0.006) × 20/365) = 1285 × 1.00323 = ₹1,289.15. Actual futures = ₹1,310 > ₹1,289.15 → OVERPRICED by ₹20.85. Cash-and-Carry: Buy 500 Reliance shares (1 lot) at ₹1,285, sell 1 Mar 2026 futures at ₹1,310. At expiry (30-MAR-2026): profit = ₹20.85 × 500 = ₹10,425 per lot, risk-free (before transaction costs).",
     wrongExplanation: "❌ Calculate first: F_theoretical = 1285 × (1 + (6.5% − 0.6%) × 20/365) = ₹1,289.15. Actual F = ₹1,310 >> ₹1,289.15. Futures are OVERPRICED. Rule: overpriced futures → buy cheap (spot shares) + sell expensive (futures) = Cash-and-Carry. Physical delivery at expiry (30-MAR-2026) actually HELPS this arbitrage — no basis risk at settlement!"
   },
   basis: {
@@ -1443,7 +1443,7 @@ const quizQuestions = [
     co: "CO1"
   },
   {
-    q: "Reliance Industries spot = ₹1,285. March 2026 futures (expiring 30-MAR-2026, 20 days away) are trading at ₹1,310. Risk-free rate = 6.5% p.a., Reliance dividend yield = 0.6% p.a. (a) Calculate the theoretical fair value of the futures. (b) Is this an arbitrage opportunity? (c) Describe the exact trade and calculate profit per lot (lot size = 250 shares).",
+    q: "Reliance Industries spot = ₹1,285. March 2026 futures (expiring 30-MAR-2026, 20 days away) are trading at ₹1,310. Risk-free rate = 6.5% p.a., Reliance dividend yield = 0.6% p.a. (a) Calculate the theoretical fair value of the futures. (b) Is this an arbitrage opportunity? (c) Describe the exact trade and calculate profit per lot (lot size = 500 shares).",
     hint: "Use F = S × (1 + (r − d) × T/365). Then compare theoretical vs actual. Note: Reliance stock futures have physical delivery — how does that affect your arbitrage at expiry?",
     co: "CO1 & CO2"
   },
