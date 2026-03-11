@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — Module 1: Markets & Instruments</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --surface2: #131920;
+    --surface3: #1a2332;
+    --accent: #00d4aa;
+    --accent2: #ff6b35;
+    --accent3: #4fa3e0;
+    --text: #e8edf2;
+    --text2: #8899aa;
+    --text3: #445566;
+    --green: #00e676;
+    --red: #ff4444;
+    --gold: #ffd700;
+    --border: rgba(0,212,170,0.15);
+    --glow: 0 0 20px rgba(0,212,170,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 16px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glowing orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,212,170,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    background: rgba(8,12,16,0.95);
+    backdrop-filter: blur(20px);
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .module-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--green);
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* HERO */
+  .hero {
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+    position: relative;
+  }
+
+  .hero-sub {
+    color: var(--text2);
+    font-size: 1.1rem;
+    max-width: 600px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    padding-bottom: 0;
+  }
+
+  .tab {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 12px 20px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text3);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .tab:hover { color: var(--text2); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* MARKET TICKER */
+  .ticker-strip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 20px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ticker-scroll {
+    display: flex;
+    gap: 40px;
+    animation: ticker 30s linear infinite;
+    white-space: nowrap;
+  }
+
+  .ticker-scroll:hover { animation-play-state: paused; }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  .ticker-name { color: var(--text2); }
+  .ticker-price { color: var(--text); font-weight: 500; }
+  .ticker-change.up { color: var(--green); }
+  .ticker-change.down { color: var(--red); }
+
+  /* MARKET DASHBOARD */
+  .market-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .market-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+
+  .market-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--glow);
+  }
+
+  .market-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .card-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+  }
+
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+
+  /* OPTIONS CHAIN TABLE */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    background: rgba(0,212,170,0.1);
+    color: var(--accent);
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+
+  .chain-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  .chain-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .expiry-selector {
+    display: flex;
+    gap: 8px;
+  }
+
+  .expiry-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text2);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .expiry-btn.active, .expiry-btn:hover {
+    background: rgba(0,212,170,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .chain-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+  }
+
+  .chain-table th {
+    padding: 10px 14px;
+    text-align: center;
+    color: var(--text3);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+
+  .chain-table th.call-header { color: var(--green); }
+  .chain-table th.put-header { color: var(--red); }
+  .chain-table th.strike-header {
+    color: var(--accent);
+    background: rgba(0,212,170,0.05);
+  }
+
+  .chain-table td {
+    padding: 9px 14px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.15s;
+  }
+
+  .chain-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .chain-table td.strike {
+    color: var(--accent);
+    font-weight: 500;
+    background: rgba(0,212,170,0.04);
+  }
+
+  .chain-table td.call-col { color: #a8d8a8; }
+  .chain-table td.put-col { color: #f4a0a0; }
+
+  .atm-row td { background: rgba(0,212,170,0.06) !important; }
+  .atm-row td.strike { background: rgba(0,212,170,0.12) !important; font-weight: 700; }
+
+  /* CONTRACT ANATOMY */
+  .anatomy-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .contract-display {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 2;
+    position: relative;
+  }
+
+  .contract-display h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text2);
+    margin-bottom: 16px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .contract-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.05);
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 6px 8px;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .contract-line:hover { background: rgba(0,212,170,0.08); }
+  .contract-line.highlighted { background: rgba(0,212,170,0.12); border-left: 2px solid var(--accent); }
+
+  .contract-line .field-name { color: var(--text3); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .contract-line .field-value { color: var(--text); font-weight: 500; }
+
+  .contract-line .field-badge {
+    position: absolute;
+    right: -120px;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+
+  .contract-line.highlighted .field-badge { opacity: 1; }
+
+  .anatomy-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .anatomy-panel h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.05em;
+  }
+
+  .term-card {
+    background: var(--surface2);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .term-card:hover, .term-card.active {
+    border-color: var(--accent);
+    background: rgba(0,212,170,0.06);
+  }
+
+  .term-card .term { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .term-card .definition { font-size: 0.88rem; color: var(--text2); line-height: 1.5; display: none; }
+  .term-card.active .definition { display: block; }
+  .term-card .hint { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text3); }
+
+  /* QUIZ SECTION */
+  .quiz-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  .quiz-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .quiz-progress {
+    display: flex;
+    gap: 6px;
+  }
+
+  .progress-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+
+  .progress-dot.done { background: var(--accent); border-color: var(--accent); }
+  .progress-dot.current { background: var(--accent2); border-color: var(--accent2); animation: pulse 1.5s infinite; }
+
+  .quiz-body { padding: 28px 24px; }
+
+  .question-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .question-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+
+  .question-hint {
+    font-size: 0.88rem;
+    color: var(--text2);
+    font-style: italic;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: rgba(79,163,224,0.08);
+    border-left: 2px solid var(--accent3);
+    border-radius: 2px;
+  }
+
+  .answer-box {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+
+  .answer-box:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,170,0.1);
+  }
+
+  .quiz-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 11px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-primary:hover { background: #00f0c0; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-ghost {
+    background: none;
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+
+  /* AI FEEDBACK */
+  .ai-feedback {
+    margin-top: 20px;
+    background: var(--surface2);
+    border: 1px solid rgba(0,212,170,0.3);
+    border-radius: 6px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .ai-feedback.visible { display: block; }
+
+  .ai-feedback-header {
+    padding: 12px 16px;
+    background: rgba(0,212,170,0.08);
+    border-bottom: 1px solid rgba(0,212,170,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .ai-icon {
+    width: 20px; height: 20px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg);
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .score-badge {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .score-badge.excellent { color: var(--green); }
+  .score-badge.good { color: var(--gold); }
+  .score-badge.needs-work { color: var(--red); }
+
+  .ai-feedback-body {
+    padding: 16px;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .ai-feedback-body strong { color: var(--accent); }
+
+  .loading-dots {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .loading-dots span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bounce 1.2s infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.4; }
+    50% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* FLASHCARDS */
+  .flashcard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .flashcard {
+    height: 180px;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+
+  .flashcard-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .flashcard-front {
+    background: var(--surface);
+  }
+
+  .flashcard-back {
+    background: var(--surface2);
+    transform: rotateY(180deg);
+    border-color: rgba(0,212,170,0.3);
+  }
+
+  .flashcard-front .card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text3);
+    position: absolute;
+    top: 12px; left: 14px;
+  }
+
+  .flashcard-front .card-term {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.3;
+  }
+
+  .flashcard-front .flip-hint {
+    position: absolute;
+    bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text3);
+  }
+
+  .flashcard-back .card-answer {
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  /* SCENARIO EXPLORER */
+  .scenario-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  .scenario-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scenario-tab {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text3);
+    border: none;
+    background: none;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .scenario-tab.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent2);
+    background: rgba(255,107,53,0.05);
+  }
+
+  .scenario-body { padding: 28px; }
+
+  .scenario-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .scenario-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--accent2);
+  }
+
+  .scenario-card p { font-size: 0.95rem; color: var(--text2); line-height: 1.6; margin-bottom: 12px; }
+
+  .scenario-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .scenario-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text2);
+    transition: all 0.2s;
+  }
+
+  .scenario-option:hover { border-color: var(--accent2); color: var(--text); }
+  .scenario-option.selected-correct { border-color: var(--green); background: rgba(0,230,118,0.08); color: var(--green); }
+  .scenario-option.selected-wrong { border-color: var(--red); background: rgba(255,68,68,0.08); color: var(--red); }
+
+  .option-letter {
+    width: 24px; height: 24px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .scenario-result {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    display: none;
+  }
+
+  .scenario-result.correct { background: rgba(0,230,118,0.08); border: 1px solid var(--green); color: var(--text); }
+  .scenario-result.wrong { background: rgba(255,68,68,0.08); border: 1px solid var(--red); color: var(--text); }
+  .scenario-result.visible { display: block; }
+
+  /* PARTICIPANTS MAP */
+  .participants-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .participant-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .participant-card:hover {
+    border-color: var(--accent3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .participant-icon { font-size: 2rem; margin-bottom: 10px; }
+  .participant-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--accent3);
+  }
+
+  .participant-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.4; }
+
+  .participant-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+    padding: 20px;
+  }
+
+  .participant-modal.open { display: flex; }
+
+  .modal-card {
+    background: var(--surface);
+    border: 1px solid var(--accent3);
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 500px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 0 60px rgba(79,163,224,0.2);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .modal-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--accent3); margin-bottom: 8px; }
+  .modal-role { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
+  .modal-desc { font-size: 0.98rem; color: var(--text2); line-height: 1.7; margin-bottom: 16px; }
+  .modal-example { background: var(--surface2); border-left: 2px solid var(--accent3); padding: 12px 16px; border-radius: 2px; font-size: 0.88rem; color: var(--text); font-style: italic; }
+
+  /* PROGRESS BAR */
+  .co-progress {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+
+  .co-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; color: var(--text2); }
+
+  .co-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+
+  .co-label { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text3); width: 40px; flex-shrink: 0; }
+  .co-bar { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+  .co-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent3)); transition: width 1s ease; }
+  .co-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--accent); width: 32px; text-align: right; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .market-grid { grid-template-columns: 1fr 1fr; }
+    .flashcard-grid { grid-template-columns: 1fr 1fr; }
+    .anatomy-container { grid-template-columns: 1fr; }
+    .participants-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .market-grid { grid-template-columns: 1fr; }
+    .flashcard-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PARTICIPANT MODAL -->
+<div class="participant-modal" id="participantModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon" id="mIcon"></div>
+    <div class="modal-name" id="mName"></div>
+    <div class="modal-role" id="mRole"></div>
+    <div class="modal-desc" id="mDesc"></div>
+    <div class="modal-example" id="mExample"></div>
+  </div>
+</div>
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">Derivatives<span>Lab</span></div>
+    <div class="module-badge">Module 1 — Markets & Instruments</div>
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      LIVE DATA
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="hero-tag">Sessions 1–3 · FIA 401 · Dr. Chakrapani Chaturvedula</div>
+    <h1>Understanding <em>Derivatives</em><br>Markets & Instruments</h1>
+    <p class="hero-sub">Explore real NSE market data, dissect live contracts, understand who trades and why — then prove your understanding with AI-graded exercises.</p>
+  </div>
+
+  <!-- CO PROGRESS -->
+  <div style="margin-top:28px;">
+    <div class="co-progress">
+      <div class="co-title">Course Outcome Progress — Module 1</div>
+      <div class="co-row">
+        <div class="co-label">CO1</div>
+        <div class="co-bar"><div class="co-fill" id="co1bar" style="width:0%"></div></div>
+        <div class="co-pct" id="co1pct">0%</div>
+      </div>
+      <div class="co-row">
+        <div class="co-label">CO2</div>
+        <div class="co-bar"><div class="co-fill" id="co2bar" style="width:0%"></div></div>
+        <div class="co-pct" id="co2pct">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('market')">📊 Live Market</button>
+    <button class="tab" onclick="switchTab('anatomy')">🔬 Contract Anatomy</button>
+    <button class="tab" onclick="switchTab('participants')">👥 Market Participants</button>
+    <button class="tab" onclick="switchTab('scenarios')">🎯 Scenarios</button>
+    <button class="tab" onclick="switchTab('flashcards')">🃏 Flashcards</button>
+    <button class="tab" onclick="switchTab('quiz')">✏️ AI Quiz</button>
+  </div>
+
+  <!-- TAB 1: LIVE MARKET -->
+  <div class="tab-panel active" id="tab-market">
+
+    <!-- TICKER -->
+    <div class="ticker-strip">
+      <div class="ticker-scroll" id="tickerScroll"></div>
+    </div>
+
+    <!-- MARKET CARDS -->
+    <div class="market-grid" id="marketCards"></div>
+
+    <!-- OPTIONS CHAIN -->
+    <div class="section-title">
+      Nifty 50 Options Chain
+      <span class="badge">LIVE NSE DATA</span>
+    </div>
+    <div class="chain-container">
+      <div class="chain-header">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text2)">
+          Underlying: <span style="color:var(--accent)" id="chainSpot">--</span> &nbsp;|&nbsp; Lot Size: <span style="color:var(--text)">25</span>
+        </div>
+        <div class="expiry-selector" id="expirySelector"></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="chain-table">
+          <thead>
+            <tr>
+              <th class="call-header">OI (C)</th>
+              <th class="call-header">Vol (C)</th>
+              <th class="call-header">LTP (C)</th>
+              <th class="strike-header">STRIKE</th>
+              <th class="put-header">LTP (P)</th>
+              <th class="put-header">Vol (P)</th>
+              <th class="put-header">OI (P)</th>
+            </tr>
+          </thead>
+          <tbody id="chainBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3);margin-bottom:32px;padding:12px 16px;background:var(--surface);border-radius:4px;border:1px solid var(--border)">
+      ℹ️ Data is simulated from realistic NSE market parameters. In production, this connects to NSE's public API or a data vendor.
+      &nbsp;|&nbsp; Last updated: <span id="lastUpdated"></span>
+    </div>
+
+  </div>
+
+  <!-- TAB 2: CONTRACT ANATOMY -->
+  <div class="tab-panel" id="tab-anatomy">
+
+    <div class="section-title">Dissect a Real Futures Contract</div>
+    <p style="color:var(--text2);margin-bottom:24px;font-size:0.98rem">Click on any field of the contract below to learn what it means and why it matters.</p>
+
+    <div class="anatomy-container">
+      <div class="contract-display">
+        <h3>NSE FUTURES CONTRACT SPECIFICATION</h3>
+        <div class="contract-line" onclick="highlightField('underlying')" id="field-underlying">
+          <span class="field-name">Underlying Asset</span>
+          <span class="field-value">NIFTY 50</span>
+          <span class="field-badge">CLICK TO LEARN</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('type')" id="field-type">
+          <span class="field-name">Instrument Type</span>
+          <span class="field-value">Index Futures (FUTIDX)</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('expiry')" id="field-expiry">
+          <span class="field-name">Expiry Date</span>
+          <span class="field-value">27-MAR-2025</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('lot')" id="field-lot">
+          <span class="field-name">Lot Size</span>
+          <span class="field-value">25 Units</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('ltp')" id="field-ltp">
+          <span class="field-name">Last Traded Price</span>
+          <span class="field-value" id="contractLTP">₹22,750.00</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('basis')" id="field-basis">
+          <span class="field-name">Basis (F − S)</span>
+          <span class="field-value" id="contractBasis">₹+215.00</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('margin')" id="field-margin">
+          <span class="field-name">Initial Margin</span>
+          <span class="field-value">~₹1,42,000 (≈12.5%)</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('settlement')" id="field-settlement">
+          <span class="field-name">Settlement</span>
+          <span class="field-value">Cash Settled (Daily MTM)</span>
+        </div>
+        <div class="contract-line" onclick="highlightField('oi')" id="field-oi">
+          <span class="field-name">Open Interest</span>
+          <span class="field-value">1,24,350 contracts</span>
+        </div>
+      </div>
+
+      <div class="anatomy-panel">
+        <h3>📖 Field Explanation</h3>
+        <div id="anatomyExplanation" style="color:var(--text2);font-size:0.92rem;line-height:1.7;padding:12px 0;">
+          ← Click any field on the contract to see a detailed explanation, real-world significance, and how it connects to pricing theory.
+        </div>
+      </div>
+    </div>
+
+    <!-- TERMINOLOGY GLOSSARY -->
+    <div class="section-title">Key Terminology — Session 1–3</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:32px" id="termGrid"></div>
+
+  </div>
+
+  <!-- TAB 3: MARKET PARTICIPANTS -->
+  <div class="tab-panel" id="tab-participants">
+    <div class="section-title">Who Trades Derivatives & Why?</div>
+    <p style="color:var(--text2);margin-bottom:24px;font-size:0.98rem">Click on any participant to understand their role, motivation, and typical strategy in the derivatives market.</p>
+
+    <div class="participants-grid" id="participantsGrid"></div>
+
+    <div class="section-title">Real Market Activity Snapshot</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:32px">
+      <table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:0.72rem">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border)">
+            <th style="padding:12px 16px;text-align:left;color:var(--text3);font-weight:400">Participant</th>
+            <th style="padding:12px 16px;text-align:right;color:var(--green)">Net Buy (Cr)</th>
+            <th style="padding:12px 16px;text-align:right;color:var(--red)">Net Sell (Cr)</th>
+            <th style="padding:12px 16px;text-align:right;color:var(--text2)">Net Position</th>
+            <th style="padding:12px 16px;text-align:center;color:var(--text3)">Primary Intent</th>
+          </tr>
+        </thead>
+        <tbody id="participantTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 4: SCENARIOS -->
+  <div class="tab-panel" id="tab-scenarios">
+    <div class="section-title">Market Scenarios — Apply Your Knowledge</div>
+    <p style="color:var(--text2);margin-bottom:24px;font-size:0.98rem">Real-world situations. Identify the participant type, instrument used, and market concept at play.</p>
+
+    <div class="scenario-container">
+      <div class="scenario-tabs">
+        <button class="scenario-tab active" onclick="switchScenario('hedging')">🛡️ Hedging</button>
+        <button class="scenario-tab" onclick="switchScenario('speculation')">🎲 Speculation</button>
+        <button class="scenario-tab" onclick="switchScenario('arbitrage')">⚖️ Arbitrage</button>
+        <button class="scenario-tab" onclick="switchScenario('basis')">📐 Basis</button>
+      </div>
+      <div class="scenario-body" id="scenarioBody"></div>
+    </div>
+  </div>
+
+  <!-- TAB 5: FLASHCARDS -->
+  <div class="tab-panel" id="tab-flashcards">
+    <div class="section-title">Terminology Flashcards <span class="badge">CLICK TO FLIP</span></div>
+    <div class="flashcard-grid" id="flashcardGrid"></div>
+  </div>
+
+  <!-- TAB 6: AI QUIZ -->
+  <div class="tab-panel" id="tab-quiz">
+    <div class="section-title">AI-Graded Assessment <span class="badge">CLAUDE POWERED</span></div>
+    <p style="color:var(--text2);margin-bottom:24px;font-size:0.98rem">Write your answers in full sentences. Claude will evaluate your conceptual understanding, application, and depth.</p>
+
+    <div class="quiz-container">
+      <div class="quiz-header">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:4px">Module 1 Assessment</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Maps to CO1 & CO2</div>
+        </div>
+        <div class="quiz-progress" id="quizProgress"></div>
+      </div>
+      <div class="quiz-body" id="quizBody"></div>
+      <div class="quiz-footer">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text3)" id="quizStatus">Answer the question above</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="skipQuestion()">Skip →</button>
+          <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">Submit for Grading</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ==================== DATA ====================
+
+const NIFTY_SPOT = 22535;
+
+const marketData = [
+  { label: "NIFTY 50 SPOT", value: "22,535.40", change: "+186.45", pct: "+0.83%", dir: "up" },
+  { label: "NIFTY MAR FUTURES", value: "22,751.25", change: "+192.10", pct: "+0.85%", dir: "up" },
+  { label: "INDIA VIX", value: "13.82", change: "-0.54", pct: "-3.76%", dir: "down" },
+  { label: "BANKNIFTY SPOT", value: "48,230.15", change: "+340.80", pct: "+0.71%", dir: "up" },
+  { label: "TOTAL F&O TURNOVER", value: "₹18.4L Cr", change: "", pct: "Today", dir: "up" },
+  { label: "PCR (NIFTY)", value: "0.78", change: "Bearish", pct: "", dir: "down" },
+];
+
+const tickerItems = [
+  { name: "NIFTY", price: "22,535", chg: "+0.83%", dir: "up" },
+  { name: "BANKNIFTY", price: "48,230", chg: "+0.71%", dir: "up" },
+  { name: "FINNIFTY", price: "21,840", chg: "+0.45%", dir: "up" },
+  { name: "MIDCPNIFTY", price: "12,540", chg: "-0.22%", dir: "down" },
+  { name: "CRUDE OIL", price: "₹6,724", chg: "+1.2%", dir: "up" },
+  { name: "GOLD", price: "₹65,480", chg: "-0.3%", dir: "down" },
+  { name: "USD/INR", price: "83.24", chg: "+0.05%", dir: "up" },
+  { name: "INDIA VIX", price: "13.82", chg: "-3.76%", dir: "down" },
+];
+
+const expiries = ["27-MAR-2025", "24-APR-2025", "29-MAY-2025"];
+
+function generateChain(spot) {
+  const strikes = [];
+  const base = Math.round(spot / 100) * 100;
+  for (let i = -6; i <= 6; i++) strikes.push(base + i * 100);
+  return strikes.map(k => {
+    const dist = k - spot;
+    const isATM = Math.abs(dist) < 60;
+    const callLTP = Math.max(1, Math.round(isATM ? 85 + Math.random()*30 : dist < 0 ? -dist + 10 + Math.random()*20 : Math.max(2, 800/(Math.abs(dist)/50+1))));
+    const putLTP = Math.max(1, Math.round(isATM ? 80 + Math.random()*30 : dist > 0 ? dist + 10 + Math.random()*20 : Math.max(2, 800/(Math.abs(dist)/50+1))));
+    const callOI = Math.round((100000 - Math.abs(dist)*50 + Math.random()*30000));
+    const putOI = Math.round((90000 - Math.abs(dist)*40 + Math.random()*25000));
+    const callVol = Math.round(callOI * 0.12);
+    const putVol = Math.round(putOI * 0.10);
+    return { strike: k, callLTP, putLTP, callOI, putOI, callVol, putVol, isATM };
+  });
+}
+
+const fieldExplanations = {
+  underlying: {
+    title: "Underlying Asset",
+    text: "The asset on which the derivative contract is based. For index futures, it's a basket of stocks (Nifty 50 = India's top 50 companies by market cap). The futures price moves in sync with this underlying. You never own the underlying directly — you hold a contract that derives its value from it.",
+    formula: "Futures Value = Futures Price × Lot Size",
+    insight: "💡 This is why they're called 'derivatives' — their value is derived from something else."
+  },
+  type: {
+    title: "Instrument Type",
+    text: "FUTIDX means Futures on an Index. NSE classifies derivatives by: FUTIDX (index futures), FUTSTK (stock futures), OPTIDX (index options), OPTSTK (stock options). Futures are standardized forward contracts traded on an exchange with daily mark-to-market settlement.",
+    formula: "Forward vs Future: Forward = OTC, Future = Exchange Traded",
+    insight: "💡 Key difference: Futures have counterparty risk eliminated by the clearinghouse (NSCCL)."
+  },
+  expiry: {
+    title: "Expiry Date",
+    text: "The last Thursday of every month. On this date, the contract expires and is settled in cash based on the closing spot price. NSE offers 3 monthly contracts (near, mid, far month). As expiry approaches, the futures price converges to spot price — the basis shrinks to zero.",
+    formula: "At expiry: Futures Price → Spot Price, Basis → 0",
+    insight: "💡 Basis = Futures − Spot. It decays predictably, enabling convergence trades."
+  },
+  lot: {
+    title: "Lot Size",
+    text: "The minimum quantity per contract. You can't buy 1 Nifty futures — you buy 25 units. This creates leverage: with Nifty at ₹22,535, one lot controls ₹5,63,375 worth of exposure. This is why margin requirements exist — to ensure you can honour your obligations.",
+    formula: "Contract Value = LTP × Lot Size = ₹22,750 × 25 = ₹5,68,750",
+    insight: "💡 Leverage cuts both ways — magnifies gains AND losses proportionally."
+  },
+  ltp: {
+    title: "Last Traded Price (LTP)",
+    text: "The price at which the most recent trade occurred in this contract. Unlike stocks, futures LTP is influenced by: spot price, cost of carry (interest rates), dividends, and time to expiry. The theoretical price from cost-of-carry model serves as an anchor.",
+    formula: "F = S × e^(r-q)T  or  F ≈ S × (1 + r - d) × T/365",
+    insight: "💡 If Futures > Theoretical Price → Overpriced → Cash-and-carry arbitrage opportunity."
+  },
+  basis: {
+    title: "Basis",
+    text: "Basis = Futures Price − Spot Price. For index futures, basis is almost always positive (contango) because of the cost of carry (interest rate minus dividend yield). As expiry date approaches, basis converges to zero. Basis risk is the risk that this relationship breaks down unexpectedly.",
+    formula: "Basis = F − S = S × (r − d) × T/365",
+    insight: "💡 Basis is predictable in direction (shrinks to 0) but not always in magnitude — that's basis risk."
+  },
+  margin: {
+    title: "Initial Margin",
+    text: "The deposit required by NSE to take a position. Set as a percentage of contract value using SPAN (Standard Portfolio Analysis of Risk) methodology. It's NOT a down payment — it's a good-faith deposit. Daily MTM gains/losses are credited/debited to your account — if margin falls below maintenance level, you get a margin call.",
+    formula: "Initial Margin ≈ 8–15% of Contract Value",
+    insight: "💡 Margin creates leverage. ₹1.42L controls ₹5.69L exposure = ~4x leverage on 1 lot."
+  },
+  settlement: {
+    title: "Settlement",
+    text: "Indian index futures are cash-settled (no physical delivery). Every day, P&L is calculated against previous day's settlement price (Mark-to-Market). At expiry, final settlement = closing spot price (Special Opening Quotation). Daily MTM prevents large accumulated losses.",
+    formula: "Daily MTM = (Today's Settlement − Yesterday's Settlement) × Lot Size",
+    insight: "💡 Daily settlement is why futures don't carry counterparty credit risk unlike forwards."
+  },
+  oi: {
+    title: "Open Interest (OI)",
+    text: "Total number of outstanding contracts that haven't been settled. Unlike volume (trades per day), OI shows the total market commitment. Rising OI with rising prices = new money entering bullish bets (strong signal). Rising OI with falling prices = new short positions (bearish signal). OI peaks near expiry.",
+    formula: "OI increases when new contracts are opened; decreases when contracts are closed/expired.",
+    insight: "💡 OI at max pain strike often becomes a gravitational point for index near expiry — used by options traders."
+  }
+};
+
+const glossaryTerms = [
+  { term: "Derivative", hint: "The foundation", def: "A financial contract whose value depends on (is derived from) an underlying asset such as a stock index, commodity, currency, or interest rate. It is NOT the asset itself." },
+  { term: "Futures", hint: "Standardized forward", def: "An exchange-traded, standardized agreement to buy or sell an asset at a predetermined price on a specified future date. Unlike forwards, futures are cleared centrally, eliminating counterparty risk." },
+  { term: "Forward Contract", hint: "OTC cousin of futures", def: "A privately negotiated agreement to buy/sell an asset at a future date and price. Customizable but carries counterparty risk. Common in currency (USD/INR forwards by banks) and commodity markets." },
+  { term: "Open Interest", hint: "Market commitment", def: "Total number of derivative contracts outstanding (not yet settled). It measures market participation — rising OI signals new positions being created, falling OI signals positions being closed." },
+  { term: "Basis", hint: "F minus S", def: "The difference between the futures price and the spot price of the underlying. Basis = Futures − Spot. Under normal conditions (contango), basis is positive and decays to zero at expiry." },
+  { term: "Contango", hint: "Normal market", def: "A condition where futures prices are higher than the current spot price. This is normal for assets with positive cost of carry (storage costs + interest − dividends). Most equity index futures are in contango." },
+  { term: "Backwardation", hint: "Inverted market", def: "A condition where futures prices are below the current spot price. Occurs when dividends or convenience yield exceed interest rates. Common in some commodity futures. Signals strong current demand." },
+  { term: "Mark-to-Market", hint: "Daily settlement", def: "The daily process of revaluing open futures positions at the day's settlement price and crediting/debiting P&L. This prevents large accumulated losses and is why futures eliminate counterparty risk." },
+  { term: "Cost of Carry", hint: "Pricing foundation", def: "The cost of holding the underlying asset until the futures expiry — primarily interest cost minus dividends received. Theoretical Futures Price = Spot × e^(r-d)T. Forms the basis of futures pricing." },
+  { term: "Lot Size", hint: "Contract unit", def: "The standardized minimum quantity per futures contract set by NSE. For Nifty: 25 units. For BankNifty: 15 units. You cannot trade a fraction of a lot — it creates minimum trade size and leverage." },
+  { term: "Arbitrage", hint: "Risk-free profit", def: "Simultaneously buying and selling equivalent assets in different markets to profit from price discrepancies. In derivatives: if Futures > theoretical price, buy spot and sell futures. Risk-free profit locked in at expiry." },
+  { term: "Hedging", hint: "Risk reduction", def: "Taking an offsetting derivative position to reduce the risk of an existing exposure. Example: A portfolio manager with ₹5Cr in equities sells Nifty futures to protect against market decline." },
+];
+
+const participants = [
+  { icon: "🏦", name: "Hedgers", role: "Risk Managers", desc: "Entities who use derivatives to reduce or eliminate price risk from their existing business or investment positions. They sacrifice potential upside to protect against downside.", example: "Tata Steel buys crude oil futures to lock in production costs for the next 6 months, protecting profits from oil price spikes." },
+  { icon: "🎯", name: "Speculators", role: "Risk Takers", desc: "Traders who deliberately take derivative positions to profit from predicted price movements. They have no underlying exposure — they take on risk in exchange for potential profit. Essential for market liquidity.", example: "A trader buys Nifty call options expecting the market to rally after RBI policy, hoping to earn 3-5x on the premium paid." },
+  { icon: "⚖️", name: "Arbitrageurs", role: "Price Correctors", desc: "Market participants who exploit price inefficiencies between related instruments — buying cheap and selling expensive simultaneously to earn risk-free profits. Their activity drives prices toward fair value.", example: "An arbitrageur notices BankNifty futures trading ₹200 above theoretical price. Buys constituent stocks, sells futures. Locks in ₹200 profit at expiry." },
+  { icon: "🏪", name: "Market Makers", role: "Liquidity Providers", desc: "Professional trading firms that continuously quote buy (bid) and sell (ask) prices, ensuring other participants can always trade. They profit from the bid-ask spread and manage inventory risk through hedging.", example: "Optimus Algo quotes bid ₹85 / ask ₹87 for a Nifty call continuously, earning ₹2 per round trip from thousands of trades daily." },
+  { icon: "🏛️", name: "FIIs / FPIs", role: "Foreign Investors", desc: "Foreign Institutional Investors use index futures and options to hedge their large equity portfolios or express macro views on India. Their derivatives activity is closely tracked as a leading indicator.", example: "A US-based fund holds ₹10,000 Cr in Indian equities. Buys Nifty put options as a hedge before Indian elections." },
+  { icon: "🏢", name: "DIIs", role: "Domestic Funds", desc: "Domestic Institutional Investors (mutual funds, insurance companies, pension funds) use derivatives to manage portfolio risk, generate income through options writing, or implement tactical asset allocation.", example: "A mutual fund writes (sells) covered calls on its Nifty ETF holdings to generate extra income in sideways markets." },
+  { icon: "👤", name: "Retail Traders", role: "Individual Speculators", desc: "Individual investors who participate in F&O markets, primarily for speculation and leverage. SEBI data shows majority of retail traders in F&O lose money — understanding pricing and risk is critical.", example: "A retail trader buys 2 lots of Nifty weekly options expecting a short-term move, risking ₹5,000 premium for potential ₹25,000 profit." },
+  { icon: "🏭", name: "Corporates", role: "Treasury Managers", desc: "Large companies use derivatives to hedge currency exposure (USD/INR forwards), interest rate risk (interest rate futures/swaps), and commodity price risk. Mandated by risk management policies.", example: "Infosys, with $1B in USD receivables, buys USD/INR put options to ensure minimum INR revenue regardless of rupee appreciation." },
+];
+
+const participantTableData = [
+  { name: "FIIs/FPIs", buy: "4,820", sell: "3,940", net: "+880", intent: "🛡️ Hedge / Macro" },
+  { name: "DIIs", buy: "2,310", sell: "2,650", net: "-340", intent: "🛡️ Hedge / Income" },
+  { name: "Prop Traders", buy: "18,450", sell: "18,200", net: "+250", intent: "🎯 Speculate" },
+  { name: "Retail", buy: "9,800", sell: "10,200", net: "-400", intent: "🎯 Speculate" },
+  { name: "Corporates", buy: "1,200", sell: "1,450", net: "-250", intent: "🛡️ Hedge" },
+];
+
+const scenarios = {
+  hedging: {
+    title: "Scenario: The Worried Portfolio Manager",
+    story: "Kavitha manages a ₹25 Crore equity portfolio tracking Nifty 50 (beta ≈ 1.0). It is March 2025. She expects market volatility before the Union Budget in July and wants to protect her portfolio from a potential 8–10% correction.",
+    question: "What should Kavitha do using derivatives? Identify: (1) the instrument, (2) position (buy/sell), (3) number of contracts, and (4) the market participant type she is acting as.",
+    options: [
+      { letter: "A", text: "Buy Nifty March futures to profit from the expected decline", correct: false },
+      { letter: "B", text: "Sell Nifty futures to hedge — short futures offset portfolio losses", correct: true },
+      { letter: "C", text: "Buy Nifty call options to protect upside", correct: false },
+      { letter: "D", text: "Do nothing — futures are too expensive to hedge", correct: false },
+    ],
+    correctExplanation: "✅ Correct! Kavitha is acting as a Hedger. She should SELL Nifty futures. Contracts needed = (Portfolio Value / Contract Value) × Beta = (₹25Cr / ₹5.69L) × 1.0 ≈ 44 contracts. If Nifty falls 10%, her portfolio loses ~₹2.5Cr but her short futures gain ~₹2.5Cr — risk eliminated.",
+    wrongExplanation: "❌ Incorrect. A hedger with a long equity portfolio must take the offsetting SHORT position in futures. Buying futures would ADD risk (long-long). Buying calls offers protection but costs premium. The textbook hedge for a long portfolio is to SELL futures."
+  },
+  speculation: {
+    title: "Scenario: The RBI Rate Cut Play",
+    story: "Arjun, a proprietary trader, expects the RBI to cut interest rates by 25bps next week. He believes this will push BankNifty up by 3–4% in the next 5 trading days. BankNifty spot is at ₹48,000. He has ₹2 lakh capital to deploy.",
+    question: "Arjun wants to maximize leverage on his directional view. Which approach gives him the highest leverage while limiting loss to his ₹2L capital?",
+    options: [
+      { letter: "A", text: "Buy BankNifty spot ETF worth ₹2L", correct: false },
+      { letter: "B", text: "Buy 1 BankNifty futures contract (requires ~₹1.5L margin)", correct: false },
+      { letter: "C", text: "Buy BankNifty 48500 Call options expiring next Thursday for ₹2L premium", correct: true },
+      { letter: "D", text: "Sell BankNifty put options to collect premium", correct: false },
+    ],
+    correctExplanation: "✅ Correct! Options provide the highest leverage with defined maximum loss. Paying ₹2L in premium means maximum loss = ₹2L (if BankNifty doesn't move up). But if it rises 3%, a ₹48,500 call could multiply 5-10x. Futures also work but expose him to unlimited loss if wrong. Arjun is acting as a Speculator.",
+    wrongExplanation: "❌ Rethink the leverage angle. ETF gives 1:1 exposure. Futures give leverage but unlimited downside if wrong. Selling puts gives premium income but massive risk if market falls. Buying calls = defined risk (premium paid) + unlimited upside leverage. That's the speculator's preferred tool."
+  },
+  arbitrage: {
+    title: "Scenario: The Mispricing Alert",
+    story: "Nifty spot is at ₹22,535. The 3-month futures (90 days to expiry) are trading at ₹22,900. Risk-free rate = 6.5% p.a. Dividend yield on Nifty = 1.2% p.a. An algorithm flags a potential arbitrage.",
+    question: "First, calculate the theoretical futures price. Then identify what type of arbitrage (if any) exists and what trade to execute.",
+    options: [
+      { letter: "A", text: "Futures underpriced → Buy futures, sell underlying basket", correct: false },
+      { letter: "B", text: "Futures overpriced → Buy underlying basket, sell futures (Cash-and-Carry)", correct: true },
+      { letter: "C", text: "Fairly priced → No arbitrage opportunity", correct: false },
+      { letter: "D", text: "Futures underpriced → Reverse cash-and-carry arbitrage", correct: false },
+    ],
+    correctExplanation: "✅ Correct! Theoretical Futures = 22,535 × (1 + (0.065 − 0.012) × 90/365) = 22,535 × 1.01305 = ₹22,829. Actual futures = ₹22,900 > ₹22,829 → OVERPRICED by ₹71. Execute Cash-and-Carry: Buy Nifty basket worth ₹5.63L (1 lot), simultaneously sell 1 lot futures at ₹22,900. At expiry, pocket ₹71 × 25 = ₹1,775 per lot, risk-free.",
+    wrongExplanation: "❌ Calculate first: F_theoretical = 22,535 × (1 + (6.5% − 1.2%) × 90/365) = ₹22,829. Actual F = ₹22,900 > ₹22,829. So futures are OVERPRICED. When futures are overpriced → buy cheap (spot) + sell expensive (futures) = Cash-and-Carry arbitrage."
+  },
+  basis: {
+    title: "Scenario: The Basis Trader",
+    story: "It is January 2nd. Nifty spot = ₹22,200. March futures (83 days to expiry) = ₹22,480. A trader notes: basis = +₹280. On March 27 (expiry), a trader closes the position when Nifty spot = ₹23,100 and March futures = ₹23,100.",
+    question: "The basis on January 2nd was +₹280. What happened to the basis by expiry? What fundamental law of futures markets does this demonstrate?",
+    options: [
+      { letter: "A", text: "Basis widened to +₹500 as markets rallied", correct: false },
+      { letter: "B", text: "Basis remained at +₹280 throughout the period", correct: false },
+      { letter: "C", text: "Basis converged to zero at expiry — spot and futures prices equalized", correct: true },
+      { letter: "D", text: "Basis turned negative (backwardation) due to market rally", correct: false },
+    ],
+    correctExplanation: "✅ Correct! At expiry: Spot = Futures = ₹23,100. Basis = 0. This is the Law of Convergence — the cornerstone of futures pricing. As expiry approaches, cost of carry (interest − dividend) for the remaining period approaches zero, so the no-arbitrage price approaches spot. If it didn't converge, risk-free arbitrage would force it to.",
+    wrongExplanation: "❌ The Law of Convergence states that futures price MUST equal spot price at expiry. If they diverged, arbitrageurs would immediately exploit it (buy cheap, sell expensive) until prices equalized. This is guaranteed by the settlement mechanism: final settlement = spot closing price."
+  }
+};
+
+const flashcards = [
+  { term: "What is a Derivative?", answer: "A financial contract whose value is derived from an underlying asset (stock, index, commodity, currency). Not the asset itself — a contract about the asset." },
+  { term: "Futures vs Forward", answer: "Both: buy/sell at future date/price. Key difference: Futures = exchange-traded, standardized, cash-settled daily (MTM). Forwards = OTC, customized, settled at maturity, carry counterparty risk." },
+  { term: "What is Basis?", answer: "Basis = Futures Price − Spot Price. Normally positive (contango). Converges to ZERO at expiry — this is guaranteed by arbitrage forces." },
+  { term: "3 Market Participants", answer: "Hedgers (reduce risk), Speculators (take risk for profit), Arbitrageurs (exploit mispricings for risk-free profit). Each serves an essential market function." },
+  { term: "Cost of Carry Model", answer: "F = S × e^(r−d)T. Futures price = Spot × e^(interest rate − dividend yield) × time. Interest pushes futures up; dividends push them down." },
+  { term: "Open Interest vs Volume", answer: "Volume: contracts traded TODAY. OI: total contracts OUTSTANDING (not yet closed). Rising OI = new positions. Falling OI = positions being closed/expired." },
+  { term: "What is Contango?", answer: "Futures > Spot. Normal condition when cost of carry is positive (interest > dividends). Most equity index futures are in contango. Opposite = Backwardation (Futures < Spot)." },
+  { term: "Mark-to-Market (MTM)", answer: "Daily settlement of futures P&L. Each day, gains/losses vs previous settlement price are credited/debited. Prevents large accumulated losses and eliminates counterparty risk." },
+  { term: "Initial Margin Purpose", answer: "Not a down payment — a good-faith deposit (~8–15% of contract value) to ensure you can honour obligations. NSE uses SPAN methodology. Replenished via margin calls if balance falls below maintenance margin." },
+];
+
+const quizQuestions = [
+  {
+    q: "A wheat farmer in Rajasthan is worried about falling prices at harvest time in 6 months. Explain precisely how she can use futures markets to protect her revenue. In your answer, include: (1) the position she would take, (2) why this eliminates price risk, and (3) the trade-off she accepts by hedging.",
+    hint: "Think about what 'locking in a price' means in futures terms. What happens to her gain/loss on the futures position vs her physical crop if prices fall? What if prices rise?",
+    co: "CO1"
+  },
+  {
+    q: "Nifty spot = ₹22,500. 3-month futures are trading at ₹22,400. Risk-free rate = 7% p.a., dividend yield = 1.5% p.a. (a) Calculate the theoretical fair value of the futures. (b) Is the market in contango or backwardation? (c) Describe the arbitrage strategy and calculate approximate profit per lot (lot size = 25).",
+    hint: "Use F = S × (1 + (r − d) × T/365). Then compare theoretical vs actual. If actual < theoretical, what's cheaper — spot or futures?",
+    co: "CO1 & CO2"
+  },
+  {
+    q: "Explain in your own words why futures prices MUST converge to spot prices at expiry. Use the concept of arbitrage in your explanation — what would happen if they didn't converge, and who would act on it?",
+    hint: "Imagine futures expired at ₹100 above spot. What would any rational market participant do immediately? Keep doing this thought experiment until convergence.",
+    co: "CO1"
+  },
+  {
+    q: "A portfolio manager says: 'I don't need to understand derivatives. My equity fund just buys good stocks.' Critique this statement. Under what circumstances would a professional equity manager benefit from knowing derivatives, and what specific strategies would be relevant?",
+    hint: "Think about: portfolio protection (hedging), income generation (covered calls), tactical allocation, and managing beta during market uncertainty.",
+    co: "CO2"
+  },
+  {
+    q: "The Nifty open interest is rising sharply while the futures price is also rising. Separately, a trader notices India VIX is falling. What do each of these signals suggest about market sentiment? Are they consistent or contradictory? Explain.",
+    hint: "OI + Price direction tells you about conviction. VIX = volatility expectation. Rising OI + rising price = ? Rising OI + falling price = ? Low VIX = ?",
+    co: "CO1 & CO2"
+  }
+];
+
+// ==================== STATE ====================
+let currentTab = 'market';
+let currentExpiry = 0;
+let currentScenario = 'hedging';
+let currentQuestion = 0;
+let scores = [];
+let co1Score = 0;
+let co2Score = 0;
+let chainData = [];
+let activeField = null;
+
+// ==================== INIT ====================
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTicker();
+  initMarketCards();
+  initChain();
+  initTermGrid();
+  initParticipants();
+  initParticipantTable();
+  initScenarios();
+  initFlashcards();
+  initQuiz();
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-IN');
+  setTimeout(() => {
+    document.getElementById('co1bar').style.width = '0%';
+    document.getElementById('co2bar').style.width = '0%';
+  }, 100);
+  setInterval(refreshTicker, 5000);
+});
+
+// ==================== TICKER ====================
+function initTicker() {
+  const items = [...tickerItems, ...tickerItems];
+  const el = document.getElementById('tickerScroll');
+  el.innerHTML = items.map(t => `
+    <div class="ticker-item">
+      <span class="ticker-name">${t.name}</span>
+      <span class="ticker-price">${t.price}</span>
+      <span class="ticker-change ${t.dir}">${t.dir === 'up' ? '▲' : '▼'} ${t.chg}</span>
+    </div>
+  `).join('');
+}
+
+function refreshTicker() {
+  // Slight random jitter
+  document.querySelectorAll('.ticker-price').forEach(el => {
+    const v = parseFloat(el.textContent.replace(/[,₹]/g, ''));
+    if (!isNaN(v)) {
+      const jitter = (Math.random() - 0.5) * 2;
+      const newV = (v + jitter).toFixed(v > 1000 ? 0 : 2);
+      el.textContent = el.textContent.includes('₹') ? '₹' + parseInt(newV).toLocaleString('en-IN') : newV;
+    }
+  });
+}
+
+// ==================== MARKET CARDS ====================
+function initMarketCards() {
+  const container = document.getElementById('marketCards');
+  container.innerHTML = marketData.map(m => `
+    <div class="market-card">
+      <div class="card-label">${m.label}</div>
+      <div class="card-value ${m.dir}">${m.value}</div>
+      <div class="card-sub ${m.dir}">
+        ${m.change ? (m.dir === 'up' ? '▲' : '▼') + ' ' + m.change + ' (' + m.pct + ')' : m.pct}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== OPTIONS CHAIN ====================
+function initChain() {
+  chainData = generateChain(NIFTY_SPOT);
+  document.getElementById('chainSpot').textContent = '₹' + NIFTY_SPOT.toLocaleString('en-IN');
+
+  const expiryEl = document.getElementById('expirySelector');
+  expiryEl.innerHTML = expiries.map((e, i) => `
+    <button class="expiry-btn ${i === 0 ? 'active' : ''}" onclick="selectExpiry(${i}, this)">${e}</button>
+  `).join('');
+
+  renderChain();
+}
+
+function selectExpiry(idx, btn) {
+  currentExpiry = idx;
+  document.querySelectorAll('.expiry-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const multiplier = 1 + idx * 0.01;
+  chainData = generateChain(NIFTY_SPOT * multiplier);
+  renderChain();
+}
+
+function renderChain() {
+  const tbody = document.getElementById('chainBody');
+  tbody.innerHTML = chainData.map(row => `
+    <tr class="${row.isATM ? 'atm-row' : ''}">
+      <td class="call-col">${(row.callOI/1000).toFixed(1)}K</td>
+      <td class="call-col">${(row.callVol/1000).toFixed(1)}K</td>
+      <td class="call-col">₹${row.callLTP}</td>
+      <td class="strike">${row.strike.toLocaleString('en-IN')}${row.isATM ? ' ★' : ''}</td>
+      <td class="put-col">₹${row.putLTP}</td>
+      <td class="put-col">${(row.putVol/1000).toFixed(1)}K</td>
+      <td class="put-col">${(row.putOI/1000).toFixed(1)}K</td>
+    </tr>
+  `).join('');
+}
+
+// ==================== CONTRACT ANATOMY ====================
+function highlightField(field) {
+  if (activeField) {
+    document.getElementById('field-' + activeField)?.classList.remove('highlighted');
+  }
+  activeField = field;
+  document.getElementById('field-' + field)?.classList.add('highlighted');
+
+  const exp = fieldExplanations[field];
+  document.getElementById('anatomyExplanation').innerHTML = `
+    <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:12px">${exp.title}</div>
+    <p style="margin-bottom:14px;color:var(--text)">${exp.text}</p>
+    <div style="background:var(--surface2);padding:12px 16px;border-radius:4px;border-left:2px solid var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent);margin-bottom:12px">${exp.formula}</div>
+    <div style="background:rgba(255,107,53,0.08);padding:12px 16px;border-radius:4px;font-size:0.88rem;color:var(--accent2)">${exp.insight}</div>
+  `;
+}
+
+// ==================== TERMINOLOGY ====================
+function initTermGrid() {
+  const container = document.getElementById('termGrid');
+  container.innerHTML = glossaryTerms.map((t, i) => `
+    <div class="term-card" onclick="toggleTerm(this)" id="term-${i}">
+      <div class="term">${t.term}</div>
+      <div class="hint">${t.hint}</div>
+      <div class="definition">${t.def}</div>
+    </div>
+  `).join('');
+}
+
+function toggleTerm(el) {
+  el.classList.toggle('active');
+}
+
+// ==================== PARTICIPANTS ====================
+function initParticipants() {
+  const container = document.getElementById('participantsGrid');
+  container.innerHTML = participants.map((p, i) => `
+    <div class="participant-card" onclick="openParticipant(${i})">
+      <div class="participant-icon">${p.icon}</div>
+      <div class="participant-name">${p.name}</div>
+      <div class="participant-desc">${p.role}</div>
+    </div>
+  `).join('');
+}
+
+function openParticipant(i) {
+  const p = participants[i];
+  document.getElementById('mIcon').textContent = p.icon;
+  document.getElementById('mName').textContent = p.name;
+  document.getElementById('mRole').textContent = p.role;
+  document.getElementById('mDesc').textContent = p.desc;
+  document.getElementById('mExample').textContent = '📌 Example: ' + p.example;
+  document.getElementById('participantModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('participantModal').classList.remove('open');
+}
+
+function initParticipantTable() {
+  const tbody = document.getElementById('participantTable');
+  tbody.innerHTML = participantTableData.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
+      <td style="padding:11px 16px;color:var(--text)">${r.name}</td>
+      <td style="padding:11px 16px;text-align:right;color:var(--green)">${r.buy}</td>
+      <td style="padding:11px 16px;text-align:right;color:var(--red)">${r.sell}</td>
+      <td style="padding:11px 16px;text-align:right;color:${r.net.startsWith('+') ? 'var(--green)' : 'var(--red)'};font-weight:600">${r.net}</td>
+      <td style="padding:11px 16px;text-align:center;font-size:0.78rem;color:var(--text2)">${r.intent}</td>
+    </tr>
+  `).join('');
+}
+
+// ==================== SCENARIOS ====================
+function initScenarios() {
+  renderScenario(currentScenario);
+}
+
+function switchScenario(type) {
+  currentScenario = type;
+  document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderScenario(type);
+}
+
+function renderScenario(type) {
+  const s = scenarios[type];
+  document.getElementById('scenarioBody').innerHTML = `
+    <div class="scenario-card">
+      <h4>${s.title}</h4>
+      <p>${s.story}</p>
+      <p style="color:var(--text);font-weight:600;margin-bottom:0">${s.question}</p>
+    </div>
+    <div class="scenario-options" id="scenOptions">
+      ${s.options.map((o, i) => `
+        <div class="scenario-option" onclick="selectOption(${i}, ${o.correct}, '${type}')">
+          <div class="option-letter">${o.letter}</div>
+          ${o.text}
+        </div>
+      `).join('')}
+    </div>
+    <div class="scenario-result" id="scenResult"></div>
+  `;
+}
+
+function selectOption(idx, correct, type) {
+  const options = document.querySelectorAll('.scenario-option');
+  options.forEach(o => o.onclick = null);
+  options[idx].classList.add(correct ? 'selected-correct' : 'selected-wrong');
+
+  const s = scenarios[type];
+  const result = document.getElementById('scenResult');
+  result.textContent = correct ? s.correctExplanation : s.wrongExplanation;
+  result.className = 'scenario-result visible ' + (correct ? 'correct' : 'wrong');
+
+  if (correct) updateProgress(8);
+}
+
+// ==================== FLASHCARDS ====================
+function initFlashcards() {
+  const container = document.getElementById('flashcardGrid');
+  container.innerHTML = flashcards.map((f, i) => `
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div class="card-num">${String(i+1).padStart(2,'0')}</div>
+          <div class="card-term">${f.term}</div>
+          <div class="flip-hint">tap to reveal →</div>
+        </div>
+        <div class="flashcard-back">
+          <div class="card-answer">${f.answer}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== QUIZ ====================
+function initQuiz() {
+  scores = new Array(quizQuestions.length).fill(null);
+  renderQuizProgress();
+  renderQuestion();
+}
+
+function renderQuizProgress() {
+  const el = document.getElementById('quizProgress');
+  el.innerHTML = quizQuestions.map((_, i) => `
+    <div class="progress-dot ${scores[i] !== null ? 'done' : i === currentQuestion ? 'current' : ''}"></div>
+  `).join('');
+}
+
+function renderQuestion() {
+  const q = quizQuestions[currentQuestion];
+  document.getElementById('quizBody').innerHTML = `
+    <div class="question-num">Question ${currentQuestion + 1} of ${quizQuestions.length} · ${q.co}</div>
+    <div class="question-text">${q.q}</div>
+    <div class="question-hint">💡 Hint: ${q.hint}</div>
+    <textarea class="answer-box" id="answerBox" placeholder="Write your answer here in full sentences. Think through the problem step by step — show your reasoning..."></textarea>
+    <div class="ai-feedback" id="aiFeedback">
+      <div class="ai-feedback-header">
+        <div class="ai-icon">AI</div>
+        CLAUDE'S ASSESSMENT
+        <span class="score-badge" id="scoreBadge"></span>
+      </div>
+      <div class="ai-feedback-body" id="feedbackBody"></div>
+    </div>
+  `;
+  document.getElementById('quizStatus').textContent = 'Answer the question above';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = 'Submit for Grading';
+  renderQuizProgress();
+}
+
+async function submitAnswer() {
+  const answer = document.getElementById('answerBox')?.value?.trim();
+  if (!answer || answer.length < 20) {
+    document.getElementById('quizStatus').textContent = '⚠️ Please write a more complete answer';
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Grading...';
+
+  const q = quizQuestions[currentQuestion];
+  const feedback = document.getElementById('aiFeedback');
+  const fbBody = document.getElementById('feedbackBody');
+
+  feedback.classList.add('visible');
+  fbBody.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: `You are an expert professor of Financial Derivatives at a top business school in India. 
+          
+You are grading a PGDM student's answer on the following question:
+
+QUESTION: ${q.q}
+
+STUDENT ANSWER: ${answer}
+
+Grade the answer on a scale of 1-10 and provide feedback. Your response must be a JSON object with exactly these fields:
+{
+  "score": <number 1-10>,
+  "grade": "<Excellent|Good|Needs Work>",
+  "feedback": "<2-3 paragraphs of specific, constructive feedback mentioning what was correct, what was missing, and deeper insights>",
+  "keyMissed": "<one key concept they missed or could elaborate on, or 'Nothing significant' if excellent>"
+}
+
+Be specific to Indian derivatives markets where relevant (NSE, Nifty, SEBI, rupee amounts). Be encouraging but academically rigorous. Return ONLY the JSON, no other text.`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '{}';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    const score = result.score || 5;
+    const grade = result.grade || 'Good';
+    const scoreBadge = document.getElementById('scoreBadge');
+    scoreBadge.textContent = `${score}/10 — ${grade}`;
+    scoreBadge.className = 'score-badge ' + (score >= 8 ? 'excellent' : score >= 6 ? 'good' : 'needs-work');
+
+    fbBody.innerHTML = `
+      <p>${result.feedback || 'Good attempt.'}</p>
+      ${result.keyMissed && result.keyMissed !== 'Nothing significant' ? `
+        <div style="margin-top:12px;padding:10px 14px;background:rgba(255,107,53,0.08);border-left:2px solid var(--accent2);border-radius:2px;font-size:0.88rem">
+          <strong style="color:var(--accent2)">Key concept to explore:</strong> ${result.keyMissed}
+        </div>` : ''}
+    `;
+
+    scores[currentQuestion] = score;
+    updateCOProgress(score, q.co);
+    btn.textContent = 'Next Question →';
+    btn.disabled = false;
+    btn.onclick = nextQuestion;
+    document.getElementById('quizStatus').textContent = `Scored ${score}/10`;
+    renderQuizProgress();
+
+  } catch (err) {
+    fbBody.innerHTML = `<p style="color:var(--red)">Error connecting to grading service. Please check your connection and try again.</p>`;
+    btn.disabled = false;
+    btn.textContent = 'Retry';
+  }
+}
+
+function nextQuestion() {
+  if (currentQuestion < quizQuestions.length - 1) {
+    currentQuestion++;
+    document.getElementById('submitBtn').onclick = submitAnswer;
+    renderQuestion();
+  } else {
+    showFinalScore();
+  }
+}
+
+function skipQuestion() {
+  if (currentQuestion < quizQuestions.length - 1) {
+    currentQuestion++;
+    document.getElementById('submitBtn').onclick = submitAnswer;
+    renderQuestion();
+  }
+}
+
+function showFinalScore() {
+  const validScores = scores.filter(s => s !== null);
+  const avg = validScores.length ? (validScores.reduce((a,b) => a+b, 0) / validScores.length).toFixed(1) : 0;
+  document.getElementById('quizBody').innerHTML = `
+    <div style="text-align:center;padding:40px 0">
+      <div style="font-size:3rem;margin-bottom:16px">${avg >= 8 ? '🏆' : avg >= 6 ? '🎯' : '📚'}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent);margin-bottom:8px">${avg}/10</div>
+      <div style="color:var(--text2);margin-bottom:24px">Module 1 Assessment Complete — ${validScores.length}/${quizQuestions.length} questions answered</div>
+      <button class="btn btn-primary" onclick="resetQuiz()">Retake Assessment</button>
+    </div>
+  `;
+}
+
+function resetQuiz() {
+  currentQuestion = 0;
+  scores = new Array(quizQuestions.length).fill(null);
+  initQuiz();
+}
+
+function updateCOProgress(score, co) {
+  const pct = Math.min(100, Math.round(score * 10));
+  if (co.includes('CO1')) {
+    co1Score = Math.max(co1Score, pct);
+    document.getElementById('co1bar').style.width = co1Score + '%';
+    document.getElementById('co1pct').textContent = co1Score + '%';
+  }
+  if (co.includes('CO2')) {
+    co2Score = Math.max(co2Score, pct);
+    document.getElementById('co2bar').style.width = co2Score + '%';
+    document.getElementById('co2pct').textContent = co2Score + '%';
+  }
+}
+
+function updateProgress(amount) {
+  co1Score = Math.min(100, co1Score + amount);
+  document.getElementById('co1bar').style.width = co1Score + '%';
+  document.getElementById('co1pct').textContent = co1Score + '%';
+}
+
+// ==================== TAB SWITCHING ====================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// Close modal on backdrop click
+document.getElementById('participantModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
