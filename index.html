@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DerivativesLab — Module 1: Markets & Instruments</title>
+<title>DerivativesLab — Module 1: Markets & Instruments (Reliance Industries)</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1064,13 +1064,13 @@
 
     <!-- OPTIONS CHAIN -->
     <div class="section-title">
-      Nifty 50 Options Chain
+      Reliance Industries Options Chain
       <span class="badge">LIVE NSE DATA</span>
     </div>
     <div class="chain-container">
       <div class="chain-header">
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text2)">
-          Underlying: <span style="color:var(--accent)" id="chainSpot">--</span> &nbsp;|&nbsp; Lot Size: <span style="color:var(--text)">25</span>
+          Underlying: <span style="color:var(--accent)" id="chainSpot">--</span> &nbsp;|&nbsp; Lot Size: <span style="color:var(--text)">250 shares</span> &nbsp;|&nbsp; Expiry: <span style="color:var(--accent2)">Last Tuesday</span>
         </div>
         <div class="expiry-selector" id="expirySelector"></div>
       </div>
@@ -1093,7 +1093,7 @@
     </div>
 
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3);margin-bottom:32px;padding:12px 16px;background:var(--surface);border-radius:4px;border:1px solid var(--border)">
-      ℹ️ Data is simulated from realistic NSE market parameters. In production, this connects to NSE's public API or a data vendor.
+      ℹ️ Data is simulated from realistic NSE market parameters for Reliance Industries (RELIANCE). Stock F&O expires on the <strong style="color:var(--accent2)">last Tuesday</strong> of each month (effective Nov 2024). Index F&O (Nifty, BankNifty) still expires on Thursdays.
       &nbsp;|&nbsp; Last updated: <span id="lastUpdated"></span>
     </div>
 
@@ -1110,40 +1110,40 @@
         <h3>NSE FUTURES CONTRACT SPECIFICATION</h3>
         <div class="contract-line" onclick="highlightField('underlying')" id="field-underlying">
           <span class="field-name">Underlying Asset</span>
-          <span class="field-value">NIFTY 50</span>
+          <span class="field-value">RELIANCE INDUSTRIES LTD</span>
           <span class="field-badge">CLICK TO LEARN</span>
         </div>
         <div class="contract-line" onclick="highlightField('type')" id="field-type">
           <span class="field-name">Instrument Type</span>
-          <span class="field-value">Index Futures (FUTIDX)</span>
+          <span class="field-value">Stock Futures (FUTSTK)</span>
         </div>
         <div class="contract-line" onclick="highlightField('expiry')" id="field-expiry">
           <span class="field-name">Expiry Date</span>
-          <span class="field-value">27-MAR-2025</span>
+          <span class="field-value">30-MAR-2026 (Last Tuesday)</span>
         </div>
         <div class="contract-line" onclick="highlightField('lot')" id="field-lot">
           <span class="field-name">Lot Size</span>
-          <span class="field-value">25 Units</span>
+          <span class="field-value">250 Shares</span>
         </div>
         <div class="contract-line" onclick="highlightField('ltp')" id="field-ltp">
           <span class="field-name">Last Traded Price</span>
-          <span class="field-value" id="contractLTP">₹22,750.00</span>
+          <span class="field-value" id="contractLTP">₹1,298.75</span>
         </div>
         <div class="contract-line" onclick="highlightField('basis')" id="field-basis">
           <span class="field-name">Basis (F − S)</span>
-          <span class="field-value" id="contractBasis">₹+215.00</span>
+          <span class="field-value" id="contractBasis">₹+13.35</span>
         </div>
         <div class="contract-line" onclick="highlightField('margin')" id="field-margin">
           <span class="field-name">Initial Margin</span>
-          <span class="field-value">~₹1,42,000 (≈12.5%)</span>
+          <span class="field-value">~₹41,763 (≈13% of CV)</span>
         </div>
         <div class="contract-line" onclick="highlightField('settlement')" id="field-settlement">
           <span class="field-name">Settlement</span>
-          <span class="field-value">Cash Settled (Daily MTM)</span>
+          <span class="field-value">Physical Delivery at Expiry</span>
         </div>
         <div class="contract-line" onclick="highlightField('oi')" id="field-oi">
           <span class="field-name">Open Interest</span>
-          <span class="field-value">1,24,350 contracts</span>
+          <span class="field-value">3,24,500 contracts</span>
         </div>
       </div>
 
@@ -1236,41 +1236,42 @@
 <script>
 // ==================== DATA ====================
 
-const NIFTY_SPOT = 22535;
+const NIFTY_SPOT = 1285; // Reliance Industries spot price (₹)
 
 const marketData = [
-  { label: "NIFTY 50 SPOT", value: "22,535.40", change: "+186.45", pct: "+0.83%", dir: "up" },
-  { label: "NIFTY MAR FUTURES", value: "22,751.25", change: "+192.10", pct: "+0.85%", dir: "up" },
+  { label: "RELIANCE SPOT (NSE)", value: "₹1,285.40", change: "+18.65", pct: "+1.47%", dir: "up" },
+  { label: "RELIANCE MAR 2026 FUTURES", value: "₹1,298.75", change: "+19.10", pct: "+1.49%", dir: "up" },
   { label: "INDIA VIX", value: "13.82", change: "-0.54", pct: "-3.76%", dir: "down" },
-  { label: "BANKNIFTY SPOT", value: "48,230.15", change: "+340.80", pct: "+0.71%", dir: "up" },
-  { label: "TOTAL F&O TURNOVER", value: "₹18.4L Cr", change: "", pct: "Today", dir: "up" },
-  { label: "PCR (NIFTY)", value: "0.78", change: "Bearish", pct: "", dir: "down" },
+  { label: "NIFTY 50 (Reference)", value: "22,535.40", change: "+186.45", pct: "+0.83%", dir: "up" },
+  { label: "RELIANCE PCR", value: "0.84", change: "Mildly Bearish", pct: "", dir: "down" },
+  { label: "RELIANCE OI (Futures)", value: "3,24,500", change: "+12,400", pct: "Contracts", dir: "up" },
 ];
 
 const tickerItems = [
+  { name: "RELIANCE", price: "₹1,285", chg: "+1.47%", dir: "up" },
+  { name: "TCS", price: "₹3,842", chg: "+0.62%", dir: "up" },
+  { name: "HDFCBANK", price: "₹1,624", chg: "-0.38%", dir: "down" },
+  { name: "INFY", price: "₹1,478", chg: "+0.91%", dir: "up" },
   { name: "NIFTY", price: "22,535", chg: "+0.83%", dir: "up" },
-  { name: "BANKNIFTY", price: "48,230", chg: "+0.71%", dir: "up" },
-  { name: "FINNIFTY", price: "21,840", chg: "+0.45%", dir: "up" },
-  { name: "MIDCPNIFTY", price: "12,540", chg: "-0.22%", dir: "down" },
   { name: "CRUDE OIL", price: "₹6,724", chg: "+1.2%", dir: "up" },
-  { name: "GOLD", price: "₹65,480", chg: "-0.3%", dir: "down" },
   { name: "USD/INR", price: "83.24", chg: "+0.05%", dir: "up" },
   { name: "INDIA VIX", price: "13.82", chg: "-3.76%", dir: "down" },
 ];
 
-const expiries = ["27-MAR-2025", "24-APR-2025", "29-MAY-2025"];
+// NSE Stock F&O now expires on TUESDAY (last Tuesday of each month)
+const expiries = ["30-MAR-2026", "28-APR-2026", "26-MAY-2026"];
 
 function generateChain(spot) {
   const strikes = [];
-  const base = Math.round(spot / 100) * 100;
-  for (let i = -6; i <= 6; i++) strikes.push(base + i * 100);
+  const base = Math.round(spot / 20) * 20; // Reliance uses ₹20 strike intervals
+  for (let i = -6; i <= 6; i++) strikes.push(base + i * 20);
   return strikes.map(k => {
     const dist = k - spot;
-    const isATM = Math.abs(dist) < 60;
-    const callLTP = Math.max(1, Math.round(isATM ? 85 + Math.random()*30 : dist < 0 ? -dist + 10 + Math.random()*20 : Math.max(2, 800/(Math.abs(dist)/50+1))));
-    const putLTP = Math.max(1, Math.round(isATM ? 80 + Math.random()*30 : dist > 0 ? dist + 10 + Math.random()*20 : Math.max(2, 800/(Math.abs(dist)/50+1))));
-    const callOI = Math.round((100000 - Math.abs(dist)*50 + Math.random()*30000));
-    const putOI = Math.round((90000 - Math.abs(dist)*40 + Math.random()*25000));
+    const isATM = Math.abs(dist) < 12;
+    const callLTP = Math.max(0.5, Math.round((isATM ? 18 + Math.random()*8 : dist < 0 ? -dist + 2 + Math.random()*5 : Math.max(0.5, 200/(Math.abs(dist)/10+1))) * 10) / 10);
+    const putLTP = Math.max(0.5, Math.round((isATM ? 16 + Math.random()*8 : dist > 0 ? dist + 2 + Math.random()*5 : Math.max(0.5, 200/(Math.abs(dist)/10+1))) * 10) / 10);
+    const callOI = Math.round((80000 - Math.abs(dist)*800 + Math.random()*20000));
+    const putOI = Math.round((70000 - Math.abs(dist)*600 + Math.random()*18000));
     const callVol = Math.round(callOI * 0.12);
     const putVol = Math.round(putOI * 0.10);
     return { strike: k, callLTP, putLTP, callOI, putOI, callVol, putVol, isATM };
@@ -1280,57 +1281,57 @@ function generateChain(spot) {
 const fieldExplanations = {
   underlying: {
     title: "Underlying Asset",
-    text: "The asset on which the derivative contract is based. For index futures, it's a basket of stocks (Nifty 50 = India's top 50 companies by market cap). The futures price moves in sync with this underlying. You never own the underlying directly — you hold a contract that derives its value from it.",
-    formula: "Futures Value = Futures Price × Lot Size",
-    insight: "💡 This is why they're called 'derivatives' — their value is derived from something else."
+    text: "The asset on which the derivative contract is based. For stock futures, it is the actual equity share — in this case Reliance Industries Ltd (NSE: RELIANCE), India's largest company by market capitalisation (~₹17 lakh crore). The futures price moves in sync with the Reliance share price. You never own the shares directly — you hold a contract that derives its value from them.",
+    formula: "Futures Value = Futures Price × Lot Size = ₹1,298.75 × 250 = ₹3,24,688",
+    insight: "💡 Stock futures (FUTSTK) differ from index futures — they have physical delivery obligation in some cases. Reliance is one of the most actively traded stock futures on NSE."
   },
   type: {
     title: "Instrument Type",
-    text: "FUTIDX means Futures on an Index. NSE classifies derivatives by: FUTIDX (index futures), FUTSTK (stock futures), OPTIDX (index options), OPTSTK (stock options). Futures are standardized forward contracts traded on an exchange with daily mark-to-market settlement.",
-    formula: "Forward vs Future: Forward = OTC, Future = Exchange Traded",
-    insight: "💡 Key difference: Futures have counterparty risk eliminated by the clearinghouse (NSCCL)."
+    text: "FUTSTK means Futures on a Stock (single stock futures). NSE classifies derivatives by: FUTIDX (index futures), FUTSTK (stock futures), OPTIDX (index options), OPTSTK (stock options). Reliance stock futures are standardized contracts traded on NSE with daily mark-to-market settlement.",
+    formula: "Forward vs Future: Forward = OTC, Future = Exchange Traded + Centrally Cleared",
+    insight: "💡 Stock futures in India are compulsorily deliverable at expiry — if you hold a position to expiry, you must deliver/receive shares, unlike index futures which are always cash-settled."
   },
   expiry: {
     title: "Expiry Date",
-    text: "The last Thursday of every month. On this date, the contract expires and is settled in cash based on the closing spot price. NSE offers 3 monthly contracts (near, mid, far month). As expiry approaches, the futures price converges to spot price — the basis shrinks to zero.",
+    text: "SEBI changed stock F&O expiry from the last Thursday to the last TUESDAY of every month, effective November 2024. This change was made to reduce systemic risk from concentration of expiries. NSE offers 3 monthly contracts (near, mid, far month). As expiry approaches, futures price converges to spot price.",
     formula: "At expiry: Futures Price → Spot Price, Basis → 0",
-    insight: "💡 Basis = Futures − Spot. It decays predictably, enabling convergence trades."
+    insight: "💡 Important: Index options (Nifty, BankNifty) still expire on Thursdays. Stock F&O now expires on Tuesdays. Know which is which!"
   },
   lot: {
     title: "Lot Size",
-    text: "The minimum quantity per contract. You can't buy 1 Nifty futures — you buy 25 units. This creates leverage: with Nifty at ₹22,535, one lot controls ₹5,63,375 worth of exposure. This is why margin requirements exist — to ensure you can honour your obligations.",
-    formula: "Contract Value = LTP × Lot Size = ₹22,750 × 25 = ₹5,68,750",
-    insight: "💡 Leverage cuts both ways — magnifies gains AND losses proportionally."
+    text: "The minimum quantity per contract set by NSE/SEBI. For Reliance: 250 shares per lot. This creates leverage: with Reliance at ₹1,285, one lot controls ₹3,21,250 worth of exposure. Lot sizes are periodically revised by SEBI based on stock price to maintain contract values in a standard range (₹5–10 lakh).",
+    formula: "Contract Value = LTP × Lot Size = ₹1,285 × 250 = ₹3,21,250",
+    insight: "💡 Leverage cuts both ways. A ₹40,000 margin controls ₹3.2L exposure (~8x leverage). A 5% adverse move = ₹16,000 loss on ₹40,000 margin = 40% margin erosion."
   },
   ltp: {
     title: "Last Traded Price (LTP)",
-    text: "The price at which the most recent trade occurred in this contract. Unlike stocks, futures LTP is influenced by: spot price, cost of carry (interest rates), dividends, and time to expiry. The theoretical price from cost-of-carry model serves as an anchor.",
-    formula: "F = S × e^(r-q)T  or  F ≈ S × (1 + r - d) × T/365",
-    insight: "💡 If Futures > Theoretical Price → Overpriced → Cash-and-carry arbitrage opportunity."
+    text: "The price at which the most recent trade occurred in this Reliance futures contract. The futures LTP should closely track the theoretical price from the cost-of-carry model. Any deviation creates an arbitrage opportunity. For Reliance, the basis reflects risk-free rate minus dividend yield on the stock.",
+    formula: "F = S × e^(r−d)T  |  F ≈ 1285 × (1 + (0.065 − 0.006) × 14/365) ≈ ₹1,298",
+    insight: "💡 Reliance pays relatively low dividends (~0.5–0.6% yield), so its basis is mostly driven by the risk-free rate (≈ repo rate)."
   },
   basis: {
     title: "Basis",
-    text: "Basis = Futures Price − Spot Price. For index futures, basis is almost always positive (contango) because of the cost of carry (interest rate minus dividend yield). As expiry date approaches, basis converges to zero. Basis risk is the risk that this relationship breaks down unexpectedly.",
-    formula: "Basis = F − S = S × (r − d) × T/365",
-    insight: "💡 Basis is predictable in direction (shrinks to 0) but not always in magnitude — that's basis risk."
+    text: "Basis = Futures Price − Spot Price = ₹1,298.75 − ₹1,285.40 = ₹+13.35. For Reliance stock futures, basis is normally positive (contango) as interest cost exceeds the low dividend yield. As expiry (last Tuesday) approaches, basis decays to zero. Basis risk: the spread may widen/narrow unexpectedly due to supply-demand imbalances in the futures.",
+    formula: "Basis = F − S = S × (r − d) × T/365 = 1285 × (6.5% − 0.6%) × 14/365 ≈ ₹13",
+    insight: "💡 With 20 days to expiry, basis of ₹13 implies annualised cost of carry of ~5.9% — very close to the repo rate minus Reliance dividend yield."
   },
   margin: {
     title: "Initial Margin",
-    text: "The deposit required by NSE to take a position. Set as a percentage of contract value using SPAN (Standard Portfolio Analysis of Risk) methodology. It's NOT a down payment — it's a good-faith deposit. Daily MTM gains/losses are credited/debited to your account — if margin falls below maintenance level, you get a margin call.",
-    formula: "Initial Margin ≈ 8–15% of Contract Value",
-    insight: "💡 Margin creates leverage. ₹1.42L controls ₹5.69L exposure = ~4x leverage on 1 lot."
+    text: "The deposit required by NSE to carry a Reliance futures position. Calculated by NSCCL using SPAN methodology. For Reliance, initial margin is typically 12–15% of contract value due to its volatility profile. If your margin account falls below the maintenance margin level, you receive a margin call and must top up within the same day.",
+    formula: "Initial Margin ≈ 13% × ₹3,21,250 = ₹41,763 per lot",
+    insight: "💡 Margin % is higher for volatile stocks and lower for large-cap stable stocks. SEBI mandates a minimum VaR + ELM margin for all stock futures."
   },
   settlement: {
     title: "Settlement",
-    text: "Indian index futures are cash-settled (no physical delivery). Every day, P&L is calculated against previous day's settlement price (Mark-to-Market). At expiry, final settlement = closing spot price (Special Opening Quotation). Daily MTM prevents large accumulated losses.",
-    formula: "Daily MTM = (Today's Settlement − Yesterday's Settlement) × Lot Size",
-    insight: "💡 Daily settlement is why futures don't carry counterparty credit risk unlike forwards."
+    text: "Reliance stock futures are compulsorily deliverable at expiry (since October 2019, SEBI mandated physical delivery for all stock F&O). If you hold a position to the last Tuesday expiry, you must deliver (if short) or accept delivery (if long) of 250 Reliance shares. Intraday and squared-off positions are cash settled via MTM.",
+    formula: "Daily MTM = (Today's Settlement − Yesterday's Settlement) × Lot Size × No. of Lots",
+    insight: "💡 Physical delivery risk is REAL — many retail traders get surprised at expiry. Always square off stock futures positions before expiry if you don't want physical shares."
   },
   oi: {
     title: "Open Interest (OI)",
-    text: "Total number of outstanding contracts that haven't been settled. Unlike volume (trades per day), OI shows the total market commitment. Rising OI with rising prices = new money entering bullish bets (strong signal). Rising OI with falling prices = new short positions (bearish signal). OI peaks near expiry.",
-    formula: "OI increases when new contracts are opened; decreases when contracts are closed/expired.",
-    insight: "💡 OI at max pain strike often becomes a gravitational point for index near expiry — used by options traders."
+    text: "Total outstanding Reliance futures contracts not yet settled. Reliance typically has one of the highest OI among single-stock futures on NSE. Rising OI + rising price = bulls entering (bullish signal). Rising OI + falling price = bears entering (bearish signal). OI concentration at specific strikes in options helps identify support/resistance levels.",
+    formula: "OI increases when new contracts opened; decreases when contracts are closed/squared off/expired.",
+    insight: "💡 NSE publishes daily OI data. When Reliance OI rises sharply with price, large institutional positions are being built — a key signal for derivative traders."
   }
 };
 
@@ -1344,7 +1345,7 @@ const glossaryTerms = [
   { term: "Backwardation", hint: "Inverted market", def: "A condition where futures prices are below the current spot price. Occurs when dividends or convenience yield exceed interest rates. Common in some commodity futures. Signals strong current demand." },
   { term: "Mark-to-Market", hint: "Daily settlement", def: "The daily process of revaluing open futures positions at the day's settlement price and crediting/debiting P&L. This prevents large accumulated losses and is why futures eliminate counterparty risk." },
   { term: "Cost of Carry", hint: "Pricing foundation", def: "The cost of holding the underlying asset until the futures expiry — primarily interest cost minus dividends received. Theoretical Futures Price = Spot × e^(r-d)T. Forms the basis of futures pricing." },
-  { term: "Lot Size", hint: "Contract unit", def: "The standardized minimum quantity per futures contract set by NSE. For Nifty: 25 units. For BankNifty: 15 units. You cannot trade a fraction of a lot — it creates minimum trade size and leverage." },
+  { term: "Lot Size", hint: "Contract unit", def: "The standardized minimum quantity per futures contract set by NSE/SEBI. For Reliance: 250 shares. For Nifty: 25 units. For BankNifty: 15 units. SEBI periodically revises lot sizes to keep contract values in a standard range of ₹5–10 lakh." },
   { term: "Arbitrage", hint: "Risk-free profit", def: "Simultaneously buying and selling equivalent assets in different markets to profit from price discrepancies. In derivatives: if Futures > theoretical price, buy spot and sell futures. Risk-free profit locked in at expiry." },
   { term: "Hedging", hint: "Risk reduction", def: "Taking an offsetting derivative position to reduce the risk of an existing exposure. Example: A portfolio manager with ₹5Cr in equities sells Nifty futures to protect against market decline." },
 ];
@@ -1370,56 +1371,56 @@ const participantTableData = [
 
 const scenarios = {
   hedging: {
-    title: "Scenario: The Worried Portfolio Manager",
-    story: "Kavitha manages a ₹25 Crore equity portfolio tracking Nifty 50 (beta ≈ 1.0). It is March 2025. She expects market volatility before the Union Budget in July and wants to protect her portfolio from a potential 8–10% correction.",
-    question: "What should Kavitha do using derivatives? Identify: (1) the instrument, (2) position (buy/sell), (3) number of contracts, and (4) the market participant type she is acting as.",
+    title: "Scenario: The Reliance Shareholder's Dilemma",
+    story: "Priya holds 5,000 shares of Reliance Industries, currently worth ₹1,285 each (total value ₹64.25 lakh). It is March 2026. She expects Reliance to face near-term pressure due to a large rights issue announcement next month, and wants to protect her portfolio for the next 6 weeks without selling her physical shares.",
+    question: "What should Priya do using derivatives? Identify: (1) the instrument, (2) position (buy/sell), (3) number of contracts needed, and (4) the market participant type she is acting as.",
     options: [
-      { letter: "A", text: "Buy Nifty March futures to profit from the expected decline", correct: false },
-      { letter: "B", text: "Sell Nifty futures to hedge — short futures offset portfolio losses", correct: true },
-      { letter: "C", text: "Buy Nifty call options to protect upside", correct: false },
-      { letter: "D", text: "Do nothing — futures are too expensive to hedge", correct: false },
+      { letter: "A", text: "Buy Reliance futures to profit from the expected decline", correct: false },
+      { letter: "B", text: "Sell Reliance futures (short hedge) — short futures offset share losses", correct: true },
+      { letter: "C", text: "Buy Reliance call options to protect upside", correct: false },
+      { letter: "D", text: "Do nothing — physical shares are safe from futures movements", correct: false },
     ],
-    correctExplanation: "✅ Correct! Kavitha is acting as a Hedger. She should SELL Nifty futures. Contracts needed = (Portfolio Value / Contract Value) × Beta = (₹25Cr / ₹5.69L) × 1.0 ≈ 44 contracts. If Nifty falls 10%, her portfolio loses ~₹2.5Cr but her short futures gain ~₹2.5Cr — risk eliminated.",
-    wrongExplanation: "❌ Incorrect. A hedger with a long equity portfolio must take the offsetting SHORT position in futures. Buying futures would ADD risk (long-long). Buying calls offers protection but costs premium. The textbook hedge for a long portfolio is to SELL futures."
+    correctExplanation: "✅ Correct! Priya is acting as a Hedger. She should SELL Reliance futures. Contracts needed = 5,000 shares ÷ 250 (lot size) = 20 contracts. If Reliance falls ₹100/share, her portfolio loses ₹5L but her short futures gain ₹100 × 250 × 20 = ₹5L — risk neutralised. She's a classic hedger.",
+    wrongExplanation: "❌ Incorrect. A hedger with a LONG share position must take the offsetting SHORT position in futures. Buying futures would double her risk (long shares + long futures). Buying calls gives upside protection but doesn't hedge downside. The textbook short hedge = sell futures against your physical holding."
   },
   speculation: {
-    title: "Scenario: The RBI Rate Cut Play",
-    story: "Arjun, a proprietary trader, expects the RBI to cut interest rates by 25bps next week. He believes this will push BankNifty up by 3–4% in the next 5 trading days. BankNifty spot is at ₹48,000. He has ₹2 lakh capital to deploy.",
-    question: "Arjun wants to maximize leverage on his directional view. Which approach gives him the highest leverage while limiting loss to his ₹2L capital?",
+    title: "Scenario: The Jio IPO Play",
+    story: "Rahul, a proprietary trader, believes Reliance Industries will rally 5–7% over the next month following an announcement about the Jio IPO timeline. Reliance spot = ₹1,285. He has ₹1.5 lakh to deploy and wants maximum leverage on this directional view.",
+    question: "Rahul wants to maximize upside leverage while capping his loss at ₹1.5L. Which approach best fits his objective?",
     options: [
-      { letter: "A", text: "Buy BankNifty spot ETF worth ₹2L", correct: false },
-      { letter: "B", text: "Buy 1 BankNifty futures contract (requires ~₹1.5L margin)", correct: false },
-      { letter: "C", text: "Buy BankNifty 48500 Call options expiring next Thursday for ₹2L premium", correct: true },
-      { letter: "D", text: "Sell BankNifty put options to collect premium", correct: false },
+      { letter: "A", text: "Buy 500 Reliance shares in the spot market for ₹6.43L", correct: false },
+      { letter: "B", text: "Buy 1 lot Reliance futures (requires ~₹42,000 margin)", correct: false },
+      { letter: "C", text: "Buy Reliance 1300 Call options expiring next Tuesday for ₹1.5L total premium", correct: true },
+      { letter: "D", text: "Sell Reliance put options at ₹1,260 strike to collect premium", correct: false },
     ],
-    correctExplanation: "✅ Correct! Options provide the highest leverage with defined maximum loss. Paying ₹2L in premium means maximum loss = ₹2L (if BankNifty doesn't move up). But if it rises 3%, a ₹48,500 call could multiply 5-10x. Futures also work but expose him to unlimited loss if wrong. Arjun is acting as a Speculator.",
-    wrongExplanation: "❌ Rethink the leverage angle. ETF gives 1:1 exposure. Futures give leverage but unlimited downside if wrong. Selling puts gives premium income but massive risk if market falls. Buying calls = defined risk (premium paid) + unlimited upside leverage. That's the speculator's preferred tool."
+    correctExplanation: "✅ Correct! Call options give the highest leverage with defined maximum loss = ₹1.5L (the premium paid). If Reliance rallies 6% to ₹1,361, a ₹1,300 call could multiply 5–8x. Futures also give leverage but carry unlimited downside if Rahul is wrong. Buying calls = the speculator's preferred tool for defined-risk directional bets.",
+    wrongExplanation: "❌ Revisit the leverage objective. Spot buying uses full capital (1:1). Futures give leverage but unlimited downside. Selling puts gives premium income but MASSIVE loss if Reliance falls (unlimited downside). Buying calls = pay premium (max loss) + unlimited upside leverage. That's the cleanest fit for Rahul's objective."
   },
   arbitrage: {
-    title: "Scenario: The Mispricing Alert",
-    story: "Nifty spot is at ₹22,535. The 3-month futures (90 days to expiry) are trading at ₹22,900. Risk-free rate = 6.5% p.a. Dividend yield on Nifty = 1.2% p.a. An algorithm flags a potential arbitrage.",
-    question: "First, calculate the theoretical futures price. Then identify what type of arbitrage (if any) exists and what trade to execute.",
+    title: "Scenario: The Mispricing Alert — Reliance",
+    story: "Reliance spot = ₹1,285. The March 2026 futures (last Tuesday 30-MAR-2026, 20 days to expiry) are trading at ₹1,310. Risk-free rate = 6.5% p.a. Reliance dividend yield = 0.6% p.a. An algorithm flags a potential mispricing.",
+    question: "Calculate the theoretical futures price. Is this an arbitrage opportunity? If yes, what trade should be executed and what is the approximate profit per lot?",
     options: [
-      { letter: "A", text: "Futures underpriced → Buy futures, sell underlying basket", correct: false },
-      { letter: "B", text: "Futures overpriced → Buy underlying basket, sell futures (Cash-and-Carry)", correct: true },
-      { letter: "C", text: "Fairly priced → No arbitrage opportunity", correct: false },
-      { letter: "D", text: "Futures underpriced → Reverse cash-and-carry arbitrage", correct: false },
+      { letter: "A", text: "Futures underpriced → Buy futures, short sell Reliance shares", correct: false },
+      { letter: "B", text: "Futures overpriced → Buy Reliance shares, sell futures (Cash-and-Carry)", correct: true },
+      { letter: "C", text: "Fairly priced → No arbitrage exists", correct: false },
+      { letter: "D", text: "Cannot arbitrage — physical delivery risk makes it too complex", correct: false },
     ],
-    correctExplanation: "✅ Correct! Theoretical Futures = 22,535 × (1 + (0.065 − 0.012) × 90/365) = 22,535 × 1.01305 = ₹22,829. Actual futures = ₹22,900 > ₹22,829 → OVERPRICED by ₹71. Execute Cash-and-Carry: Buy Nifty basket worth ₹5.63L (1 lot), simultaneously sell 1 lot futures at ₹22,900. At expiry, pocket ₹71 × 25 = ₹1,775 per lot, risk-free.",
-    wrongExplanation: "❌ Calculate first: F_theoretical = 22,535 × (1 + (6.5% − 1.2%) × 90/365) = ₹22,829. Actual F = ₹22,900 > ₹22,829. So futures are OVERPRICED. When futures are overpriced → buy cheap (spot) + sell expensive (futures) = Cash-and-Carry arbitrage."
+    correctExplanation: "✅ Correct! Theoretical F = 1285 × (1 + (0.065 − 0.006) × 20/365) = 1285 × 1.00323 = ₹1,289.15. Actual futures = ₹1,310 > ₹1,289.15 → OVERPRICED by ₹20.85. Cash-and-Carry: Buy 250 Reliance shares (1 lot) at ₹1,285, sell 1 Mar 2026 futures at ₹1,310. At expiry (30-MAR-2026): profit = ₹20.85 × 250 = ₹5,213 per lot, risk-free (before transaction costs).",
+    wrongExplanation: "❌ Calculate first: F_theoretical = 1285 × (1 + (6.5% − 0.6%) × 20/365) = ₹1,289.15. Actual F = ₹1,310 >> ₹1,289.15. Futures are OVERPRICED. Rule: overpriced futures → buy cheap (spot shares) + sell expensive (futures) = Cash-and-Carry. Physical delivery at expiry (30-MAR-2026) actually HELPS this arbitrage — no basis risk at settlement!"
   },
   basis: {
-    title: "Scenario: The Basis Trader",
-    story: "It is January 2nd. Nifty spot = ₹22,200. March futures (83 days to expiry) = ₹22,480. A trader notes: basis = +₹280. On March 27 (expiry), a trader closes the position when Nifty spot = ₹23,100 and March futures = ₹23,100.",
-    question: "The basis on January 2nd was +₹280. What happened to the basis by expiry? What fundamental law of futures markets does this demonstrate?",
+    title: "Scenario: Basis Convergence — Reliance",
+    story: "It is March 7th, 2026. Reliance spot = ₹1,260. March 2026 futures (expiry 30-MAR-2026, 24 days away) = ₹1,275. Basis = +₹15. A trader tracks this daily. On 30-MAR-2026 (expiry Tuesday), Reliance spot = ₹1,318 and March 2026 futures = ₹1,318.",
+    question: "The basis on March 7th was +₹15. What happened to it by expiry on 30-MAR-2026? What does this tell us about the relationship between futures and spot prices?",
     options: [
-      { letter: "A", text: "Basis widened to +₹500 as markets rallied", correct: false },
-      { letter: "B", text: "Basis remained at +₹280 throughout the period", correct: false },
-      { letter: "C", text: "Basis converged to zero at expiry — spot and futures prices equalized", correct: true },
-      { letter: "D", text: "Basis turned negative (backwardation) due to market rally", correct: false },
+      { letter: "A", text: "Basis widened to +₹40 as the stock rallied strongly", correct: false },
+      { letter: "B", text: "Basis stayed at +₹15 because cost of carry didn't change", correct: false },
+      { letter: "C", text: "Basis converged to zero on 30-MAR-2026 — spot and futures equalized at ₹1,318", correct: true },
+      { letter: "D", text: "Basis turned negative because Reliance went ex-dividend before expiry", correct: false },
     ],
-    correctExplanation: "✅ Correct! At expiry: Spot = Futures = ₹23,100. Basis = 0. This is the Law of Convergence — the cornerstone of futures pricing. As expiry approaches, cost of carry (interest − dividend) for the remaining period approaches zero, so the no-arbitrage price approaches spot. If it didn't converge, risk-free arbitrage would force it to.",
-    wrongExplanation: "❌ The Law of Convergence states that futures price MUST equal spot price at expiry. If they diverged, arbitrageurs would immediately exploit it (buy cheap, sell expensive) until prices equalized. This is guaranteed by the settlement mechanism: final settlement = spot closing price."
+    correctExplanation: "✅ Correct! At expiry (30-MAR-2026, last Tuesday): Spot = Futures = ₹1,318. Basis = 0. This is the Law of Convergence — guaranteed by the physical delivery settlement mechanism. NSE's final settlement price = closing spot price on expiry day. Basis decayed from ₹15 to ₹0 over 24 days.",
+    wrongExplanation: "❌ The Law of Convergence is absolute. At expiry (30-MAR-2026), NSE settles Reliance futures at the closing spot price — so futures MUST equal spot. If they didn't, traders would immediately exploit the gap. This arbitrage force guarantees convergence every single expiry Tuesday."
   }
 };
 
@@ -1442,23 +1443,23 @@ const quizQuestions = [
     co: "CO1"
   },
   {
-    q: "Nifty spot = ₹22,500. 3-month futures are trading at ₹22,400. Risk-free rate = 7% p.a., dividend yield = 1.5% p.a. (a) Calculate the theoretical fair value of the futures. (b) Is the market in contango or backwardation? (c) Describe the arbitrage strategy and calculate approximate profit per lot (lot size = 25).",
-    hint: "Use F = S × (1 + (r − d) × T/365). Then compare theoretical vs actual. If actual < theoretical, what's cheaper — spot or futures?",
+    q: "Reliance Industries spot = ₹1,285. March 2026 futures (expiring 30-MAR-2026, 20 days away) are trading at ₹1,310. Risk-free rate = 6.5% p.a., Reliance dividend yield = 0.6% p.a. (a) Calculate the theoretical fair value of the futures. (b) Is this an arbitrage opportunity? (c) Describe the exact trade and calculate profit per lot (lot size = 250 shares).",
+    hint: "Use F = S × (1 + (r − d) × T/365). Then compare theoretical vs actual. Note: Reliance stock futures have physical delivery — how does that affect your arbitrage at expiry?",
     co: "CO1 & CO2"
   },
   {
-    q: "Explain in your own words why futures prices MUST converge to spot prices at expiry. Use the concept of arbitrage in your explanation — what would happen if they didn't converge, and who would act on it?",
-    hint: "Imagine futures expired at ₹100 above spot. What would any rational market participant do immediately? Keep doing this thought experiment until convergence.",
+    q: "SEBI changed stock F&O expiry from the last Thursday to the last Tuesday of each month (effective Nov 2024), while index options (Nifty, BankNifty) still expire on Thursdays. Explain: (a) why this distinction matters to a trader holding both a Nifty index option and a Reliance stock future simultaneously, and (b) what 'basis convergence' means and why it is guaranteed regardless of whether expiry is on a Tuesday or Thursday.",
+    hint: "Think about calendar risk — different instruments expiring on different days. For part (b), think about what would happen if futures didn't converge to spot at expiry.",
     co: "CO1"
   },
   {
-    q: "A portfolio manager says: 'I don't need to understand derivatives. My equity fund just buys good stocks.' Critique this statement. Under what circumstances would a professional equity manager benefit from knowing derivatives, and what specific strategies would be relevant?",
-    hint: "Think about: portfolio protection (hedging), income generation (covered calls), tactical allocation, and managing beta during market uncertainty.",
+    q: "Reliance Industries is India's largest company. A fund manager holds ₹3.2 Crore worth of Reliance shares (2,500 shares at ₹1,280 each). She is worried about a 10% decline over the next month due to a large rights issue overhang. Design a complete hedging strategy using Reliance stock futures: number of contracts, position (buy/sell), and calculate the net P&L of the hedged position if Reliance falls 10%.",
+    hint: "Contracts needed = shares held ÷ lot size. If Reliance falls 10%: calculate loss on shares + gain on short futures. Are they equal?",
     co: "CO2"
   },
   {
-    q: "The Nifty open interest is rising sharply while the futures price is also rising. Separately, a trader notices India VIX is falling. What do each of these signals suggest about market sentiment? Are they consistent or contradictory? Explain.",
-    hint: "OI + Price direction tells you about conviction. VIX = volatility expectation. Rising OI + rising price = ? Rising OI + falling price = ? Low VIX = ?",
+    q: "A trader observes: Reliance spot is ₹1,285, but Reliance March 2026 futures (expiry 30-MAR-2026, 15 days away) are trading at ₹1,240 — BELOW the spot price (backwardation). Risk-free rate = 6.5%, dividend yield = 0.6%. Is this normal or abnormal? What does it signal about market sentiment on Reliance? Describe the arbitrage strategy if one exists.",
+    hint: "First calculate theoretical futures price. Actual = ₹1,240 vs theoretical = ? When futures < spot, it's called backwardation. For stocks this is unusual — what might cause it? What arbitrage trade exploits underpriced futures?",
     co: "CO1 & CO2"
   }
 ];
@@ -1535,7 +1536,7 @@ function initMarketCards() {
 
 // ==================== OPTIONS CHAIN ====================
 function initChain() {
-  chainData = generateChain(NIFTY_SPOT);
+  chainData = generateChain(NIFTY_SPOT); // Using RELIANCE_SPOT
   document.getElementById('chainSpot').textContent = '₹' + NIFTY_SPOT.toLocaleString('en-IN');
 
   const expiryEl = document.getElementById('expirySelector');
@@ -1550,7 +1551,7 @@ function selectExpiry(idx, btn) {
   currentExpiry = idx;
   document.querySelectorAll('.expiry-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const multiplier = 1 + idx * 0.01;
+  const multiplier = 1 + idx * 0.005; // smaller multiplier for stock price
   chainData = generateChain(NIFTY_SPOT * multiplier);
   renderChain();
 }
