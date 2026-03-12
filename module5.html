@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — Module 5: Options Strategies</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080a;--surf:#101012;--surf2:#17171a;--surf3:#232328;--vi:#7c3aed;--vi2:#8b5cf6;--vi3:#a78bfa;--vi4:#c4b5fd;--teal:#2dd4bf;--red:#f87171;--green:#4ade80;--amber:#fbbf24;--blue:#60a5fa;--text:#f5f3ff;--text2:#a09db8;--text3:#5b5870;--bdr:rgba(124,58,237,.18);--bdr2:rgba(255,255,255,.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 35% at 10% 5%,rgba(124,58,237,.08) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 90% 95%,rgba(45,212,191,.05) 0%,transparent 60%);}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(124,58,237,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.025) 1px,transparent 1px);background-size:55px 55px;}
+.w{max-width:1380px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
+header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr2);padding:12px 0;}
+.hdr{display:flex;align-items:center;justify-content:space-between;}
+.hdrl{display:flex;align-items:center;gap:13px;}
+.back{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text3);text-decoration:none;border:1px solid var(--bdr2);padding:5px 10px;border-radius:3px;transition:all .2s;}.back:hover{color:var(--vi2);border-color:var(--bdr);}
+.logo{font-weight:700;font-size:1.25rem;letter-spacing:-.02em;}.logo b{color:var(--vi2);}
+.mpill{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--vi2);border:1px solid var(--bdr);padding:4px 10px;border-radius:20px;letter-spacing:.1em;}
+.hinfo{font-family:'DM Mono',monospace;font-size:.65rem;display:flex;gap:16px;color:var(--text3);}.hinfo span{color:var(--vi3);}
+.hero{padding:50px 0 38px;border-bottom:1px solid var(--bdr2);margin-bottom:32px;}
+.htag{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--vi2);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}.htag::before{content:'';width:24px;height:1px;background:var(--vi2);}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.6rem,5vw,4.6rem);font-weight:400;line-height:1;margin-bottom:8px;}.hero h1 em{color:var(--vi3);font-style:italic;}
+.hcode{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--text3);margin-bottom:16px;letter-spacing:.06em;}
+.hdesc{color:var(--text2);font-size:.93rem;line-height:1.72;max-width:620px;margin-bottom:20px;}
+.cotags{display:flex;gap:7px;flex-wrap:wrap;}.cotag{font-family:'DM Mono',monospace;font-size:.58rem;padding:4px 10px;border-radius:2px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);color:var(--vi3);}
+.cobar{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;padding:12px 20px;display:flex;gap:20px;align-items:center;margin-bottom:26px;flex-wrap:wrap;}
+.colbl{font-family:'DM Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+.coit{flex:1;min-width:90px;display:flex;flex-direction:column;gap:4px;}.conm{font-family:'DM Mono',monospace;font-size:.57rem;color:var(--text3);}
+.cotr{height:3px;background:var(--surf3);border-radius:2px;overflow:hidden;}.cofl{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--vi2),var(--teal));transition:width 1s ease;}
+.copct{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--vi2);}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--bdr2);margin-bottom:26px;overflow-x:auto;}
+.tab{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;padding:9px 15px;cursor:pointer;border:none;background:none;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}.tab:hover{color:var(--text2);}.tab.active{color:var(--vi3);border-bottom-color:var(--vi2);}
+.panel{display:none;}.panel.active{display:block;}
+.stag{font-family:'DM Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:12px;}.stag::after{content:'';flex:1;height:1px;background:var(--bdr2);}
+.sh{font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:7px;}
+.sp{color:var(--text2);font-size:.92rem;line-height:1.72;margin-bottom:22px;max-width:800px;}
+.card{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:20px;}
+.cardh{font-weight:700;font-size:.82rem;color:var(--text2);margin-bottom:12px;}
+.ctrl{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+.ctrlbl{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;display:flex;justify-content:space-between;}.ctrlbl b{color:var(--vi3);font-weight:500;}
+input[type=range]{width:100%;height:3px;background:var(--surf3);border-radius:2px;outline:none;-webkit-appearance:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--vi2);cursor:pointer;box-shadow:0 0 8px rgba(124,58,237,.5);}
+.sel{background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:7px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:.72rem;outline:none;cursor:pointer;width:100%;}
+.btn{font-family:'DM Sans',sans-serif;font-weight:700;font-size:.78rem;padding:9px 18px;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.bvi{background:var(--vi);color:#fff;}.bvi:hover{background:var(--vi2);}
+.bgh{background:var(--surf3);color:var(--text2);border:1px solid var(--bdr2);}.bgh:hover{border-color:var(--vi2);color:var(--vi3);}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.86rem;}.rrow:last-child{border-bottom:none;}
+.rl{color:var(--text2);}.rv{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);font-weight:500;}
+.rv.hl{color:var(--vi3);font-size:.97rem;}.rv.gn{color:var(--green);}.rv.rd{color:var(--red);}.rv.am{color:var(--amber);}
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem;}
+.tbl th{padding:7px 11px;text-align:right;font-family:'DM Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--bdr2);background:var(--surf2);}
+.tbl th.lft,.tbl td.lft{text-align:left;}
+.tbl td{padding:8px 11px;text-align:right;border-bottom:1px solid rgba(255,255,255,.03);font-family:'DM Mono',monospace;font-size:.72rem;}
+.tbl td:first-child{text-align:left;font-family:'DM Sans',sans-serif;color:var(--text2);font-size:.82rem;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}.tbl tr.hlr td{background:rgba(124,58,237,.07);}
+.gn{color:var(--green);}.rd{color:var(--red);}.vi{color:var(--vi3);}.am{color:var(--amber);}
+.callout{border-radius:6px;padding:13px 15px;margin-bottom:15px;font-size:.85rem;line-height:1.65;}
+.callout.info{background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.25);}
+.callout.success{background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.25);}
+.callout.warn{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);}
+.callout.vi{background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.25);}
+canvas{display:block;width:100%;}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+.scard{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:16px;cursor:pointer;transition:all .2s;}.scard:hover{border-color:var(--bdr);transform:translateY(-2px);}.scard.active{border-color:var(--vi2);background:rgba(124,58,237,.07);}
+.sc-icon{font-size:1.5rem;margin-bottom:7px;}.sc-name{font-weight:700;font-size:.87rem;margin-bottom:4px;}.sc-market{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--vi3);letter-spacing:.06em;margin-bottom:6px;}.sc-desc{font-size:.8rem;color:var(--text2);line-height:1.55;}.sc-profit{font-family:'DM Mono',monospace;font-size:.65rem;margin-top:7px;padding:5px 8px;background:var(--surf2);border-radius:3px;}.sc-profit.good{color:var(--green);}.sc-profit.bad{color:var(--red);}.sc-profit.neutral{color:var(--text3);}
+.legrow{display:flex;gap:8px;align-items:center;padding:9px 12px;background:var(--surf2);border-radius:5px;margin-bottom:7px;font-size:.84rem;}
+.legdel{background:rgba(248,113,113,.15);border:none;color:var(--red);width:22px;height:22px;border-radius:3px;cursor:pointer;font-size:.8rem;}
+.leginp{background:var(--surf3);border:1px solid var(--bdr2);border-radius:3px;padding:5px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.72rem;width:80px;outline:none;}.leginp:focus{border-color:var(--vi2);}
+.legsel{background:var(--surf3);border:1px solid var(--bdr2);border-radius:3px;padding:5px 7px;color:var(--text);font-family:'DM Mono',monospace;font-size:.72rem;outline:none;cursor:pointer;}
+.scen{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:20px;margin-bottom:13px;}.scen-t{font-weight:700;margin-bottom:8px;font-size:.92rem;}.scen-s{font-size:.85rem;color:var(--text2);line-height:1.65;margin-bottom:13px;padding:10px 14px;background:var(--surf2);border-radius:5px;border-left:3px solid var(--vi2);}.scen-q{font-weight:600;font-size:.89rem;margin-bottom:11px;}
+.sopts{display:flex;flex-direction:column;gap:6px;}
+.sopt{padding:8px 12px;border-radius:5px;cursor:pointer;border:1px solid var(--bdr2);background:var(--surf2);font-size:.85rem;color:var(--text2);transition:all .2s;text-align:left;}.sopt:hover:not(.answered){border-color:var(--vi2);color:var(--text);}
+.sopt.correct{background:rgba(74,222,128,.1);border-color:var(--green);color:var(--green);}.sopt.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red);}.sopt.reveal{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2);color:var(--text2);}
+.sexp{display:none;margin-top:10px;padding:11px 13px;border-radius:5px;font-size:.83rem;line-height:1.65;}.sexp.show{display:block;}.sexp.right{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.3);}.sexp.wrong{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);}
+.qbox{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;margin-bottom:22px;}
+.qhd{padding:13px 20px;border-bottom:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;}.qt{font-weight:700;font-size:.86rem;margin-bottom:2px;}.qs{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--text3);}
+.qdots{display:flex;gap:5px;}.qdot{width:8px;height:8px;border-radius:50%;background:var(--surf3);border:1px solid var(--bdr2);transition:all .3s;}.qdot.done{background:var(--vi2);border-color:var(--vi2);}.qdot.cur{background:var(--vi4);border-color:var(--vi4);animation:qp 1.5s infinite;}
+@keyframes qp{0%,100%{opacity:1}50%{opacity:.5}}
+.qbody{padding:20px;}.qn{font-family:'DM Mono',monospace;font-size:.57rem;color:var(--vi3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}.qt2{font-size:1rem;font-weight:500;line-height:1.55;margin-bottom:11px;}.qhint{font-size:.82rem;color:var(--text2);font-style:italic;padding:9px 13px;background:rgba(124,58,237,.06);border-left:2px solid var(--vi2);border-radius:2px;margin-bottom:12px;line-height:1.6;}
+.qarea{width:100%;background:var(--surf2);border:1px solid var(--bdr2);border-radius:6px;padding:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.92rem;resize:vertical;min-height:95px;line-height:1.6;outline:none;transition:border-color .2s;}.qarea:focus{border-color:var(--vi2);}
+.qft{padding:11px 20px;border-top:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;}.qst{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--text3);}
+.aifb{margin-top:11px;border-radius:6px;overflow:hidden;display:none;border:1px solid rgba(124,58,237,.3);}.aifb.show{display:block;}
+.aifbh{padding:8px 12px;background:rgba(124,58,237,.07);border-bottom:1px solid rgba(124,58,237,.2);display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--vi3);}
+.aib{background:var(--vi2);color:#fff;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.56rem;font-weight:700;}
+.spl{margin-left:auto;font-size:.67rem;font-weight:700;}.spl.ex{color:var(--green);}.spl.gd{color:var(--vi3);}.spl.nw{color:var(--red);}
+.aifbb{padding:12px;font-size:.85rem;line-height:1.7;background:var(--surf2);}
+.dots{display:flex;gap:4px;padding:5px;}.dots span{width:6px;height:6px;border-radius:50%;background:var(--vi2);animation:db 1.2s infinite;}.dots span:nth-child(2){animation-delay:.2s;}.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes db{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}}
+@media(max-width:900px){.sgrid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.w{padding:0 14px;}.sgrid{grid-template-columns:1fr;}.hero h1{font-size:2.3rem;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="w hdr">
+    <div class="hdrl">
+      <a href="index.html" class="back">&#8592; Home</a>
+      <div class="logo">Derivatives<b>Lab</b></div>
+      <div class="mpill">MODULE 05</div>
+    </div>
+    <div class="hinfo">Sessions 9&#8211;10 &middot; Hull Ch.11&#8211;12 &middot; <span>Options Strategies</span></div>
+  </div>
+</header>
+<div class="w">
+<div class="hero">
+  <div class="htag">Sessions 9&#8211;10 &middot; Hull Chapters 11 &amp; 12</div>
+  <h1>Options<br><em>Strategies</em></h1>
+  <div class="hcode">FIA 401 &middot; RELIANCE OPTIONS &middot; NSE &middot; SPREADS + COMBINATIONS</div>
+  <p class="hdesc">Master every options strategy from basic spreads to multi-leg combinations. Build custom payoff diagrams, explore break-even analysis, and understand when each strategy works &#8212; using live Reliance Industries option chain data.</p>
+  <div class="cotags">
+    <span class="cotag">CO2 &#8212; Strategy Design</span>
+    <span class="cotag">CO3 &#8212; Pricing</span>
+    <span class="cotag">CO4 &#8212; Instrument Design</span>
+  </div>
+</div>
+<div class="cobar">
+  <div class="colbl">Progress</div>
+  <div class="coit"><div class="conm">CO2</div><div class="cotr"><div class="cofl" id="c2f" style="width:0%"></div></div><div class="copct" id="c2p">0%</div></div>
+  <div class="coit"><div class="conm">CO3</div><div class="cotr"><div class="cofl" id="c3f" style="width:0%"></div></div><div class="copct" id="c3p">0%</div></div>
+  <div class="coit"><div class="conm">CO4</div><div class="cotr"><div class="cofl" id="c4f" style="width:0%"></div></div><div class="copct" id="c4p">0%</div></div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="sw('library',this)">&#128218; Strategy Library</button>
+  <button class="tab" onclick="sw('builder',this)">&#128295; Payoff Builder</button>
+  <button class="tab" onclick="sw('spreads',this)">&#128202; Spreads Lab</button>
+  <button class="tab" onclick="sw('combos',this)">&#128256; Combinations Lab</button>
+  <button class="tab" onclick="sw('scenarios',this)">&#129513; Scenarios</button>
+  <button class="tab" onclick="sw('quiz',this)">&#9999;&#65039; AI Quiz</button>
+</div>
+
+<!-- TAB 1: LIBRARY -->
+<div class="panel active" id="tab-library">
+  <div class="stag">Tab 1 &#8212; All Strategies At a Glance</div>
+  <div class="sh">Options Strategy Library</div>
+  <div class="sp">Click any strategy card to load its payoff diagram with adjustable parameters. Underlying: Reliance Industries, Spot &#8377;1,285, Lot 500.</div>
+  <div class="stag" style="margin-bottom:10px">Bullish Strategies</div>
+  <div class="sgrid">
+    <div class="scard active" id="sc-lc" onclick="showStrat('lc',this)"><div class="sc-icon">&#128200;</div><div class="sc-name">Long Call</div><div class="sc-market">BULLISH &middot; UNLIMITED UPSIDE</div><div class="sc-desc">Buy a call. Profit if stock rises above strike + premium. Max loss = premium paid.</div><div class="sc-profit good">Max Profit: Unlimited &nbsp;|&nbsp; Max Loss: Premium</div></div>
+    <div class="scard" id="sc-bcs" onclick="showStrat('bcs',this)"><div class="sc-icon">&#128002;</div><div class="sc-name">Bull Call Spread</div><div class="sc-market">MILDLY BULLISH &middot; CAPPED</div><div class="sc-desc">Buy lower K call, sell higher K call. Reduce cost, cap profit. Best for moderate upside.</div><div class="sc-profit good">Max Profit: &#916;strike &#8722; net prem &nbsp;|&nbsp; Max Loss: Net prem</div></div>
+    <div class="scard" id="sc-cc" onclick="showStrat('cc',this)"><div class="sc-icon">&#128181;</div><div class="sc-name">Covered Call</div><div class="sc-market">NEUTRAL-BULLISH &middot; INCOME</div><div class="sc-desc">Hold stock + sell call. Premium income. Caps upside at strike. Good for sideways markets.</div><div class="sc-profit good">Max Profit: Premium + (K&#8722;S&#8320;) &nbsp;|&nbsp; Capped upside</div></div>
+  </div>
+  <div class="stag" style="margin-bottom:10px">Bearish Strategies</div>
+  <div class="sgrid">
+    <div class="scard" id="sc-lp" onclick="showStrat('lp',this)"><div class="sc-icon">&#128201;</div><div class="sc-name">Long Put</div><div class="sc-market">BEARISH &middot; DOWNSIDE PROTECTION</div><div class="sc-desc">Buy a put. Profit if stock falls below strike &#8722; premium. Also used as portfolio insurance.</div><div class="sc-profit bad">Max Profit: K &#8722; Premium &nbsp;|&nbsp; Max Loss: Premium</div></div>
+    <div class="scard" id="sc-bps" onclick="showStrat('bps',this)"><div class="sc-icon">&#128059;</div><div class="sc-name">Bear Put Spread</div><div class="sc-market">MILDLY BEARISH &middot; CAPPED</div><div class="sc-desc">Buy higher K put, sell lower K put. Reduce cost, cap protection. Best for moderate fall.</div><div class="sc-profit bad">Max Profit: &#916;strike &#8722; net prem &nbsp;|&nbsp; Max Loss: Net prem</div></div>
+    <div class="scard" id="sc-pp" onclick="showStrat('pp',this)"><div class="sc-icon">&#9730;&#65039;</div><div class="sc-name">Protective Put</div><div class="sc-market">BEARISH &middot; PORTFOLIO INSURANCE</div><div class="sc-desc">Hold stock + buy put. Floors your loss. Upside fully preserved.</div><div class="sc-profit bad">Max Loss: S&#8320; &#8722; K + Premium &nbsp;|&nbsp; Upside unlimited</div></div>
+  </div>
+  <div class="stag" style="margin-bottom:10px">Volatility / Neutral Strategies</div>
+  <div class="sgrid">
+    <div class="scard" id="sc-str" onclick="showStrat('str',this)"><div class="sc-icon">&#9889;</div><div class="sc-name">Long Straddle</div><div class="sc-market">HIGH VOLATILITY EXPECTED</div><div class="sc-desc">Buy ATM call + ATM put (same K). Profit from big move either way. Best before events.</div><div class="sc-profit neutral">Profit if |move| > total premium paid</div></div>
+    <div class="scard" id="sc-strg" onclick="showStrat('strg',this)"><div class="sc-icon">&#129417;</div><div class="sc-name">Long Strangle</div><div class="sc-market">HIGH VOLATILITY &middot; CHEAPER</div><div class="sc-desc">Buy OTM call + OTM put (different Ks). Cheaper than straddle, needs bigger move.</div><div class="sc-profit neutral">Profit if price goes beyond either B/E</div></div>
+    <div class="scard" id="sc-bf" onclick="showStrat('bf',this)"><div class="sc-icon">&#129411;</div><div class="sc-name">Butterfly Spread</div><div class="sc-market">LOW VOLATILITY &middot; NEUTRAL</div><div class="sc-desc">Buy 1 low + sell 2 ATM + buy 1 high call. Profit if price stays near middle K.</div><div class="sc-profit neutral">Max profit at middle strike &nbsp;|&nbsp; Limited risk</div></div>
+  </div>
+
+  <div class="stag">Strategy Detail</div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px">
+    <div class="card" style="padding:18px">
+      <div style="font-weight:700;font-size:.9rem;margin-bottom:3px" id="sdName">Long Call &#8212; Reliance Industries</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--text3);margin-bottom:14px" id="sdSub">SPOT &#8377;1,285 &middot; NSE &middot; LOT 500</div>
+      <canvas id="stratChart" height="260"></canvas>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="cardh">Parameters</div>
+        <div class="ctrl"><div class="ctrlbl">Spot S&#8320; <b id="sdSD">1,285</b></div><input type="range" min="900" max="1700" value="1285" id="sdS" oninput="drawStrat()"></div>
+        <div class="ctrl"><div class="ctrlbl">Strike K&#8321; <b id="sdK1D">1,300</b></div><input type="range" min="900" max="1700" value="1300" id="sdK1" oninput="drawStrat()"></div>
+        <div id="sdK2row" class="ctrl" style="display:none"><div class="ctrlbl">Strike K&#8322; <b id="sdK2D">1,350</b></div><input type="range" min="900" max="1800" value="1350" id="sdK2" oninput="drawStrat()"></div>
+        <div id="sdK3row" class="ctrl" style="display:none"><div class="ctrlbl">Strike K&#8323; <b id="sdK3D">1,400</b></div><input type="range" min="900" max="1900" value="1400" id="sdK3" oninput="drawStrat()"></div>
+        <div class="ctrl"><div class="ctrlbl">Premium P&#8321; &#8377; <b id="sdP1D">45</b></div><input type="range" min="1" max="200" value="45" id="sdP1" oninput="drawStrat()"></div>
+        <div id="sdP2row" class="ctrl" style="display:none"><div class="ctrlbl">Premium P&#8322; &#8377; <b id="sdP2D">22</b></div><input type="range" min="1" max="200" value="22" id="sdP2" oninput="drawStrat()"></div>
+        <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Lot Size <b id="sdLotD">500</b></div><input type="range" min="1" max="1000" value="500" id="sdLot" oninput="drawStrat()"></div>
+      </div>
+      <div class="card">
+        <div class="rrow"><span class="rl">Strategy</span><span class="rv vi" id="rStrat">Long Call</span></div>
+        <div class="rrow"><span class="rl">Net Premium</span><span class="rv rd" id="rPrem">&#8722;&#8377;45/share</span></div>
+        <div class="rrow"><span class="rl">Break-even</span><span class="rv am" id="rBE">&#8377;1,345</span></div>
+        <div class="rrow"><span class="rl">Max Profit</span><span class="rv gn" id="rMax">Unlimited</span></div>
+        <div class="rrow"><span class="rl">Max Loss</span><span class="rv rd" id="rLoss">&#8722;&#8377;22,500</span></div>
+        <div class="rrow"><span class="rl">P&amp;L per lot at +10%</span><span class="rv gn" id="rPnL10">&#43;&#8377;57,000</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: BUILDER -->
+<div class="panel" id="tab-builder">
+  <div class="stag">Tab 2 &#8212; Build Any Multi-Leg Strategy</div>
+  <div class="sh">Custom Payoff Builder</div>
+  <div class="sp">Add up to 4 option legs &#8212; any mix of calls, puts, long, short, at any strike. Payoff diagram updates live. Spot &#8377;1,285, Lot 500.</div>
+  <div style="display:grid;grid-template-columns:360px 1fr;gap:16px;margin-bottom:22px">
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="cardh">Option Legs</div>
+        <div id="legsContainer"></div>
+        <button class="btn bvi" style="width:100%;margin-top:8px" onclick="addLeg()">&#43; Add Leg</button>
+      </div>
+      <div class="card">
+        <div class="cardh">Quick Load Presets</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button class="btn bgh" style="font-size:.72rem;padding:7px 10px" onclick="loadPreset('straddle')">Long Straddle</button>
+          <button class="btn bgh" style="font-size:.72rem;padding:7px 10px" onclick="loadPreset('strangle')">Long Strangle</button>
+          <button class="btn bgh" style="font-size:.72rem;padding:7px 10px" onclick="loadPreset('bullcall')">Bull Call Spread</button>
+          <button class="btn bgh" style="font-size:.72rem;padding:7px 10px" onclick="loadPreset('bearput')">Bear Put Spread</button>
+          <button class="btn bgh" style="font-size:.72rem;padding:7px 10px" onclick="loadPreset('butterfly')">Butterfly</button>
+          <button class="btn bgh" style="font-size:.72rem;padding:7px 10px" onclick="loadPreset('condor')">Iron Condor</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px;padding:18px">
+        <div style="font-weight:700;font-size:.86rem;margin-bottom:12px">Combined Payoff at Expiry (&#8377; per lot)</div>
+        <canvas id="builderChart" height="280"></canvas>
+      </div>
+      <div class="card">
+        <div class="cardh">Summary</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">NET PREMIUM</div><div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500" id="bNetPrem">&#8212;</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">MAX PROFIT</div><div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500" id="bMaxProfit">&#8212;</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">MAX LOSS</div><div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500" id="bMaxLoss">&#8212;</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">BREAK-EVEN(S)</div><div style="font-family:'DM Mono',monospace;font-size:.85rem;font-weight:500" id="bBE">&#8212;</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: SPREADS -->
+<div class="panel" id="tab-spreads">
+  <div class="stag">Tab 3 &#8212; Spread Strategies</div>
+  <div class="sh">Spreads Lab</div>
+  <div class="sp">Spreads combine two options of the same type to reduce premium cost while capping profit potential. Adjust strikes and premiums live.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px">
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="cardh" style="color:var(--green)">&#128002; Bull Call Spread</div>
+        <div class="callout info" style="margin-bottom:10px">Buy lower strike call (K&#8321;), sell higher strike call (K&#8322;). Net debit. Best for mildly bullish view.</div>
+        <div class="ctrl"><div class="ctrlbl">Spot <b id="bcsSD">1,285</b></div><input type="range" min="1000" max="1600" value="1285" id="bcsS" oninput="calcSpreads()"></div>
+        <div class="ctrl"><div class="ctrlbl">Lower Strike K&#8321; <b id="bcsK1D">1,280</b></div><input type="range" min="1000" max="1600" value="1280" id="bcsK1" oninput="calcSpreads()"></div>
+        <div class="ctrl"><div class="ctrlbl">Upper Strike K&#8322; <b id="bcsK2D">1,340</b></div><input type="range" min="1050" max="1700" value="1340" id="bcsK2" oninput="calcSpreads()"></div>
+        <div class="ctrl"><div class="ctrlbl">K&#8321; Call Premium <b id="bcsP1D">52</b></div><input type="range" min="1" max="200" value="52" id="bcsP1" oninput="calcSpreads()"></div>
+        <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">K&#8322; Call Premium (received) <b id="bcsP2D">18</b></div><input type="range" min="1" max="150" value="18" id="bcsP2" oninput="calcSpreads()"></div>
+      </div>
+      <div class="card">
+        <div class="rrow"><span class="rl">Net Debit</span><span class="rv rd" id="bcsNet">&#8722;&#8377;34/sh</span></div>
+        <div class="rrow"><span class="rl">Break-even</span><span class="rv am" id="bcsBE">&#8377;1,314</span></div>
+        <div class="rrow"><span class="rl">Max Profit</span><span class="rv gn" id="bcsMaxP">&#43;&#8377;13,000/lot</span></div>
+        <div class="rrow"><span class="rl">Max Loss</span><span class="rv rd" id="bcsMaxL">&#8722;&#8377;17,000/lot</span></div>
+        <div class="rrow"><span class="rl">Reward:Risk</span><span class="rv vi" id="bcsRR">0.76:1</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="cardh" style="color:var(--red)">&#128059; Bear Put Spread</div>
+        <div class="callout info" style="margin-bottom:10px">Buy higher strike put (K&#8321;), sell lower strike put (K&#8322;). Net debit. Best for mildly bearish view.</div>
+        <div class="ctrl"><div class="ctrlbl">Spot <b id="bpsSD">1,285</b></div><input type="range" min="1000" max="1600" value="1285" id="bpsS" oninput="calcSpreads()"></div>
+        <div class="ctrl"><div class="ctrlbl">Upper Strike K&#8321; <b id="bpsK1D">1,290</b></div><input type="range" min="1000" max="1600" value="1290" id="bpsK1" oninput="calcSpreads()"></div>
+        <div class="ctrl"><div class="ctrlbl">Lower Strike K&#8322; <b id="bpsK2D">1,230</b></div><input type="range" min="900" max="1550" value="1230" id="bpsK2" oninput="calcSpreads()"></div>
+        <div class="ctrl"><div class="ctrlbl">K&#8321; Put Premium <b id="bpsP1D">48</b></div><input type="range" min="1" max="200" value="48" id="bpsP1" oninput="calcSpreads()"></div>
+        <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">K&#8322; Put Premium (received) <b id="bpsP2D">15</b></div><input type="range" min="1" max="150" value="15" id="bpsP2" oninput="calcSpreads()"></div>
+      </div>
+      <div class="card">
+        <div class="rrow"><span class="rl">Net Debit</span><span class="rv rd" id="bpsNet">&#8722;&#8377;33/sh</span></div>
+        <div class="rrow"><span class="rl">Break-even</span><span class="rv am" id="bpsBE">&#8377;1,257</span></div>
+        <div class="rrow"><span class="rl">Max Profit</span><span class="rv gn" id="bpsMaxP">&#43;&#8377;13,500/lot</span></div>
+        <div class="rrow"><span class="rl">Max Loss</span><span class="rv rd" id="bpsMaxL">&#8722;&#8377;16,500/lot</span></div>
+        <div class="rrow"><span class="rl">Reward:Risk</span><span class="rv vi" id="bpsRR">0.82:1</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px">
+    <div style="font-weight:700;font-size:.86rem;margin-bottom:12px">Side-by-Side Payoff</div>
+    <canvas id="spreadsChart" height="240"></canvas>
+  </div>
+</div>
+
+<!-- TAB 4: COMBOS -->
+<div class="panel" id="tab-combos">
+  <div class="stag">Tab 4 &#8212; Combination Strategies</div>
+  <div class="sh">Combinations Lab</div>
+  <div class="sp">Combinations mix calls and puts. Straddles and strangles profit from large moves. Butterfly and condor profit from low volatility. Select and adjust live.</div>
+  <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;margin-bottom:22px">
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="cardh">Select Strategy</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn bvi" id="cb-str" onclick="setCombo('straddle',this)">&#9889; Long Straddle</button>
+          <button class="btn bgh" id="cb-strg" onclick="setCombo('strangle',this)">&#129417; Long Strangle</button>
+          <button class="btn bgh" id="cb-bf" onclick="setCombo('butterfly',this)">&#129411; Butterfly Spread</button>
+          <button class="btn bgh" id="cb-ic" onclick="setCombo('condor',this)">&#127919; Iron Condor</button>
+          <button class="btn bgh" id="cb-pp" onclick="setCombo('protput',this)">&#9730;&#65039; Protective Put</button>
+          <button class="btn bgh" id="cb-cc" onclick="setCombo('covercall',this)">&#128181; Covered Call</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardh">Parameters</div>
+        <div class="ctrl"><div class="ctrlbl">Spot S&#8320; <b id="cbSD">1,285</b></div><input type="range" min="900" max="1700" value="1285" id="cbS" oninput="calcCombo()"></div>
+        <div class="ctrl"><div class="ctrlbl" id="cbK1L">ATM Strike K <b id="cbK1D">1,285</b></div><input type="range" min="900" max="1700" value="1285" id="cbK1" oninput="calcCombo()"></div>
+        <div id="cbK2row" class="ctrl" style="display:none"><div class="ctrlbl" id="cbK2L">OTM Call K&#8322; <b id="cbK2D">1,340</b></div><input type="range" min="900" max="1800" value="1340" id="cbK2" oninput="calcCombo()"></div>
+        <div id="cbK3row" class="ctrl" style="display:none"><div class="ctrlbl">K&#8323; <b id="cbK3D">1,200</b></div><input type="range" min="800" max="1700" value="1200" id="cbK3" oninput="calcCombo()"></div>
+        <div id="cbK4row" class="ctrl" style="display:none"><div class="ctrlbl">K&#8324; <b id="cbK4D">1,380</b></div><input type="range" min="900" max="1800" value="1380" id="cbK4" oninput="calcCombo()"></div>
+        <div class="ctrl"><div class="ctrlbl">Call Premium <b id="cbCPD">48</b></div><input type="range" min="1" max="200" value="48" id="cbCP" oninput="calcCombo()"></div>
+        <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Put Premium <b id="cbPPD">44</b></div><input type="range" min="1" max="200" value="44" id="cbPP" oninput="calcCombo()"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px;padding:18px">
+        <div style="font-weight:700;font-size:.86rem;margin-bottom:3px" id="comboTitle">Long Straddle &#8212; Reliance &#8377;1,285</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--text3);margin-bottom:12px" id="comboSub">Buy ATM call + ATM put at &#8377;1,285 strike</div>
+        <canvas id="comboChart" height="260"></canvas>
+      </div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">TOTAL PREMIUM</div><div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500" id="cbTotPrem">&#8377;92</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">UPPER B/E</div><div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500" id="cbUBE">&#8377;1,377</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">LOWER B/E</div><div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500" id="cbLBE">&#8377;1,193</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:11px;text-align:center"><div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--text3);margin-bottom:4px">MAX LOSS</div><div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500" id="cbMaxLoss">&#8377;46,000/lot</div></div>
+        </div>
+        <div class="callout vi" style="margin-top:12px;margin-bottom:0" id="cbInsight">Long Straddle profits from large moves in either direction.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: SCENARIOS -->
+<div class="panel" id="tab-scenarios">
+  <div class="stag">Tab 5 &#8212; Applied Practice</div>
+  <div class="sh">Strategy Scenarios</div>
+  <div class="sp">Match market outlook to the right strategy. Detailed explanations for each.</div>
+  <div id="scenCont"></div>
+</div>
+
+<!-- TAB 6: QUIZ -->
+<div class="panel" id="tab-quiz">
+  <div class="stag">Tab 6 &#8212; AI-Graded Assessment</div>
+  <div class="sh">Module 5 Quiz</div>
+  <div class="sp">Full answers with calculations. Graded by Claude on strategy selection, payoff analysis, and break-even &#8212; CO2, CO3, CO4.</div>
+  <div class="qbox">
+    <div class="qhd"><div><div class="qt">Options Strategies Assessment</div><div class="qs">5 Questions &middot; CO2, CO3, CO4</div></div><div class="qdots" id="qDots"></div></div>
+    <div class="qbody" id="qBody"></div>
+    <div class="qft"><div class="qst" id="qStat">Answer above</div><div style="display:flex;gap:8px"><button class="btn bgh" onclick="skipQ()">Skip &#8594;</button><button class="btn bvi" id="qBtn" onclick="submitQ()">Submit for Grading</button></div></div>
+  </div>
+</div>
+</div>
+
+<script>
+// CO
+let co2=0,co3=0,co4=0;
+function upCO(c,v){const m={2:['c2f','c2p'],3:['c3f','c3p'],4:['c4f','c4p']};const get=()=>c===2?co2:c===3?co3:co4;const set=x=>{if(c===2)co2=x;else if(c===3)co3=x;else co4=x;};set(Math.min(100,Math.max(get(),v)));document.getElementById(m[c][0]).style.width=get()+'%';document.getElementById(m[c][1]).textContent=get()+'%';}
+
+function sw(t,b){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');if(b)b.classList.add('active');
+  if(t==='library')drawStrat();if(t==='builder'){initLegs();drawBuilder();}if(t==='spreads'){calcSpreads();}if(t==='combos')calcCombo();if(t==='scenarios')renderScens();if(t==='quiz'){renderQ();renderQDots();}
+}
+
+// ── LIBRARY ──────────────────────────────
+let curStrat='lc';
+function showStrat(id,el){
+  curStrat=id;
+  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const show2={'bcs':true,'bps':true,'str':false,'strg':true,'bf':true,'lc':false,'lp':false,'cc':false,'pp':false};
+  const show3={'bf':true};
+  const showp2={'bcs':true,'bps':true,'str':true,'strg':true,'bf':false,'lc':false,'lp':false,'cc':false,'pp':false};
+  document.getElementById('sdK2row').style.display=show2[id]?'flex':'none';
+  document.getElementById('sdK3row').style.display=show3[id]?'flex':'none';
+  document.getElementById('sdP2row').style.display=showp2[id]?'flex':'none';
+  document.getElementById('sdName').textContent={lc:'Long Call',lp:'Long Put',cc:'Covered Call',pp:'Protective Put',bcs:'Bull Call Spread',bps:'Bear Put Spread',str:'Long Straddle',strg:'Long Strangle',bf:'Butterfly Spread'}[id]+' \u2014 Reliance';
+  drawStrat();upCO(2,10);upCO(3,8);
+}
+
+function payoff(id,p,K1,K2,K3,P1,P2,S){
+  if(id==='lc')return Math.max(p-K1,0)-P1;
+  if(id==='lp')return Math.max(K1-p,0)-P1;
+  if(id==='cc')return(p-S)+P1-Math.max(p-K1,0);
+  if(id==='pp')return(p-S)-P1+Math.max(K1-p,0);
+  if(id==='bcs')return Math.max(p-K1,0)-Math.max(p-K2,0)-(P1-P2);
+  if(id==='bps')return Math.max(K1-p,0)-Math.max(K2-p,0)-(P1-P2);
+  if(id==='str')return Math.max(p-K1,0)+Math.max(K1-p,0)-(P1+P2);
+  if(id==='strg')return Math.max(p-K2,0)+Math.max(K1-p,0)-(P1+P2);
+  if(id==='bf')return Math.max(p-K1,0)-2*Math.max(p-K2,0)+Math.max(p-K3,0)-(P1-2*22+15);
+  return 0;
+}
+function calcResults(id,S,K1,K2,K3,P1,P2,lot){
+  const names={lc:'Long Call',lp:'Long Put',cc:'Covered Call',pp:'Protective Put',bcs:'Bull Call Spread',bps:'Bear Put Spread',str:'Long Straddle',strg:'Long Strangle',bf:'Butterfly Spread'};
+  let prem,be,max,loss,pnl10;
+  if(id==='lc'){prem='-Rs'+P1;be='Rs'+(K1+P1);max='Unlimited';loss='-Rs'+(P1*lot).toLocaleString('en-IN');pnl10='Rs'+((Math.max(S*1.1-K1,0)-P1)*lot).toLocaleString('en-IN');}
+  else if(id==='lp'){prem='-Rs'+P1;be='Rs'+(K1-P1);max='Rs'+((K1-P1)*lot).toLocaleString('en-IN');loss='-Rs'+(P1*lot).toLocaleString('en-IN');pnl10='Rs'+((Math.max(K1-S*0.9,0)-P1)*lot).toLocaleString('en-IN');}
+  else if(id==='cc'){prem='+Rs'+P1;be='Rs'+(S-P1);max='Rs'+((K1-S+P1)*lot).toLocaleString('en-IN');loss='If S->0: -Rs'+((S-P1)*lot).toLocaleString('en-IN');pnl10='Capped';}
+  else if(id==='pp'){const fl=S-K1+P1;prem='-Rs'+P1;be='Rs'+(S+P1);max='Unlimited';loss='-Rs'+(fl*lot).toLocaleString('en-IN');pnl10='Unlimited';}
+  else if(id==='bcs'){const net=P1-P2;prem='-Rs'+net;be='Rs'+(K1+net);max='+Rs'+((K2-K1-net)*lot).toLocaleString('en-IN');loss='-Rs'+(net*lot).toLocaleString('en-IN');pnl10='Capped at K2';}
+  else if(id==='bps'){const net=P1-P2;prem='-Rs'+net;be='Rs'+(K1-net);max='+Rs'+((K1-K2-net)*lot).toLocaleString('en-IN');loss='-Rs'+(net*lot).toLocaleString('en-IN');pnl10='Capped at K2';}
+  else if(id==='str'){const tot=P1+P2;prem='-Rs'+tot;be='Rs'+(K1-tot)+' / Rs'+(K1+tot);max='Unlimited';loss='-Rs'+(tot*lot).toLocaleString('en-IN');pnl10='Depends on move';}
+  else if(id==='strg'){const tot=P1+P2;prem='-Rs'+tot;be='Rs'+(K1-tot)+' / Rs'+(K2+tot);max='Unlimited';loss='-Rs'+(tot*lot).toLocaleString('en-IN');pnl10='Depends on move';}
+  else{const cost=P1-44+15;prem='-Rs'+cost;be='K1+cost / K3-cost';max='+Rs'+(Math.max(K2-K1-cost,0)*lot).toLocaleString('en-IN')+' at K2';loss='-Rs'+(Math.abs(cost)*lot).toLocaleString('en-IN');pnl10='Low-vol only';}
+  return{name:names[id],prem,be,max,loss,pnl10};
+}
+function drawStrat(){
+  const S=+document.getElementById('sdS').value,K1=+document.getElementById('sdK1').value,K2=+document.getElementById('sdK2').value,K3=+document.getElementById('sdK3').value,P1=+document.getElementById('sdP1').value,P2=+document.getElementById('sdP2').value,lot=+document.getElementById('sdLot').value;
+  ['sdSD','sdK1D','sdK2D','sdK3D','sdP1D','sdP2D','sdLotD'].forEach((id,i)=>document.getElementById(id).textContent=[S,K1,K2,K3,P1,P2,lot][i].toLocaleString('en-IN'));
+  const r=calcResults(curStrat,S,K1,K2,K3,P1,P2,lot);
+  document.getElementById('rStrat').textContent=r.name;document.getElementById('rPrem').textContent=r.prem;document.getElementById('rBE').textContent=r.be;document.getElementById('rMax').textContent=r.max;document.getElementById('rLoss').textContent=r.loss;document.getElementById('rPnL10').textContent=r.pnl10;
+  const cv=document.getElementById('stratChart');const ctx=cv.getContext('2d');cv.width=cv.offsetWidth*devicePixelRatio;cv.height=260*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=260,minP=S*0.75,maxP=S*1.25;
+  const pts=[];for(let p=minP;p<=maxP;p+=S*0.005)pts.push(p);
+  const pnls=pts.map(p=>payoff(curStrat,p,K1,K2,K3,P1,P2,S)*lot);
+  drawChart(ctx,W,H,pts,pnls,S,'#8b5cf6');
+}
+
+function drawChart(ctx,W,H,pts,pnls,S,col){
+  ctx.clearRect(0,0,W,H);
+  const maxV=Math.max(...pnls,1),minV=Math.min(...pnls,-1),rng=maxV-minV;
+  const px=p=>50+(p-pts[0])/(pts[pts.length-1]-pts[0])*(W-70);
+  const py=v=>12+(maxV-v)/rng*(H-35);
+  for(let i=0;i<=4;i++){const v=minV+(i/4)*rng;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(50,py(v));ctx.lineTo(W-20,py(v));ctx.stroke();ctx.fillStyle='rgba(160,157,184,.5)';ctx.font='9px DM Mono';ctx.fillText((v>=0?'+':'')+(v/1000).toFixed(1)+'K',2,py(v)+3);}
+  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(50,py(0));ctx.lineTo(W-20,py(0));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(251,191,36,.3)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(px(S),10);ctx.lineTo(px(S),H-20);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();pts.forEach((p,i)=>{i===0?ctx.moveTo(px(p),py(pnls[i])):ctx.lineTo(px(p),py(pnls[i]));});ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.stroke();
+  ctx.fillStyle='rgba(251,191,36,.7)';ctx.font='9px DM Mono';ctx.fillText('Spot',px(S)-12,H-5);
+  ctx.fillStyle='rgba(160,157,184,.5)';[pts[0],pts[Math.floor(pts.length/2)],pts[pts.length-1]].forEach(p=>ctx.fillText('Rs'+Math.round(p).toLocaleString('en-IN'),px(p)-14,H-5));
+}
+
+// ── BUILDER ──────────────────────────────
+let legs=[{dir:1,type:'C',K:1300,P:45},{dir:-1,type:'C',K:1350,P:22}];
+function initLegs(){if(!legs.length)legs=[{dir:1,type:'C',K:1285,P:45}];renderLegs();}
+function addLeg(){if(legs.length>=4)return;legs.push({dir:1,type:'C',K:1285,P:40});renderLegs();drawBuilder();}
+function removeLeg(i){legs.splice(i,1);renderLegs();drawBuilder();}
+function renderLegs(){
+  document.getElementById('legsContainer').innerHTML=legs.map((l,i)=>`<div class="legrow"><button class="legdel" onclick="removeLeg(${i})">x</button><select class="legsel" onchange="legs[${i}].dir=+this.value;drawBuilder()"><option value="1" ${l.dir===1?'selected':''}>BUY</option><option value="-1" ${l.dir===-1?'selected':''}>SELL</option></select><select class="legsel" onchange="legs[${i}].type=this.value;drawBuilder()"><option value="C" ${l.type==='C'?'selected':''}>Call</option><option value="P" ${l.type==='P'?'selected':''}>Put</option></select><span style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--text3)">K=</span><input class="leginp" type="number" value="${l.K}" onchange="legs[${i}].K=+this.value;drawBuilder()"><span style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--text3)">P=</span><input class="leginp" type="number" value="${l.P}" onchange="legs[${i}].P=+this.value;drawBuilder()"></div>`).join('');
+}
+const PRESETS={straddle:[{dir:1,type:'C',K:1285,P:48},{dir:1,type:'P',K:1285,P:44}],strangle:[{dir:1,type:'C',K:1340,P:22},{dir:1,type:'P',K:1230,P:18}],bullcall:[{dir:1,type:'C',K:1280,P:52},{dir:-1,type:'C',K:1340,P:18}],bearput:[{dir:1,type:'P',K:1290,P:48},{dir:-1,type:'P',K:1230,P:15}],butterfly:[{dir:1,type:'C',K:1240,P:65},{dir:-1,type:'C',K:1285,P:45},{dir:-1,type:'C',K:1285,P:45},{dir:1,type:'C',K:1330,P:28}],condor:[{dir:-1,type:'C',K:1320,P:28},{dir:1,type:'C',K:1360,P:14},{dir:-1,type:'P',K:1250,P:22},{dir:1,type:'P',K:1210,P:10}]};
+function loadPreset(k){legs=PRESETS[k].map(l=>({...l}));renderLegs();drawBuilder();upCO(4,15);}
+function drawBuilder(){
+  const S=1285,lot=500,minP=S*0.75,maxP=S*1.25;
+  const pts=[];for(let p=minP;p<=maxP;p+=S*0.005)pts.push(p);
+  const pnls=pts.map(p=>{let v=0;for(const l of legs){const intr=l.type==='C'?Math.max(p-l.K,0):Math.max(l.K-p,0);v+=l.dir*(intr-l.P);}return v*lot;});
+  const netP=legs.reduce((a,l)=>a+l.dir*l.P,0);
+  const maxV=Math.max(...pnls),minV=Math.min(...pnls);
+  const bes=[];for(let i=1;i<pnls.length;i++)if((pnls[i-1]<0&&pnls[i]>=0)||(pnls[i-1]>=0&&pnls[i]<0))bes.push(Math.round((pts[i-1]+pts[i])/2));
+  document.getElementById('bNetPrem').textContent=(netP>=0?'+':'')+'\u20b9'+(netP*lot).toLocaleString('en-IN');document.getElementById('bNetPrem').style.color=netP>=0?'var(--green)':'var(--red)';
+  document.getElementById('bMaxProfit').textContent=maxV>1e8?'Unlimited':'+\u20b9'+maxV.toLocaleString('en-IN');document.getElementById('bMaxProfit').style.color='var(--green)';
+  document.getElementById('bMaxLoss').textContent=minV<-1e8?'Unlimited':'-\u20b9'+Math.abs(minV).toLocaleString('en-IN');document.getElementById('bMaxLoss').style.color='var(--red)';
+  document.getElementById('bBE').textContent=bes.length?bes.map(b=>'\u20b9'+b).join(' / '):'None';
+  const cv=document.getElementById('builderChart');if(!cv)return;const ctx=cv.getContext('2d');cv.width=cv.offsetWidth*devicePixelRatio;cv.height=280*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);drawChart(ctx,cv.offsetWidth,280,pts,pnls,S,'#8b5cf6');upCO(4,15);
+}
+
+// ── SPREADS ──────────────────────────────
+function calcSpreads(){
+  const S=+document.getElementById('bcsS').value,K1=+document.getElementById('bcsK1').value,K2=+document.getElementById('bcsK2').value,P1=+document.getElementById('bcsP1').value,P2=+document.getElementById('bcsP2').value;
+  const S2=+document.getElementById('bpsS').value,K3=+document.getElementById('bpsK1').value,K4=+document.getElementById('bpsK2').value,P3=+document.getElementById('bpsP1').value,P4=+document.getElementById('bpsP2').value;
+  ['bcsSD','bcsK1D','bcsK2D','bcsP1D','bcsP2D'].forEach((id,i)=>document.getElementById(id)&&(document.getElementById(id).textContent=[S,K1,K2,P1,P2][i]));
+  ['bpsSD','bpsK1D','bpsK2D','bpsP1D','bpsP2D'].forEach((id,i)=>document.getElementById(id)&&(document.getElementById(id).textContent=[S2,K3,K4,P3,P4][i]));
+  const lot=500,bcsN=P1-P2,bpN=P3-P4;
+  document.getElementById('bcsNet').textContent='-\u20b9'+bcsN.toFixed(0)+'/sh';
+  document.getElementById('bcsBE').textContent='\u20b9'+(K1+bcsN).toFixed(0);
+  document.getElementById('bcsMaxP').textContent='+\u20b9'+((K2-K1-bcsN)*lot).toLocaleString('en-IN')+'/lot';
+  document.getElementById('bcsMaxL').textContent='-\u20b9'+(bcsN*lot).toLocaleString('en-IN')+'/lot';
+  document.getElementById('bcsRR').textContent=((K2-K1-bcsN)/bcsN).toFixed(2)+':1';
+  document.getElementById('bpsNet').textContent='-\u20b9'+bpN.toFixed(0)+'/sh';
+  document.getElementById('bpsBE').textContent='\u20b9'+(K3-bpN).toFixed(0);
+  document.getElementById('bpsMaxP').textContent='+\u20b9'+((K3-K4-bpN)*lot).toLocaleString('en-IN')+'/lot';
+  document.getElementById('bpsMaxL').textContent='-\u20b9'+(bpN*lot).toLocaleString('en-IN')+'/lot';
+  document.getElementById('bpsRR').textContent=((K3-K4-bpN)/bpN).toFixed(2)+':1';
+  // chart
+  const minP=S*0.8,maxP=S*1.2,pts=[];for(let p=minP;p<=maxP;p+=S*0.005)pts.push(p);
+  const bcs=pts.map(p=>(Math.max(p-K1,0)-Math.max(p-K2,0)-bcsN)*lot);
+  const bps=pts.map(p=>(Math.max(K3-p,0)-Math.max(K4-p,0)-bpN)*lot);
+  const cv=document.getElementById('spreadsChart');if(!cv)return;
+  const ctx=cv.getContext('2d');cv.width=cv.offsetWidth*devicePixelRatio;cv.height=240*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=240,all=[...bcs,...bps],maxV=Math.max(...all,1),minV=Math.min(...all,-1),rng=maxV-minV;
+  ctx.clearRect(0,0,W,H);
+  const px=p=>50+(p-minP)/(maxP-minP)*(W-70),py=v=>12+(maxV-v)/rng*(H-35);
+  for(let i=0;i<=4;i++){const v=minV+(i/4)*rng;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(50,py(v));ctx.lineTo(W-20,py(v));ctx.stroke();ctx.fillStyle='rgba(160,157,184,.4)';ctx.font='9px DM Mono';ctx.fillText((v>=0?'+':'')+(v/1000).toFixed(1)+'K',2,py(v)+3);}
+  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(50,py(0));ctx.lineTo(W-20,py(0));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(251,191,36,.3)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(px(S),10);ctx.lineTo(px(S),H-20);ctx.stroke();ctx.setLineDash([]);
+  [[bcs,'#4ade80'],[bps,'#f87171']].forEach(([arr,col])=>{ctx.beginPath();pts.forEach((p,i)=>{i===0?ctx.moveTo(px(p),py(arr[i])):ctx.lineTo(px(p),py(arr[i]));});ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.stroke();});
+  ctx.fillStyle='rgba(74,222,128,.8)';ctx.font='10px DM Mono';ctx.fillText('\u2014 Bull Call',W-110,18);ctx.fillStyle='rgba(248,113,113,.8)';ctx.fillText('\u2014 Bear Put',W-110,32);
+  ctx.fillStyle='rgba(160,157,184,.5)';ctx.font='9px DM Mono';[minP,S,maxP].forEach(p=>ctx.fillText('\u20b9'+Math.round(p).toLocaleString('en-IN'),px(p)-14,H-5));
+  upCO(2,12);upCO(3,10);
+}
+
+// ── COMBOS ──────────────────────────────
+let curCombo='straddle';
+function setCombo(c,btn){
+  curCombo=c;
+  document.querySelectorAll('[id^=cb-]').forEach(b=>b.className='btn bgh');if(btn)btn.className='btn bvi';
+  const k2=['strangle','butterfly','condor','protput','covercall'].includes(c);
+  const k3=['butterfly'].includes(c),k4=['condor'].includes(c);
+  document.getElementById('cbK2row').style.display=k2?'flex':'none';document.getElementById('cbK3row').style.display=k3?'flex':'none';document.getElementById('cbK4row').style.display=k4?'flex':'none';
+  calcCombo();
+}
+function calcCombo(){
+  const S=+document.getElementById('cbS').value,K1=+document.getElementById('cbK1').value,K2=+document.getElementById('cbK2').value,K3=+document.getElementById('cbK3').value,K4=+document.getElementById('cbK4').value,CP=+document.getElementById('cbCP').value,PP=+document.getElementById('cbPP').value,lot=500;
+  ['cbSD','cbK1D','cbK2D','cbK3D','cbK4D','cbCPD','cbPPD'].forEach((id,i)=>document.getElementById(id)&&(document.getElementById(id).textContent=[S,K1,K2,K3,K4,CP,PP][i]));
+  let fn,title,sub,tp,ube,lbe,ml,insight;
+  if(curCombo==='straddle'){const t=CP+PP;tp='\u20b9'+t;ube='\u20b9'+(K1+t);lbe='\u20b9'+(K1-t);ml='\u20b9'+(t*lot).toLocaleString('en-IN')+'/lot';fn=p=>(Math.max(p-K1,0)+Math.max(K1-p,0)-t)*lot;title='Long Straddle \u2014 K=\u20b9'+K1;sub='Buy ATM call + ATM put. Total premium: \u20b9'+t;insight='Profit from big moves. Needs stock beyond \u20b9'+(K1-t)+' or \u20b9'+(K1+t)+'.';}
+  else if(curCombo==='strangle'){const t=CP+PP;tp='\u20b9'+t;ube='\u20b9'+(K2+t);lbe='\u20b9'+(K1-t);ml='\u20b9'+(t*lot).toLocaleString('en-IN')+'/lot';fn=p=>(Math.max(p-K2,0)+Math.max(K1-p,0)-t)*lot;title='Long Strangle \u2014 K\u2081=\u20b9'+K1+' K\u2082=\u20b9'+K2;sub='OTM put at \u20b9'+K1+' + OTM call at \u20b9'+K2;insight='Cheaper than straddle. Needs bigger move. Profit beyond \u20b9'+(K1-t)+' or \u20b9'+(K2+t)+'.';}
+  else if(curCombo==='butterfly'){const cost=CP-2*38+25;const cst=Math.abs(cost);tp='\u20b9'+cst;ube='\u20b9'+(K2+cst);lbe='\u20b9'+(K1-cst);ml='\u20b9'+(cst*lot).toLocaleString('en-IN')+'/lot';fn=p=>(Math.max(p-K1,0)-2*Math.max(p-K2,0)+Math.max(p-K3,0)-cost)*lot;title='Butterfly \u2014 K\u2081='+K1+' K\u2082='+K2+' K\u2083='+K3;sub='Buy K\u2081+K\u2083 calls, sell 2\xd7 K\u2082 call. Low-vol strategy.';insight='Max profit at K\u2082=\u20b9'+K2+'. Profit only if stock stays near middle strike at expiry.';}
+  else if(curCombo==='condor'){const cr=CP+PP-14-10;tp='+\u20b9'+cr.toFixed(0);ube='\u20b9'+K2;lbe='\u20b9'+K1;ml='\u20b9'+((K2-K1-cr)*lot).toLocaleString('en-IN')+'/lot';fn=p=>(-Math.max(p-K1,0)+Math.max(p-K2,0)-Math.max(K3-p,0)+Math.max(K4-p,0)+cr)*lot;title='Iron Condor \u2014 Range \u20b9'+K1+'\u2013\u20b9'+K2;sub='Net credit: \u20b9'+cr.toFixed(0)+'. Profit inside range.';insight='Collect premium and profit if stock stays between \u20b9'+K1+' and \u20b9'+K2+'. Sideways market strategy.';}
+  else if(curCombo==='protput'){tp='\u20b9'+PP;ube='Unlimited';lbe='N/A';ml='\u20b9'+((S-K1+PP)*lot).toLocaleString('en-IN')+'/lot';fn=p=>((p-S)+Math.max(K1-p,0)-PP)*lot;title='Protective Put \u2014 stock \u20b9'+S+' put K=\u20b9'+K1;sub='Hold shares + buy put. Floor on losses at \u20b9'+K1+'.';insight='Portfolio insurance. Maximum loss = \u20b9'+(S-K1)+' + \u20b9'+PP+' premium. Upside unlimited.';}
+  else{tp='+\u20b9'+CP;ube='\u20b9'+K2;lbe='N/A';ml='\u20b9'+((S-CP)*lot).toLocaleString('en-IN')+' (if S\u21920)';fn=p=>((p-S)+CP-Math.max(p-K2,0))*lot;title='Covered Call \u2014 stock \u20b9'+S+' call K=\u20b9'+K2;sub='Hold shares + sell call. Income: \u20b9'+CP+'/share.';insight='Generates income from held shares. Caps upside at \u20b9'+K2+'. Effective cost reduced by \u20b9'+CP+'/share.';}
+  document.getElementById('comboTitle').textContent=title;document.getElementById('comboSub').textContent=sub;document.getElementById('cbTotPrem').textContent=tp;document.getElementById('cbUBE').textContent=ube;document.getElementById('cbLBE').textContent=lbe;document.getElementById('cbMaxLoss').textContent=ml;document.getElementById('cbInsight').textContent=insight;
+  const minP=S*0.75,maxP=S*1.25,pts=[];for(let p=minP;p<=maxP;p+=S*0.005)pts.push(p);const pnls=pts.map(fn);
+  const cv=document.getElementById('comboChart');if(!cv)return;const ctx=cv.getContext('2d');cv.width=cv.offsetWidth*devicePixelRatio;cv.height=260*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);drawChart(ctx,cv.offsetWidth,260,pts,pnls,S,'#7c3aed');upCO(2,12);upCO(4,12);
+}
+
+// ── SCENARIOS ──────────────────────────────
+const SCENS=[
+  {t:'Scenario 1 \u2014 Reliance before Q3 Results',s:'Reliance Q3 earnings next week. Analysts widely split \u2014 EPS could beat or miss 20%. Spot \u20b91,285. ATM Call (K=1285) = \u20b948, ATM Put (K=1285) = \u20b944.',q:'Which strategy is most appropriate? Calculate break-even points.',opts:['Long Call \u2014 expect good results and price rise.','Long Straddle \u2014 uncertain direction, large move expected.','Bear Put Spread \u2014 expect poor results.','Covered Call \u2014 collect income before results.'],ans:1,right:'\u2705 Long Straddle! When direction is uncertain but big move expected (earnings, events), straddle profits from volatility either way. Total premium = \u20b948+\u20b944 = \u20b992. Upper B/E = \u20b91,285 + \u20b992 = \u20b91,377. Lower B/E = \u20b91,285 \u2212 \u20b992 = \u20b91,193.',wrong:'\u274c Wrong. Before earnings with uncertain outcome, direction risk is symmetric. Straddle profits from BIG MOVES in either direction.'},
+  {t:'Scenario 2 \u2014 Bull Call Spread Selection',s:'Investor mildly bullish on Reliance. Expects 4\u20135% rise over 1 month. Spot \u20b91,285. Call K=1285 costs \u20b952; Call K=1340 trades at \u20b918.',q:'Compare long call vs bull call spread. Which is better for a 4\u20135% target?',opts:['Long call costs \u20b952, B/E \u20b91,337, unlimited upside. Bull spread costs \u20b934, B/E \u20b91,319, max profit \u20b926/sh. For target \u20b91,340: spread achieves full profit at 35% lower cost.','Bull call spread always beats a plain long call regardless of target.','Long call is always better because of unlimited upside.','Both strategies cost the same.'],ans:0,right:'\u2705 Correct! Long call: \u20b952 cost, B/E=\u20b91,337. Bull spread: net \u20b934, B/E=\u20b91,319, max \u20b926/sh at K\u2082=\u20b91,340. For a 4\u20135% target (reaching \u20b91,340), spread achieves near-maximum profit while costing 35% less.',wrong:'\u274c Bull spread: net = \u20b952 \u2212 \u20b918 = \u20b934. B/E = \u20b91,285 + \u20b934 = \u20b91,319. Max = (\u20b91,340\u2212\u20b91,285) \u2212 \u20b934 = \u20b921/sh. For a target of only 4\u20135%, the spread is far more cost-efficient.'},
+  {t:'Scenario 3 \u2014 Protective Put as Insurance',s:'Fund manager holds 10,000 Reliance shares at \u20b91,285. Worried about correction. Considers protective put: K=1250, premium \u20b932/share.',q:'Calculate max loss per share and total insurance cost. Is it expensive?',opts:['Max loss = (S\u2080\u2212K) + premium = (\u20b91,285\u2212\u20b91,250) + \u20b932 = \u20b967/sh. Total cost = \u20b932 \xd7 10,000 = \u20b93.2 Lakh = 2.5% of portfolio.','Max loss = spot price \u2212 premium = \u20b91,253.','Protective put is always too expensive.','Max loss = K \u2212 premium = \u20b91,218/share.'],ans:0,right:'\u2705 Correct! Floor at K=\u20b91,250. Max loss = (1285\u22121250) + 32 = \u20b967/sh. Total cost = \u20b932 \xd7 10,000 = \u20b93.2 L = 2.5% of \u20b91.285 Cr portfolio. Comparable to term insurance premium for 1 month.',wrong:'\u274c Protective put floors the downside. Max loss per share = (S\u2080 \u2212 K) + premium = \u20b935 + \u20b932 = \u20b967. Insurance cost = \u20b932 \xd7 10,000 = \u20b93.2 Lakh.'},
+  {t:'Scenario 4 \u2014 Iron Condor',s:'Reliance trading in range \u20b91,260\u2013\u20b91,320. Trader considers Iron Condor: Short \u20b91,320 call (\u20b920), long \u20b91,360 call (\u20b98), short \u20b91,250 put (\u20b918), long \u20b91,210 put (\u20b97). Net credit = \u20b923.',q:'Calculate max profit, max loss, and break-even prices.',opts:['Max profit = \u20b923. Max loss = \u20b917. Upper B/E = \u20b91,343. Lower B/E = \u20b91,227.','Max profit = \u20b940. Max loss = \u20b923.','Max loss = \u20b923. Max profit = \u20b917.','Break-evens are at \u20b91,250 and \u20b91,320 only.'],ans:0,right:'\u2705 Correct! Net credit = \u20b923. Max profit = \u20b923 (stock stays between \u20b91,250\u2013\u20b91,320). Max loss = spread width \u2212 credit = \u20b940 \u2212 \u20b923 = \u20b917/sh. Upper B/E = 1,320 + 23 = \u20b91,343. Lower B/E = 1,250 \u2212 23 = \u20b91,227.',wrong:'\u274c Iron Condor: net credit = \u20b923. Max profit = net credit. Max loss = spread width \u2212 credit = (1360\u22121320) \u2212 23 = \u20b917. B/Es: upper = 1320+23=1343; lower = 1250\u221223=1227.'}
+];
+let sAns=new Array(SCENS.length).fill(false);
+function renderScens(){document.getElementById('scenCont').innerHTML=SCENS.map((s,i)=>'<div class="scen"><div class="scen-t">'+s.t+'</div><div class="scen-s">'+s.s+'</div><div class="scen-q">'+s.q+'</div><div class="sopts" id="so'+i+'">'+s.opts.map((o,j)=>'<button class="sopt" onclick="ansS('+i+','+j+')">'+'ABCD'[j]+'. '+o+'</button>').join('')+'</div><div class="sexp" id="se'+i+'"></div></div>').join('');}
+function ansS(si,oi){if(sAns[si])return;sAns[si]=true;const s=SCENS[si];document.querySelectorAll('#so'+si+' .sopt').forEach((o,j)=>{o.classList.add('answered');if(j===s.ans)o.classList.add('correct');else if(j===oi&&oi!==s.ans)o.classList.add('wrong');else o.classList.add('reveal');});const e=document.getElementById('se'+si);const ok=oi===s.ans;e.textContent=ok?s.right:s.wrong;e.className='sexp show '+(ok?'right':'wrong');if(ok){upCO(2,12);upCO(4,10);}upCO(3,8);}
+
+// ── QUIZ ──────────────────────────────────
+const QS=[
+  {q:'Reliance spot = \u20b91,285. Call K=1280 @ \u20b955, Call K=1340 @ \u20b920, Put K=1290 @ \u20b952, Put K=1230 @ \u20b916. Design a Bull Call Spread AND a Bear Put Spread. For each: (a) legs, (b) net premium, (c) break-even, (d) max profit, (e) max loss, (f) reward:risk ratio.',hint:'Bull call: buy lower K call, sell higher K call. Bear put: buy higher K put, sell lower K put. Net = bought \u2212 sold. B/E = lower K + net (call) or upper K \u2212 net (put). Max profit = spread width \u2212 net.',co:'CO2 & CO3'},
+  {q:'Long Straddle on Reliance: ATM Call K=\u20b91,285 @ \u20b948, ATM Put K=\u20b91,285 @ \u20b944. (a) Total investment per lot (500 shares). (b) Upper and lower break-even. (c) % move needed to break even. (d) P&L if Reliance jumps to \u20b91,450. (e) Loss if stock stays at \u20b91,285 at expiry.',hint:'Total premium = 48+44. B/E = 1285 \xb1 total. % move = total/1285. Payoff at 1450 = max(1450-1285,0) + max(1285-1450,0).',co:'CO2 & CO4'},
+  {q:'Compare for mildly bullish target \u20b91,340: Strategy A = Long Call K=1285 @ \u20b955. Strategy B = Bull Call Spread: buy \u20b91,285 call (\u20b955), sell \u20b91,340 call (\u20b920). For both: (a) net cost, (b) break-even, (c) profit if reaches \u20b91,340, (d) profit if reaches \u20b91,400. Recommend one for a \u20b91,340 target with reasoning.',hint:'Long call B/E = K + premium. Spread B/E = lower K + net. If target exactly \u20b91,340, spread nearly maxed out. If far OTM, call wins. Compare cost efficiency.',co:'CO2 & CO3'},
+  {q:'Butterfly Spread using Reliance: Buy K=1240 call @ \u20b972, Sell 2\xd7 K=1285 calls @ \u20b948, Buy K=1330 call @ \u20b928. (a) Net cost. (b) Max profit and at what price. (c) Max loss. (d) Two break-even prices. (e) When to use vs short straddle?',hint:'Net = 72 \u2212 2\xd748 + 28. Max profit = (1285\u22121240) \u2212 net. B/Es = lower wing + net and upper wing \u2212 net. Butterfly: limited risk. Short straddle: unlimited risk.',co:'CO3 & CO4'},
+  {q:'Design a complete options strategy for an Indian exporter who will receive $500,000 USD in 3 months. USD/INR spot = \u20b983.40. Options available: Buy put K=\u20b983 @ \u20b90.50/USD (plain protection), OR Collar: buy put K=\u20b982 (\u20b90.30) + sell call K=\u20b985 (\u20b90.32). (a) Explain both strategies with cost analysis. (b) Outcomes if USD/INR falls to \u20b980. (c) Recommend one with justification.',hint:'Pure put: costs \u20b90.50 \xd7 $500K. Collar: nearly free (\u20b90.32\u2212\u20b90.30 = net +\u20b90.02). At \u20b980: put payoff \u20b93. But collar caps upside at \u20b985. Tradeoff: pure protection vs zero-cost with upside cap.',co:'CO2 & CO4'}
+];
+let qIdx=0,qScores=new Array(QS.length).fill(null);
+function renderQDots(){document.getElementById('qDots').innerHTML=QS.map((_,i)=>'<div class="qdot '+(qScores[i]!==null?'done':i===qIdx?'cur':'')+'"></div>').join('');}
+function renderQ(){const q=QS[qIdx];document.getElementById('qBody').innerHTML='<div class="qn">Question '+(qIdx+1)+'/'+QS.length+' \u00b7 '+q.co+'</div><div class="qt2">'+q.q+'</div><div class="qhint">\ud83d\udca1 '+q.hint+'</div><textarea class="qarea" id="ans" placeholder="Write full answer with calculations\u2026"></textarea><div class="aifb" id="aiFb"><div class="aifbh"><div class="aib">AI</div>ASSESSMENT<span class="spl" id="spill"></span></div><div class="aifbb" id="fbBd"></div></div>';document.getElementById('qStat').textContent='Answer above';document.getElementById('qBtn').textContent='Submit for Grading';document.getElementById('qBtn').onclick=submitQ;document.getElementById('qBtn').disabled=false;}
+async function submitQ(){const ans=document.getElementById('ans')?.value?.trim();if(!ans||ans.length<20){document.getElementById('qStat').textContent='Write more';return;}const btn=document.getElementById('qBtn');btn.disabled=true;btn.textContent='Grading\u2026';const q=QS[qIdx];const fb=document.getElementById('aiFb');fb.classList.add('show');document.getElementById('fbBd').innerHTML='<div class="dots"><span></span><span></span><span></span></div>';try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:'You are an options strategies professor (FIA401 PGDM). Grade this answer.\nQ: '+q.q+'\nSTUDENT: '+ans+'\nReturn ONLY valid JSON: {"score":<1-10>,"grade":"Excellent|Good|Needs Work","feedback":"2-3 paragraphs","keyMissed":"concept or Nothing significant"}'}]})});const data=await res.json();const r=JSON.parse(data.content?.[0]?.text.replace(/```json|```/g,'').trim()||'{}');const sc=r.score||5;const sp=document.getElementById('spill');sp.textContent=sc+'/10 \u2014 '+r.grade;sp.className='spl '+(sc>=8?'ex':sc>=6?'gd':'nw');document.getElementById('fbBd').innerHTML='<p>'+r.feedback+'</p>'+(r.keyMissed&&r.keyMissed!=='Nothing significant'?'<div style="margin-top:8px;padding:8px 11px;background:rgba(124,58,237,.07);border-left:2px solid var(--vi2);border-radius:2px;font-size:.82rem"><strong style="color:var(--vi3)">Explore: </strong>'+r.keyMissed+'</div>':'');qScores[qIdx]=sc;upCO(2,sc*9);upCO(4,sc*7);btn.textContent=qIdx<QS.length-1?'Next \u2192':'Final Score';btn.disabled=false;btn.onclick=nextQ;renderQDots();}catch(e){document.getElementById('fbBd').innerHTML='<p style="color:var(--red)">Error. Retry.</p>';btn.disabled=false;btn.textContent='Retry';}}
+function nextQ(){if(qIdx<QS.length-1){qIdx++;renderQ();renderQDots();}else{const v=qScores.filter(s=>s!==null);const avg=v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):0;document.getElementById('qBody').innerHTML='<div style="text-align:center;padding:34px 0"><div style="font-size:3rem;margin-bottom:8px">'+(avg>=8?'\ud83c\udfc6':avg>=6?'\ud83c\udfaf':'\ud83d\udcda')+'</div><div style="font-family:\'DM Serif Display\',serif;font-size:3rem;color:var(--vi3)">'+avg+'/10</div><div style="color:var(--text2);margin-bottom:18px">Module 5 Complete</div><button class="btn bvi" onclick="qIdx=0;qScores=new Array('+QS.length+').fill(null);renderQ();renderQDots()">Retake</button></div>';}}
+function skipQ(){if(qIdx<QS.length-1){qIdx++;renderQ();renderQDots();}}
+document.addEventListener('DOMContentLoaded',()=>{showStrat('lc',document.getElementById('sc-lc'));initLegs();drawBuilder();calcSpreads();calcCombo();renderQ();renderQDots();});
+</script>
+</body>
+</html>

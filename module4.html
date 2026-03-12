@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — Module 4: Hedging with Derivatives</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09090b;--surf:#111113;--surf2:#18181b;--surf3:#27272a;
+  --cu:#d97706;--cu2:#f59e0b;--cu3:#fbbf24;
+  --teal:#14b8a6;--red:#ef4444;--green:#22c55e;--blue:#60a5fa;--violet:#a78bfa;
+  --text:#fafaf9;--text2:#a8a29e;--text3:#57534e;
+  --bdr:rgba(217,119,6,.18);--bdr2:rgba(255,255,255,.07);
+  --glow:0 0 50px rgba(217,119,6,.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 65% 35% at 5% 10%,rgba(217,119,6,.07) 0%,transparent 60%),
+  radial-gradient(ellipse 45% 30% at 95% 90%,rgba(20,184,166,.05) 0%,transparent 60%);}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(217,119,6,.022) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(217,119,6,.022) 1px,transparent 1px);
+  background-size:58px 58px;}
+.w{max-width:1380px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:100;background:rgba(9,9,11,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr2);padding:12px 0;}
+.hdr{display:flex;align-items:center;justify-content:space-between;}
+.hdrl{display:flex;align-items:center;gap:13px;}
+.back{font-family:'IBM Plex Mono',monospace;font-size:.63rem;color:var(--text3);text-decoration:none;border:1px solid var(--bdr2);padding:5px 10px;border-radius:3px;transition:all .2s;}
+.back:hover{color:var(--cu);border-color:var(--bdr);}
+.logo{font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:1.25rem;letter-spacing:-.02em;}
+.logo b{color:var(--cu);}
+.mpill{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--cu);border:1px solid var(--bdr);padding:4px 10px;border-radius:20px;letter-spacing:.1em;}
+.hinfo{font-family:'IBM Plex Mono',monospace;font-size:.65rem;display:flex;gap:16px;color:var(--text3);}
+.hinfo span{color:var(--cu2);}
+
+/* ── HERO ── */
+.hero{padding:54px 0 42px;border-bottom:1px solid var(--bdr2);margin-bottom:34px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center;}
+.htag{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cu);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.htag::before{content:'';width:24px;height:1px;background:var(--cu);}
+.hero h1{font-family:'Libre Baskerville',serif;font-size:clamp(2.8rem,5vw,4.8rem);font-weight:700;line-height:1;margin-bottom:8px;}
+.hero h1 em{color:var(--cu);font-style:italic;}
+.hcode{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--text3);margin-bottom:18px;letter-spacing:.06em;}
+.hdesc{color:var(--text2);font-size:.95rem;line-height:1.75;max-width:580px;margin-bottom:22px;}
+.cotags{display:flex;gap:7px;flex-wrap:wrap;}
+.cotag{font-family:'IBM Plex Mono',monospace;font-size:.58rem;padding:4px 10px;border-radius:2px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);color:var(--cu);}
+
+/* hero stat box */
+.hstat-box{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:20px 22px;min-width:220px;box-shadow:var(--glow);}
+.hsb-title{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--cu);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
+.hsb-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bdr2);font-size:.83rem;}
+.hsb-row:last-child{border-bottom:none;}
+.hsb-row .l{color:var(--text2);}
+.hsb-row .v{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--cu2);font-weight:500;}
+
+/* ── CO BAR ── */
+.cobar{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;padding:13px 20px;display:flex;gap:20px;align-items:center;margin-bottom:28px;flex-wrap:wrap;}
+.colbl{font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+.coit{flex:1;min-width:90px;display:flex;flex-direction:column;gap:4px;}
+.conm{font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--text3);}
+.cotr{height:3px;background:var(--surf3);border-radius:2px;overflow:hidden;}
+.cofl{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--cu),var(--teal));transition:width 1s ease;}
+.copct{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cu);}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--bdr2);margin-bottom:28px;overflow-x:auto;}
+.tab{font-family:'IBM Plex Sans',sans-serif;font-size:.8rem;font-weight:500;padding:9px 15px;cursor:pointer;border:none;background:none;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
+.tab:hover{color:var(--text2);}
+.tab.active{color:var(--cu2);border-bottom-color:var(--cu);}
+.panel{display:none;}.panel.active{display:block;}
+
+/* ── SECTION ── */
+.stag{font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:12px;}
+.stag::after{content:'';flex:1;height:1px;background:var(--bdr2);}
+.sh{font-family:'Libre Baskerville',serif;font-size:1.8rem;font-weight:700;margin-bottom:7px;}
+.sp{color:var(--text2);font-size:.92rem;line-height:1.72;margin-bottom:24px;max-width:800px;}
+
+/* ── CARD ── */
+.card{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:20px;}
+.cardh{font-weight:700;font-size:.82rem;color:var(--text2);margin-bottom:12px;}
+
+/* ── CONTROLS ── */
+.ctrl{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.ctrlbl{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;display:flex;justify-content:space-between;}
+.ctrlbl b{color:var(--cu2);font-weight:500;}
+input[type=range]{width:100%;height:3px;background:var(--surf3);border-radius:2px;outline:none;-webkit-appearance:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--cu);cursor:pointer;box-shadow:0 0 8px rgba(217,119,6,.5);}
+.inp{background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:8px 12px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.78rem;width:100%;outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--cu);}
+.sel{background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:7px 10px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.72rem;outline:none;cursor:pointer;}
+
+/* ── BUTTONS ── */
+.btn{font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:.78rem;padding:9px 18px;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.bcu{background:var(--cu);color:#000;}.bcu:hover{background:var(--cu2);transform:translateY(-1px);}
+.bgh{background:var(--surf3);color:var(--text2);border:1px solid var(--bdr2);}.bgh:hover{border-color:var(--cu);color:var(--cu);}
+
+/* ── RESULT ROW ── */
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.87rem;}
+.rrow:last-child{border-bottom:none;}
+.rl{color:var(--text2);}.rv{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--text);font-weight:500;}
+.rv.hl{color:var(--cu2);font-size:.97rem;}.rv.gn{color:var(--green);}.rv.rd{color:var(--red);}.rv.bl{color:var(--blue);}.rv.vi{color:var(--violet);}
+
+/* ── TOGGLE ── */
+.tog{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.togbtn{padding:10px 8px;border-radius:5px;cursor:pointer;text-align:center;font-weight:700;font-size:.8rem;border:1px solid var(--bdr2);background:var(--surf2);color:var(--text3);transition:all .2s;}
+.togbtn.lon{background:rgba(34,197,94,.1);border-color:var(--green);color:var(--green);}
+.togbtn.sho{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red);}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.84rem;}
+.tbl th{padding:8px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--bdr2);background:var(--surf2);}
+.tbl th:first-child,.tbl th.lft{text-align:left;}
+.tbl td{padding:8px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,.03);font-family:'IBM Plex Mono',monospace;font-size:.72rem;}
+.tbl td:first-child,.tbl td.lft{text-align:left;font-family:'IBM Plex Sans',sans-serif;color:var(--text2);font-size:.83rem;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+.tbl tr.hl-row td{background:rgba(217,119,6,.06);}
+.gn{color:var(--green);}.rd{color:var(--red);}.cp{color:var(--cu2);}.wh{color:var(--text);}
+
+/* ── CONCEPT GRID ── */
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:24px;}
+.ccard{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:17px;transition:border-color .2s;}
+.ccard:hover{border-color:var(--bdr);}
+.cci{font-size:1.4rem;margin-bottom:8px;}
+.cct{font-weight:700;font-size:.86rem;margin-bottom:5px;}
+.ccb{font-size:.81rem;color:var(--text2);line-height:1.62;}
+.ccf{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--cu2);margin-top:7px;padding:6px 9px;background:var(--surf2);border-radius:3px;}
+
+/* ── SCENARIO MCQ ── */
+.scen{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:22px;margin-bottom:14px;}
+.scen-t{font-weight:700;margin-bottom:9px;font-size:.93rem;}
+.scen-s{font-size:.86rem;color:var(--text2);line-height:1.65;margin-bottom:14px;padding:11px 15px;background:var(--surf2);border-radius:6px;border-left:3px solid var(--cu);}
+.scen-q{font-weight:600;font-size:.9rem;margin-bottom:12px;}
+.sopts{display:flex;flex-direction:column;gap:7px;}
+.sopt{padding:9px 13px;border-radius:5px;cursor:pointer;border:1px solid var(--bdr2);background:var(--surf2);font-size:.86rem;color:var(--text2);transition:all .2s;text-align:left;}
+.sopt:hover:not(.answered){border-color:var(--cu);color:var(--text);}
+.sopt.correct{background:rgba(34,197,94,.1);border-color:var(--green);color:var(--green);}
+.sopt.wrong{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red);}
+.sopt.reveal{background:rgba(34,197,94,.04);border-color:rgba(34,197,94,.2);color:var(--text2);}
+.sexp{display:none;margin-top:11px;padding:12px 14px;border-radius:6px;font-size:.84rem;line-height:1.65;}
+.sexp.show{display:block;}
+.sexp.right{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);}
+.sexp.wrong{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);}
+
+/* ── QUIZ ── */
+.qbox{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;margin-bottom:24px;}
+.qhd{padding:14px 20px;border-bottom:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;}
+.qt{font-weight:700;font-size:.87rem;margin-bottom:2px;}.qs{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--text3);}
+.qdots{display:flex;gap:5px;}
+.qdot{width:8px;height:8px;border-radius:50%;background:var(--surf3);border:1px solid var(--bdr2);transition:all .3s;}
+.qdot.done{background:var(--cu);border-color:var(--cu);}
+.qdot.cur{background:var(--cu3);border-color:var(--cu3);animation:qpulse 1.5s infinite;}
+@keyframes qpulse{0%,100%{opacity:1}50%{opacity:.5}}
+.qbody{padding:22px 20px;}
+.qn{font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--cu2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.qt2{font-size:1rem;font-weight:500;line-height:1.55;margin-bottom:11px;}
+.qhint{font-size:.82rem;color:var(--text2);font-style:italic;padding:9px 13px;background:rgba(217,119,6,.06);border-left:2px solid var(--cu);border-radius:2px;margin-bottom:13px;line-height:1.6;}
+.qarea{width:100%;background:var(--surf2);border:1px solid var(--bdr2);border-radius:6px;padding:13px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;resize:vertical;min-height:100px;line-height:1.6;outline:none;transition:border-color .2s;}
+.qarea:focus{border-color:var(--cu);box-shadow:0 0 0 3px rgba(217,119,6,.1);}
+.qft{padding:11px 20px;border-top:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;}
+.qst{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--text3);}
+.aifb{margin-top:12px;border-radius:6px;overflow:hidden;display:none;border:1px solid rgba(217,119,6,.3);}
+.aifb.show{display:block;}
+.aifbh{padding:8px 13px;background:rgba(217,119,6,.07);border-bottom:1px solid rgba(217,119,6,.2);display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cu2);}
+.aib{background:var(--cu);color:#000;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.56rem;font-weight:700;}
+.spl{margin-left:auto;font-size:.67rem;font-weight:700;}
+.spl.ex{color:var(--green);}.spl.gd{color:var(--cu2);}.spl.nw{color:var(--red);}
+.aifbb{padding:12px;font-size:.86rem;line-height:1.7;background:var(--surf2);}
+.dots{display:flex;gap:4px;padding:5px;}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--cu);animation:db 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes db{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}}
+
+/* ── SIMULATION BOX ── */
+.simbox{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;margin-bottom:24px;}
+.simhd{background:linear-gradient(90deg,rgba(217,119,6,.12),transparent);padding:14px 20px;border-bottom:1px solid var(--bdr2);display:flex;align-items:center;gap:10px;}
+.simhd-title{font-weight:700;font-size:.9rem;}
+.simhd-sub{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--text3);margin-left:auto;}
+.simbody{padding:20px;}
+
+/* result callout */
+.callout{border-radius:6px;padding:14px 16px;margin-bottom:16px;font-size:.86rem;line-height:1.65;}
+.callout.info{background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.25);}
+.callout.success{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25);}
+.callout.warn{background:rgba(217,119,6,.07);border:1px solid rgba(217,119,6,.25);}
+.callout.danger{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);}
+.callout strong{color:var(--text);}
+
+canvas{display:block;width:100%;}
+
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;}.hstat-box{display:none;}
+  .cgrid,.tog-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){.w{padding:0 14px;}.cgrid{grid-template-columns:1fr;}.hero h1{font-size:2.4rem;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="w hdr">
+    <div class="hdrl">
+      <a href="index.html" class="back">← Home</a>
+      <div class="logo">Derivatives<b>Lab</b></div>
+      <div class="mpill">MODULE 04</div>
+    </div>
+    <div class="hinfo">Sessions 8 &amp; 15 · Hull Ch.3 · <span>Hedging with Derivatives</span></div>
+  </div>
+</header>
+
+<div class="w">
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="htag">Sessions 8 &amp; 15 · Hull Chapter 3</div>
+    <h1>Hedging with<br><em>Derivatives</em></h1>
+    <div class="hcode">FIA 401 · RELIANCE / NIFTY / GOLD / CRUDE OIL · NSE</div>
+    <p class="hdesc">Master corporate risk management using futures and options. Build hedges, calculate the minimum-variance hedge ratio, analyse basis risk, and simulate real outcomes across multiple price scenarios — all with live Indian market examples.</p>
+    <div class="cotags">
+      <span class="cotag">CO2 — Hedging Strategies</span>
+      <span class="cotag">CO4 — Design Instruments</span>
+      <span class="cotag">CO1 — Core Concepts</span>
+    </div>
+  </div>
+  <div class="hstat-box">
+    <div class="hsb-title">Live Reference Prices</div>
+    <div class="hsb-row"><span class="l">Reliance Spot</span><span class="v">₹1,285</span></div>
+    <div class="hsb-row"><span class="l">Nifty 50 Spot</span><span class="v">22,450</span></div>
+    <div class="hsb-row"><span class="l">Gold (MCX)</span><span class="v">₹71,200/10g</span></div>
+    <div class="hsb-row"><span class="l">Crude Oil (MCX)</span><span class="v">₹6,850/bbl</span></div>
+    <div class="hsb-row"><span class="l">USD/INR</span><span class="v">₹83.40</span></div>
+    <div class="hsb-row"><span class="l">Risk-free rate</span><span class="v">6.5% p.a.</span></div>
+  </div>
+</div>
+
+<!-- CO PROGRESS -->
+<div class="cobar">
+  <div class="colbl">Progress</div>
+  <div class="coit"><div class="conm">CO1</div><div class="cotr"><div class="cofl" id="c1f" style="width:0%"></div></div><div class="copct" id="c1p">0%</div></div>
+  <div class="coit"><div class="conm">CO2</div><div class="cotr"><div class="cofl" id="c2f" style="width:0%"></div></div><div class="copct" id="c2p">0%</div></div>
+  <div class="coit"><div class="conm">CO4</div><div class="cotr"><div class="cofl" id="c4f" style="width:0%"></div></div><div class="copct" id="c4p">0%</div></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="sw('concepts',this)">📖 Hedge Concepts</button>
+  <button class="tab" onclick="sw('hedgelab',this)">🎛️ Hedge Lab</button>
+  <button class="tab" onclick="sw('basis',this)">📏 Basis Risk Sim</button>
+  <button class="tab" onclick="sw('mvh',this)">📐 MVH Ratio</button>
+  <button class="tab" onclick="sw('stockhedge',this)">📊 Stock Portfolio Hedge</button>
+  <button class="tab" onclick="sw('scenarios',this)">🧩 Scenarios</button>
+  <button class="tab" onclick="sw('quiz',this)">✏️ AI Quiz</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 1 — HEDGE CONCEPTS
+═══════════════════════════════════════════════ -->
+<div class="panel active" id="tab-concepts">
+  <div class="stag">Tab 1 — Foundations</div>
+  <div class="sh">What is Hedging?</div>
+  <div class="sp">A hedge is a position in derivatives that offsets the risk of an existing or anticipated exposure in the physical (spot) market. The goal is <strong style="color:var(--text)">risk reduction</strong>, not profit maximisation. A perfect hedge eliminates all risk; in practice, basis risk always remains.</div>
+
+  <div class="cgrid">
+    <div class="ccard">
+      <div class="cci">📉</div>
+      <div class="cct">Short Hedge</div>
+      <div class="ccb">Used by someone who <strong style="color:var(--text)">owns</strong> an asset or will <strong style="color:var(--text)">sell</strong> it in the future. Sell futures today to lock in a selling price. Protects against falling prices.<br><br><em>Examples: Gold miner, wheat farmer, oil producer, equity investor.</em></div>
+      <div class="ccf">Action: SELL futures → Locks in sale price</div>
+    </div>
+    <div class="ccard">
+      <div class="cci">📈</div>
+      <div class="cct">Long Hedge</div>
+      <div class="ccb">Used by someone who will <strong style="color:var(--text)">buy</strong> an asset in the future. Buy futures today to lock in a purchase price. Protects against rising prices.<br><br><em>Examples: Airline buying jet fuel, jeweller buying gold, importer buying USD.</em></div>
+      <div class="ccf">Action: BUY futures → Locks in purchase price</div>
+    </div>
+    <div class="ccard">
+      <div class="cci">⚖️</div>
+      <div class="cct">Perfect vs Imperfect Hedge</div>
+      <div class="ccb">A <strong style="color:var(--text)">perfect hedge</strong> fully eliminates risk — same asset, same quantity, same expiry. An <strong style="color:var(--text)">imperfect hedge</strong> has basis risk — arises when hedging with a different asset (cross-hedge), different quantity, or different timing.</div>
+      <div class="ccf">Perfect hedge P&L = 0 regardless of price</div>
+    </div>
+    <div class="ccard">
+      <div class="cci">📏</div>
+      <div class="cct">Basis Risk</div>
+      <div class="ccb">Basis = Spot Price − Futures Price. In a perfect hedge, basis converges to zero at expiry. Basis <strong style="color:var(--green)">strengthens</strong> when spot rises relative to futures. Basis <strong style="color:var(--red)">weakens</strong> when spot falls relative to futures.</div>
+      <div class="ccf">Basis = S − F → 0 at expiry (convergence)</div>
+    </div>
+    <div class="ccard">
+      <div class="cci">🔢</div>
+      <div class="cct">Minimum Variance Hedge Ratio</div>
+      <div class="ccb">Optimal fraction of exposure to hedge. Not always 1:1. Depends on correlation and relative volatility of spot vs futures.<br><br>h* = ρ × (σ_S / σ_F)</div>
+      <div class="ccf">N* = h* × Q_A / Q_F (optimal contracts)</div>
+    </div>
+    <div class="ccard">
+      <div class="cci">🧩</div>
+      <div class="cct">Cross-Hedge</div>
+      <div class="ccb">Hedging an asset with a futures contract on a <em>different but correlated</em> asset. Example: Hedge jet fuel (no listed futures) using crude oil futures (correlated). Cross-hedges carry higher basis risk than direct hedges.</div>
+      <div class="ccf">e.g., Jet fuel ↔ Crude oil (ρ ≈ 0.93)</div>
+    </div>
+  </div>
+
+  <div class="stag">Short vs Long Hedge — Side by Side</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+    <div class="card">
+      <div class="cardh" style="color:var(--red)">📉 Short Hedge — Worked Example</div>
+      <div class="callout info" style="margin-bottom:12px">
+        <strong>Setup:</strong> GoldMine India will produce 10,000 oz of gold in 3 months. Current spot = ₹71,200/10g (approx ₹7,12,000/oz MCX equivalent). MCX Gold futures (3-month) = ₹7,25,000/oz. Lot = 1 oz. Fear: gold price falls.
+      </div>
+      <div class="rrow"><span class="rl">Action today</span><span class="rv rd">SELL 10,000 gold futures at ₹7,25,000</span></div>
+      <div class="rrow"><span class="rl">Scenario A: Gold falls to ₹6,80,000</span><span class="rv gn">Futures gain = ₹45,000 × 10,000 = ₹45 Cr</span></div>
+      <div class="rrow"><span class="rl">Spot revenue loss</span><span class="rv rd">₹(7,12,000 − 6,80,000)×10,000 = ₹32 Cr lost</span></div>
+      <div class="rrow"><span class="rl">Net effective price</span><span class="rv hl">₹7,25,000/oz (locked in) ✅</span></div>
+      <div class="rrow"><span class="rl">Scenario B: Gold rises to ₹7,60,000</span><span class="rv rd">Futures loss = ₹35,000 × 10,000 = ₹35 Cr</span></div>
+      <div class="rrow"><span class="rl">Spot revenue gain</span><span class="rv gn">₹4.8 Cr extra revenue</span></div>
+      <div class="rrow"><span class="rl">Net effective price</span><span class="rv hl">Still ~₹7,25,000/oz ✅</span></div>
+    </div>
+    <div class="card">
+      <div class="cardh" style="color:var(--green)">📈 Long Hedge — Worked Example</div>
+      <div class="callout info" style="margin-bottom:12px">
+        <strong>Setup:</strong> SpiceJet will buy 2,00,000 barrels of crude oil in 3 months. Current crude spot = ₹6,850/bbl. MCX Crude futures (3-month) = ₹6,920/bbl. Lot = 100 barrels. Fear: crude price rises.
+      </div>
+      <div class="rrow"><span class="rl">Action today</span><span class="rv gn">BUY 2,000 crude futures at ₹6,920</span></div>
+      <div class="rrow"><span class="rl">Scenario A: Crude rises to ₹7,800</span><span class="rv gn">Futures gain = ₹880 × 2L = ₹17.6 Cr</span></div>
+      <div class="rrow"><span class="rl">Extra purchase cost (spot)</span><span class="rv rd">₹(7,800−6,850)×2L = ₹19 Cr extra</span></div>
+      <div class="rrow"><span class="rl">Net effective purchase price</span><span class="rv hl">₹6,920/bbl (locked in) ✅</span></div>
+      <div class="rrow"><span class="rl">Scenario B: Crude falls to ₹5,900</span><span class="rv rd">Futures loss = ₹1,020 × 2L = ₹20.4 Cr</span></div>
+      <div class="rrow"><span class="rl">Spot purchase saving</span><span class="rv gn">₹19 Cr cheaper</span></div>
+      <div class="rrow"><span class="rl">Net effective purchase price</span><span class="rv hl">Still ~₹6,920/bbl ✅</span></div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <strong>Key Insight:</strong> In both cases, the futures gain/loss nearly offsets the spot loss/gain, locking in a price close to the original futures price. The hedge "works" in both directions — it caps losses AND forgoes windfall gains. That is exactly the point: <strong>certainty over speculation.</strong>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 2 — HEDGE LAB (interactive)
+═══════════════════════════════════════════════ -->
+<div class="panel" id="tab-hedgelab">
+  <div class="stag">Tab 2 — Build Your Hedge</div>
+  <div class="sh">Interactive Hedge Lab</div>
+  <div class="sp">Design a complete hedge for any Indian market exposure. Select hedge type, set parameters, instantly see the optimal contracts, hedged vs unhedged P&L across scenarios, and the payoff diagram.</div>
+
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:18px;margin-bottom:24px">
+    <!-- LEFT: INPUTS -->
+    <div>
+      <div class="card" style="margin-bottom:13px">
+        <div class="cardh">Hedge Type</div>
+        <div class="tog">
+          <div class="togbtn lon" id="hlBtn" onclick="setHL('long')">📈 LONG HEDGE<br><small style="font-weight:400;font-size:.68rem">Future Buyer</small></div>
+          <div class="togbtn" id="hsBtn" onclick="setHL('short')">📉 SHORT HEDGE<br><small style="font-weight:400;font-size:.68rem">Future Seller</small></div>
+        </div>
+        <div class="ctrl" style="margin-bottom:8px">
+          <div class="ctrlbl" style="margin-bottom:5px">Underlying Asset</div>
+          <select class="sel" id="hAsset" style="width:100%" onchange="updateAssetDefaults()">
+            <option value="equity">Equity — Reliance Industries</option>
+            <option value="gold">Commodity — Gold (MCX)</option>
+            <option value="crude">Commodity — Crude Oil (MCX)</option>
+            <option value="fx">Currency — USD/INR</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:13px">
+        <div class="cardh">Position Parameters</div>
+        <div class="ctrl"><div class="ctrlbl">Exposure Quantity <b id="hQD">10,000</b></div><input type="range" min="1000" max="500000" step="1000" value="10000" id="hQ" oninput="calcHL()"></div>
+        <div class="ctrl"><div class="ctrlbl">Current Spot (₹) <b id="hSD">1,285</b></div><input type="range" min="500" max="80000" step="5" value="1285" id="hS" oninput="calcHL()"></div>
+        <div class="ctrl"><div class="ctrlbl">Futures Price (₹) <b id="hFD">1,298</b></div><input type="range" min="500" max="82000" step="5" value="1298" id="hF" oninput="calcHL()"></div>
+        <div class="ctrl"><div class="ctrlbl">Lot Size <b id="hLD">500</b></div><input type="range" min="1" max="2000" step="1" value="500" id="hL" oninput="calcHL()"></div>
+        <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Scenario Price at Delivery (₹) <b id="hPD">1,220</b></div><input type="range" min="400" max="82000" step="5" value="1220" id="hP" oninput="calcHL()"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div class="card" style="margin-bottom:13px">
+        <div class="cardh">Hedge Design</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+          <div style="background:var(--surf2);border-radius:6px;padding:12px;text-align:center">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.08em;margin-bottom:5px">CONTRACTS (N*)</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:500;color:var(--cu2)" id="hNstar">20</div>
+          </div>
+          <div style="background:var(--surf2);border-radius:6px;padding:12px;text-align:center">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.08em;margin-bottom:5px">EXPOSURE VALUE</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:500;color:var(--text);margin-top:6px" id="hExpV">₹1.28 Cr</div>
+          </div>
+          <div style="background:var(--surf2);border-radius:6px;padding:12px;text-align:center">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.08em;margin-bottom:5px">HEDGE COVERAGE</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:500;color:var(--green);margin-top:6px" id="hCov">101%</div>
+          </div>
+        </div>
+        <div class="rrow"><span class="rl">Unhedged outcome at scenario price</span><span class="rv rd" id="hUnhedged">−₹6.5 L</span></div>
+        <div class="rrow"><span class="rl">Futures gain / (loss)</span><span class="rv gn" id="hFutPnL">+₹7.8 L</span></div>
+        <div class="rrow" style="padding:10px 0"><span class="rl" style="font-weight:700">Net hedged P&L</span><span class="rv hl" id="hNetPnL">+₹1.3 L</span></div>
+        <div class="rrow"><span class="rl">Effective price locked in</span><span class="rv bl" id="hEffPrice">₹1,298</span></div>
+        <div id="hCallout" class="callout success" style="margin-top:12px;margin-bottom:0">Hedge effective. Price locked near futures entry.</div>
+      </div>
+
+      <div class="card" style="padding:18px">
+        <div style="font-weight:700;font-size:.86rem;margin-bottom:3px" id="hChartTitle">Long Hedge P&L — Hedged vs Unhedged</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--text3);margin-bottom:12px">Amber = hedged · Grey = unhedged · ● = scenario point</div>
+        <canvas id="hlChart" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIO TABLE -->
+  <div class="card">
+    <div class="cardh">Scenario Analysis — Across Price Range</div>
+    <div style="overflow-x:auto">
+      <table class="tbl"><thead><tr>
+        <th class="lft">Price at Delivery</th>
+        <th>Spot P&L</th>
+        <th>Futures P&L</th>
+        <th>Net Hedged P&L</th>
+        <th>Effective Price</th>
+        <th>Basis</th>
+      </tr></thead><tbody id="hlScenBody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 3 — BASIS RISK SIMULATION
+═══════════════════════════════════════════════ -->
+<div class="panel" id="tab-basis">
+  <div class="stag">Tab 3 — Basis Risk Simulator</div>
+  <div class="sh">Understanding Basis Risk</div>
+  <div class="sp">Basis = Spot − Futures. In a perfect world it converges to zero at expiry. In practice, spot and futures don't move in perfect lockstep — the difference (basis) fluctuates, creating residual risk even after hedging.</div>
+
+  <div class="cgrid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="ccard">
+      <div class="cci">📐</div>
+      <div class="cct">Basis Definition</div>
+      <div class="ccb">Basis = Spot Price − Futures Price<br><br>Opening basis: known at hedge initiation.<br>Closing basis: uncertain — this is basis risk!<br><br>For commodities: Basis typically negative (futures > spot = normal contango).</div>
+      <div class="ccf">b₁ = S₁ − F₁ (opening) · b₂ = S₂ − F₂ (closing)</div>
+    </div>
+    <div class="ccard">
+      <div class="cci">💪</div>
+      <div class="cct">Strengthening Basis</div>
+      <div class="ccb">Basis becomes less negative (or more positive) — spot rises relative to futures. <strong style="color:var(--green)">Short hedgers benefit</strong> from strengthening basis. Long hedgers are hurt.<br><br>Example: Opens at −50, closes at −20 → Strengthened by 30.</div>
+      <div class="ccf" style="color:var(--green)">Good for short hedger (seller)</div>
+    </div>
+    <div class="ccard">
+      <div class="cci">💫</div>
+      <div class="cct">Weakening Basis</div>
+      <div class="ccb">Basis becomes more negative (or less positive) — spot falls relative to futures. <strong style="color:var(--red)">Long hedgers benefit</strong> from weakening basis. Short hedgers are hurt.<br><br>Example: Opens at −50, closes at −80 → Weakened by 30.</div>
+      <div class="ccf" style="color:var(--red)">Good for long hedger (buyer)</div>
+    </div>
+  </div>
+
+  <div class="simbox">
+    <div class="simhd">
+      <span style="font-size:1.2rem">📏</span>
+      <div class="simhd-title">Basis Risk Simulator — Wheat Trader (India)</div>
+      <div class="simhd-sub">Live calculation</div>
+    </div>
+    <div class="simbody">
+      <div style="display:grid;grid-template-columns:300px 1fr;gap:18px">
+        <div>
+          <div class="ctrl"><div class="ctrlbl">Hedge Type</div>
+            <div class="tog" style="margin-top:4px">
+              <div class="togbtn lon" id="bsLongBtn" onclick="setBsType('long')">📈 LONG</div>
+              <div class="togbtn" id="bsShortBtn" onclick="setBsType('short')">📉 SHORT</div>
+            </div>
+          </div>
+          <div class="ctrl"><div class="ctrlbl">Quantity (quintals) <b id="bsQD">10,000</b></div><input type="range" min="1000" max="100000" step="1000" value="10000" id="bsQ" oninput="calcBasis()"></div>
+          <div class="ctrl"><div class="ctrlbl">Opening Spot S₁ (₹/q) <b id="bsS1D">3,200</b></div><input type="range" min="1000" max="8000" step="10" value="3200" id="bsS1" oninput="calcBasis()"></div>
+          <div class="ctrl"><div class="ctrlbl">Opening Futures F₁ (₹/q) <b id="bsF1D">3,280</b></div><input type="range" min="1000" max="8200" step="10" value="3280" id="bsF1" oninput="calcBasis()"></div>
+          <div class="ctrl"><div class="ctrlbl">Closing Spot S₂ (₹/q) <b id="bsS2D">2,950</b></div><input type="range" min="800" max="8000" step="10" value="2950" id="bsS2" oninput="calcBasis()"></div>
+          <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Closing Futures F₂ (₹/q) <b id="bsF2D">3,010</b></div><input type="range" min="800" max="8200" step="10" value="3010" id="bsF2" oninput="calcBasis()"></div>
+        </div>
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+            <div style="background:var(--surf2);border-radius:6px;padding:12px;text-align:center">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--text3);letter-spacing:.07em;margin-bottom:5px">OPENING BASIS b₁</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:500" id="bsB1">−₹80</div>
+            </div>
+            <div style="background:var(--surf2);border-radius:6px;padding:12px;text-align:center">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--text3);letter-spacing:.07em;margin-bottom:5px">CLOSING BASIS b₂</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:500" id="bsB2">−₹60</div>
+            </div>
+            <div style="background:var(--surf2);border-radius:6px;padding:12px;text-align:center">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--text3);letter-spacing:.07em;margin-bottom:5px">BASIS CHANGE</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:500" id="bsChange" class="gn">+₹20</div>
+            </div>
+          </div>
+          <div class="rrow"><span class="rl">Basis direction</span><span class="rv" id="bsDir">Strengthened by ₹20</span></div>
+          <div class="rrow"><span class="rl">Spot P&L (unhedged)</span><span class="rv" id="bsSpotPnL">−₹25.0 L</span></div>
+          <div class="rrow"><span class="rl">Futures P&L</span><span class="rv" id="bsFutPnL">+₹27.0 L</span></div>
+          <div class="rrow" style="padding:10px 0"><span class="rl" style="font-weight:700">Effective selling/purchase price</span><span class="rv hl" id="bsEffPrice">₹3,220/q</span></div>
+          <div class="rrow"><span class="rl">Price if basis unchanged (ideal)</span><span class="rv bl" id="bsIdeal">₹3,200/q</span></div>
+          <div class="rrow"><span class="rl">Basis risk impact per unit</span><span class="rv" id="bsRiskImpact">+₹20/q (favourable)</span></div>
+          <div id="bsCallout" class="callout success" style="margin-top:12px">Basis strengthened — short hedger benefits by ₹20/q × 10,000q = ₹2 L.</div>
+          <div style="margin-top:10px;padding:10px 12px;background:var(--surf2);border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--cu2);line-height:1.7" id="bsFormula">
+            Effective price = S₂ + (F₁ − F₂) = 2,950 + (3,280 − 3,010) = ₹3,220/q
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;padding:18px">
+    <div style="font-weight:700;font-size:.86rem;margin-bottom:3px">Basis Convergence — Spot vs Futures over Time</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--text3);margin-bottom:12px">Theoretical convergence to zero at expiry · Basis risk = deviation from expected path</div>
+    <canvas id="basisChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 4 — MVH RATIO CALCULATOR
+═══════════════════════════════════════════════ -->
+<div class="panel" id="tab-mvh">
+  <div class="stag">Tab 4 — Minimum Variance Hedge Ratio</div>
+  <div class="sh">Optimal Hedge Ratio</div>
+  <div class="sp">The minimum variance hedge ratio (h*) is the fraction of exposure to hedge with futures to minimise the variance (risk) of the hedged position. It is determined by the correlation and relative volatility of the spot and futures prices.</div>
+
+  <div style="background:rgba(217,119,6,.06);border:1px solid rgba(217,119,6,.25);border-radius:8px;padding:18px 22px;margin-bottom:24px;font-family:'IBM Plex Mono',monospace;text-align:center">
+    <div style="font-size:.62rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">MINIMUM VARIANCE HEDGE RATIO</div>
+    <div style="font-size:1.5rem;color:var(--cu2);margin-bottom:6px">h* = ρ × (σ<sub style="font-size:.7rem">S</sub> / σ<sub style="font-size:.7rem">F</sub>)</div>
+    <div style="font-size:.8rem;color:var(--text2)">Number of contracts: N* = h* × Q<sub style="font-size:.65rem">A</sub> / Q<sub style="font-size:.65rem">F</sub></div>
+    <div style="font-size:.72rem;color:var(--text3);margin-top:6px">ρ = correlation(ΔS, ΔF) · σ<sub style="font-size:.6rem">S</sub> = std dev of spot price changes · σ<sub style="font-size:.6rem">F</sub> = std dev of futures price changes</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:18px;margin-bottom:24px">
+    <div>
+      <div class="card" style="margin-bottom:13px">
+        <div class="cardh">Industry Presets</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn bgh" style="text-align:left;padding:9px 13px;font-size:.78rem" onclick="setMVHPreset('jet')">✈️ Airline — Jet Fuel vs Crude Oil</button>
+          <button class="btn bgh" style="text-align:left;padding:9px 13px;font-size:.78rem" onclick="setMVHPreset('gold')">🥇 Jeweller — Silver vs Gold</button>
+          <button class="btn bgh" style="text-align:left;padding:9px 13px;font-size:.78rem" onclick="setMVHPreset('fx')">💱 Exporter — USD/INR spot vs futures</button>
+          <button class="btn bgh" style="text-align:left;padding:9px 13px;font-size:.78rem" onclick="setMVHPreset('equity')">📊 Equity — Portfolio vs Nifty futures</button>
+          <button class="btn bgh" style="text-align:left;padding:9px 13px;font-size:.78rem" onclick="setMVHPreset('wheat')">🌾 Wheat farmer — spot vs futures</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardh">Custom Parameters</div>
+        <div class="ctrl"><div class="ctrlbl">Correlation ρ <b id="mvhCorrD">0.928</b></div><input type="range" min="0" max="1" step=".001" value=".928" id="mvhCorr" oninput="calcMVH()"></div>
+        <div class="ctrl"><div class="ctrlbl">σ_S (std dev of ΔSpot) <b id="mvhSsD">0.0263</b></div><input type="range" min=".005" max=".15" step=".0001" value=".0263" id="mvhSs" oninput="calcMVH()"></div>
+        <div class="ctrl"><div class="ctrlbl">σ_F (std dev of ΔFutures) <b id="mvhSfD">0.0313</b></div><input type="range" min=".005" max=".15" step=".0001" value=".0313" id="mvhSf" oninput="calcMVH()"></div>
+        <div class="ctrl"><div class="ctrlbl">Exposure Q_A (units) <b id="mvhQaD">2,000,000</b></div><input type="range" min="10000" max="5000000" step="10000" value="2000000" id="mvhQa" oninput="calcMVH()"></div>
+        <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Lot size Q_F (units) <b id="mvhQfD">42,000</b></div><input type="range" min="100" max="200000" step="100" value="42000" id="mvhQf" oninput="calcMVH()"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="cardh">MVH Results</div>
+      <div style="background:rgba(217,119,6,.05);border:1px solid rgba(217,119,6,.2);border-radius:6px;padding:14px 16px;margin-bottom:16px" id="mvhContext">
+        Airline hedges jet fuel exposure with crude oil futures.
+      </div>
+      <div class="rrow"><span class="rl">Correlation ρ</span><span class="rv" id="mvhCorrR">0.928</span></div>
+      <div class="rrow"><span class="rl">σ_S / σ_F ratio</span><span class="rv" id="mvhSigR">0.840</span></div>
+      <div class="rrow" style="padding:11px 0"><span class="rl" style="font-weight:700">Minimum Variance Hedge Ratio h*</span><span class="rv hl" id="mvhH">0.780</span></div>
+      <div class="rrow"><span class="rl">Interpretation</span><span class="rv" id="mvhInterp">Hedge 78.0% of exposure</span></div>
+      <div class="rrow" style="padding:11px 0"><span class="rl" style="font-weight:700">Optimal Contracts N*</span><span class="rv hl" id="mvhN">37</span></div>
+      <div class="rrow"><span class="rl">Hedging effectiveness R²</span><span class="rv gn" id="mvhR2">86.1%</span></div>
+      <div class="rrow"><span class="rl">Variance reduction</span><span class="rv gn" id="mvhVarRed">86.1%</span></div>
+      <div style="margin-top:14px;padding:12px 14px;background:var(--surf2);border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--cu2);line-height:1.8" id="mvhFormula">
+        h* = 0.928 × (0.0263/0.0313) = 0.780<br>
+        N* = 0.780 × 2,000,000 / 42,000 = 37 contracts
+      </div>
+      <div id="mvhCallout" class="callout info" style="margin-top:12px;margin-bottom:0">
+        h* &lt; 1 because this is a cross-hedge. The correlation is not perfect, so over-hedging at 1:1 would actually increase variance.
+      </div>
+    </div>
+  </div>
+
+  <!-- Sensitivity chart -->
+  <div class="card" style="padding:18px;margin-bottom:24px">
+    <div style="font-weight:700;font-size:.86rem;margin-bottom:3px">h* Sensitivity — How Correlation Affects Optimal Hedge Ratio</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--text3);margin-bottom:12px">Vary ρ from 0 to 1 · Current position marked in amber</div>
+    <canvas id="mvhChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 5 — STOCK PORTFOLIO HEDGE
+═══════════════════════════════════════════════ -->
+<div class="panel" id="tab-stockhedge">
+  <div class="stag">Tab 5 — Equity Portfolio Risk Management</div>
+  <div class="sh">Hedging a Stock Portfolio with Nifty Futures</div>
+  <div class="sp">A fund manager holding a portfolio of Indian stocks can use Nifty 50 futures to hedge systematic (market) risk. The number of contracts depends on the portfolio beta — a measure of sensitivity to market moves.</div>
+
+  <div style="background:rgba(217,119,6,.06);border:1px solid rgba(217,119,6,.25);border-radius:8px;padding:16px 20px;margin-bottom:22px;font-family:'IBM Plex Mono',monospace">
+    <div style="font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">NIFTY HEDGE FORMULA</div>
+    <div style="font-size:1.1rem;color:var(--cu2)">N* = (β<sub style="font-size:.7rem">target</sub> − β<sub style="font-size:.7rem">portfolio</sub>) × P / (F × Q<sub style="font-size:.7rem">F</sub>)</div>
+    <div style="font-size:.75rem;color:var(--text2);margin-top:6px">P = portfolio value · F = Nifty futures price · Q_F = lot size · β_target = desired beta (0 = fully hedged)</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:18px;margin-bottom:22px">
+    <div>
+      <div class="card" style="margin-bottom:13px">
+        <div class="cardh">Portfolio Presets</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn bgh" style="text-align:left;padding:8px 12px;font-size:.77rem" onclick="setSHPreset('aggressive')">🚀 Aggressive Growth (β = 1.45)</button>
+          <button class="btn bgh" style="text-align:left;padding:8px 12px;font-size:.77rem" onclick="setSHPreset('balanced')">⚖️ Balanced Portfolio (β = 1.10)</button>
+          <button class="btn bgh" style="text-align:left;padding:8px 12px;font-size:.77rem" onclick="setSHPreset('defensive')">🛡️ Defensive Portfolio (β = 0.72)</button>
+          <button class="btn bgh" style="text-align:left;padding:8px 12px;font-size:.77rem" onclick="setSHPreset('it')">💻 IT Sector (β = 1.28)</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardh">Parameters</div>
+        <div class="ctrl"><div class="ctrlbl">Portfolio Value (₹ Cr) <b id="shPD">10.00</b></div><input type="range" min="1" max="100" step=".5" value="10" id="shP" oninput="calcSH()"></div>
+        <div class="ctrl"><div class="ctrlbl">Portfolio Beta β <b id="shBetaD">1.45</b></div><input type="range" min="0.1" max="2.5" step=".01" value="1.45" id="shBeta" oninput="calcSH()"></div>
+        <div class="ctrl"><div class="ctrlbl">Target Beta β_target <b id="shTargD">0.00</b></div><input type="range" min="0" max="2.5" step=".01" value="0" id="shTarg" oninput="calcSH()"></div>
+        <div class="ctrl"><div class="ctrlbl">Nifty Futures Price <b id="shFD">22,580</b></div><input type="range" min="10000" max="35000" step="50" value="22580" id="shF" oninput="calcSH()"></div>
+        <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Nifty Lot Size <b id="shLotD">25</b></div><input type="range" min="15" max="75" step="1" value="25" id="shLot" oninput="calcSH()"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:13px">
+        <div class="cardh">Hedge Calculation Results</div>
+        <div class="rrow"><span class="rl">Portfolio Value</span><span class="rv hl" id="shPR">₹10.00 Cr</span></div>
+        <div class="rrow"><span class="rl">Portfolio Beta</span><span class="rv" id="shBetaR">1.45</span></div>
+        <div class="rrow"><span class="rl">Target Beta</span><span class="rv" id="shTargR">0.00 (fully hedged)</span></div>
+        <div class="rrow"><span class="rl">Nifty Futures Value (per lot)</span><span class="rv" id="shFLotV">₹5.65 L</span></div>
+        <div class="rrow" style="padding:11px 0"><span class="rl" style="font-weight:700">Contracts to SHORT</span><span class="rv hl rd" id="shN">257 contracts</span></div>
+        <div class="rrow"><span class="rl">Total hedge value</span><span class="rv" id="shHedgeV">₹14.52 Cr</span></div>
+        <div style="padding:10px 12px;background:var(--surf2);border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--cu2);line-height:1.7;margin-top:12px" id="shFormula">
+          N* = (0 − 1.45) × 10,00,00,000 / (22,580 × 25) = 257 contracts (SHORT)
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardh">P&L Simulation — If Nifty Falls/Rises</div>
+        <div style="overflow-x:auto">
+          <table class="tbl"><thead><tr>
+            <th class="lft">Nifty Move</th><th>Portfolio P&L</th><th>Futures Gain</th><th>Net P&L</th><th>Effective β</th>
+          </tr></thead><tbody id="shScenBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 6 — SCENARIO MCQ
+═══════════════════════════════════════════════ -->
+<div class="panel" id="tab-scenarios">
+  <div class="stag">Tab 6 — Applied Scenario Practice</div>
+  <div class="sh">Hedging Scenarios</div>
+  <div class="sp">Apply your understanding to realistic corporate and market situations. Identify the correct strategy, direction, and key risk factors.</div>
+  <div id="scenCont"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 7 — AI QUIZ
+═══════════════════════════════════════════════ -->
+<div class="panel" id="tab-quiz">
+  <div class="stag">Tab 7 — AI-Graded Assessment</div>
+  <div class="sh">Module 4 Quiz</div>
+  <div class="sp">Write full answers with calculations. Claude assesses understanding of hedging strategy, MVH ratio, basis risk, and portfolio hedging — mapped to CO1, CO2, CO4.</div>
+  <div class="qbox">
+    <div class="qhd">
+      <div><div class="qt">Hedging with Derivatives Assessment</div><div class="qs">5 Questions · CO1, CO2, CO4</div></div>
+      <div class="qdots" id="qDots"></div>
+    </div>
+    <div class="qbody" id="qBody"></div>
+    <div class="qft">
+      <div class="qst" id="qStat">Answer the question above</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bgh" onclick="skipQ()">Skip →</button>
+        <button class="btn bcu" id="qBtn" onclick="submitQ()">Submit for Grading</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /w -->
+<script>
+// ── CO TRACKER ──────────────────────────────────────────────
+let co1v=0,co2v=0,co4v=0;
+function upCO(c,v){
+  if(c===1){co1v=Math.min(100,Math.max(co1v,v));document.getElementById('c1f').style.width=co1v+'%';document.getElementById('c1p').textContent=co1v+'%';}
+  if(c===2){co2v=Math.min(100,Math.max(co2v,v));document.getElementById('c2f').style.width=co2v+'%';document.getElementById('c2p').textContent=co2v+'%';}
+  if(c===4){co4v=Math.min(100,Math.max(co4v,v));document.getElementById('c4f').style.width=co4v+'%';document.getElementById('c4p').textContent=co4v+'%';}
+}
+
+// ── TAB SWITCH ───────────────────────────────────────────────
+function sw(tab,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(btn&&btn.classList) btn.classList.add('active');
+  if(tab==='hedgelab') calcHL();
+  if(tab==='basis'){calcBasis();drawBasisChart();}
+  if(tab==='mvh'){calcMVH();drawMVHChart();}
+  if(tab==='stockhedge') calcSH();
+  if(tab==='scenarios') renderScens();
+  if(tab==='quiz'){renderQ();renderQDots();}
+}
+
+// ── HEDGE LAB ────────────────────────────────────────────────
+let hType='long';
+function setHL(t){
+  hType=t;
+  document.getElementById('hlBtn').className='togbtn'+(t==='long'?' lon':'');
+  document.getElementById('hsBtn').className='togbtn'+(t==='short'?' sho':'');
+  document.getElementById('hChartTitle').textContent=(t==='long'?'Long':'Short')+' Hedge P&L — Hedged vs Unhedged';
+  calcHL();
+}
+const ASSETS={
+  equity:{q:10000,s:1285,f:1298,l:500,label:'Reliance shares'},
+  gold:{q:1000,s:71200,f:72100,l:1,label:'Gold (10g MCX)'},
+  crude:{q:200000,s:6850,f:6920,l:100,label:'Crude Oil (barrels)'},
+  fx:{q:100000,s:8340,f:8365,l:1000,label:'USD (in paise)'},
+  custom:{q:10000,s:1000,f:1010,l:100,label:'Custom'}
+};
+function updateAssetDefaults(){
+  const a=ASSETS[document.getElementById('hAsset').value];
+  document.getElementById('hQ').value=a.q;
+  document.getElementById('hS').value=a.s;
+  document.getElementById('hF').value=a.f;
+  document.getElementById('hL').value=a.l;
+  document.getElementById('hP').value=Math.round(a.s*0.95);
+  calcHL();
+}
+function calcHL(){
+  const Q=parseInt(document.getElementById('hQ').value);
+  const S=parseFloat(document.getElementById('hS').value);
+  const F=parseFloat(document.getElementById('hF').value);
+  const L=parseInt(document.getElementById('hL').value);
+  const P=parseFloat(document.getElementById('hP').value);
+  document.getElementById('hQD').textContent=Q.toLocaleString('en-IN');
+  document.getElementById('hSD').textContent=S.toLocaleString('en-IN');
+  document.getElementById('hFD').textContent=F.toLocaleString('en-IN');
+  document.getElementById('hLD').textContent=L.toLocaleString('en-IN');
+  document.getElementById('hPD').textContent=P.toLocaleString('en-IN');
+  const N=Math.round(Q/L);
+  const expV=Q*S;
+  const futV=N*L*F;
+  const cov=(futV/expV*100).toFixed(1);
+  const spotPnL=hType==='long'?(S-P)*Q:(P-S)*Q;
+  const futPnL=hType==='long'?(P-F)*N*L:(F-P)*N*L;
+  const net=spotPnL+futPnL;
+  const effPrice=hType==='long'?F+(P-P):F; // locked near F
+  const fmtL=v=>(v>=0?'+':'')+' ₹'+(Math.abs(v)/1e5).toFixed(2)+'L';
+  document.getElementById('hNstar').textContent=N;
+  document.getElementById('hExpV').textContent='₹'+(expV/1e7).toFixed(2)+' Cr';
+  document.getElementById('hCov').textContent=cov+'%';
+  document.getElementById('hUnhedged').textContent=fmtL(spotPnL);
+  document.getElementById('hUnhedged').className='rv '+(spotPnL>=0?'gn':'rd');
+  document.getElementById('hFutPnL').textContent=fmtL(futPnL);
+  document.getElementById('hFutPnL').className='rv '+(futPnL>=0?'gn':'rd');
+  document.getElementById('hNetPnL').textContent=fmtL(net);
+  document.getElementById('hNetPnL').className='rv hl';
+  document.getElementById('hEffPrice').textContent='₹'+F.toLocaleString('en-IN');
+  const c=document.getElementById('hCallout');
+  const residual=Math.abs(net);
+  if(residual/expV<0.001){c.className='callout success';c.textContent='Perfect hedge — net P&L ≈ zero. Price fully locked at futures entry.';}
+  else if(residual/expV<0.01){c.className='callout warn';c.textContent=`Near-perfect hedge. Small residual of ₹${(residual/1e5).toFixed(2)}L due to lot-size rounding.`;}
+  else{c.className='callout info';c.textContent=`Partial hedge. Net P&L: ${fmtL(net)}. Effective price ≈ ₹${F.toLocaleString('en-IN')}.`;}
+  // Scenario table
+  const moves=[-0.15,-0.10,-0.05,0,0.03,0.05,0.10,0.15];
+  document.getElementById('hlScenBody').innerHTML=moves.map(m=>{
+    const pr=Math.round(S*(1+m));
+    const sp=hType==='long'?(S-pr)*Q:(pr-S)*Q;
+    const fp=hType==='long'?(pr-F)*N*L:(F-pr)*N*L;
+    const net2=sp+fp;
+    const eff=hType==='long'?pr+(fp/(N*L)):pr-(fp/(N*L)); // approx
+    const basis=pr-F*(1+m);
+    return`<tr${m===0?' class="hl-row"':''}><td>₹${pr.toLocaleString('en-IN')} (${m>=0?'+':''}${(m*100).toFixed(0)}%)</td><td class="${sp>=0?'gn':'rd'}">${fmtL(sp)}</td><td class="${fp>=0?'gn':'rd'}">${fmtL(fp)}</td><td class="${Math.abs(net2)<expV*0.005?'cp':net2>=0?'gn':'rd'}" style="font-weight:700">${fmtL(net2)}</td><td class="cp">₹${F.toLocaleString('en-IN')}</td><td>${Math.abs(basis).toFixed(1)}</td></tr>`;
+  }).join('');
+  drawHLChart(S,F,N,L,Q,P);
+  upCO(2,15);upCO(4,10);
+}
+
+function drawHLChart(S,F,N,L,Q,P){
+  const cv=document.getElementById('hlChart');
+  const ctx=cv.getContext('2d');
+  cv.width=cv.offsetWidth*devicePixelRatio; cv.height=240*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=240;
+  ctx.clearRect(0,0,W,H);
+  const pad=S*0.2, minP=S-pad, maxP=S+pad;
+  const pts=[]; for(let p=minP;p<=maxP;p+=S*0.01) pts.push(p);
+  const unh=pts.map(p=>hType==='long'?(S-p)*Q:(p-S)*Q);
+  const hed=pts.map(p=>{const sp=hType==='long'?(S-p)*Q:(p-S)*Q; const fp=hType==='long'?(p-F)*N*L:(F-p)*N*L; return sp+fp;});
+  const allV=[...unh,...hed], maxV=Math.max(...allV), minV=Math.min(...allV), rng=Math.max(maxV-minV,1);
+  const px=p=>55+((p-minP)/(maxP-minP))*(W-75);
+  const py=v=>15+((maxV-v)/rng)*(H-40);
+  // Grid
+  for(let i=0;i<=4;i++){const v=minV+(i/4)*rng;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(55,py(v));ctx.lineTo(W-20,py(v));ctx.stroke();ctx.fillStyle='rgba(168,162,158,.5)';ctx.font='10px IBM Plex Mono';ctx.fillText((v>=0?'+':'')+'₹'+(Math.abs(v/1e5).toFixed(1))+'L',2,py(v)+4);}
+  // Zero
+  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(55,py(0));ctx.lineTo(W-20,py(0));ctx.stroke();ctx.setLineDash([]);
+  // Spot line
+  ctx.strokeStyle='rgba(217,119,6,.3)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(px(S),10);ctx.lineTo(px(S),H-20);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(217,119,6,.7)';ctx.font='bold 9px IBM Plex Mono';ctx.fillText('S₀',px(S)-8,H-6);
+  // F line
+  ctx.strokeStyle='rgba(96,165,250,.25)';ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(px(F),10);ctx.lineTo(px(F),H-20);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(96,165,250,.7)';ctx.fillText('F₀',px(F)-6,H-6);
+  // Unhedged
+  ctx.beginPath();pts.forEach((p,i)=>{i===0?ctx.moveTo(px(p),py(unh[i])):ctx.lineTo(px(p),py(unh[i]));});
+  ctx.strokeStyle='rgba(168,162,158,.4)';ctx.lineWidth=1.5;ctx.stroke();
+  // Hedged
+  ctx.beginPath();pts.forEach((p,i)=>{i===0?ctx.moveTo(px(p),py(hed[i])):ctx.lineTo(px(p),py(hed[i]));});
+  ctx.strokeStyle='#d97706';ctx.lineWidth=2.5;ctx.stroke();
+  // Scenario dot
+  if(P>=minP&&P<=maxP){
+    const sv=hType==='long'?(S-P)*Q+(P-F)*N*L:(P-S)*Q+(F-P)*N*L;
+    ctx.fillStyle=sv>=0?'#22c55e':'#ef4444';
+    ctx.beginPath();ctx.arc(px(P),py(sv),7,0,2*Math.PI);ctx.fill();
+  }
+  ctx.fillStyle='rgba(217,119,6,.8)';ctx.font='10px IBM Plex Mono';ctx.fillText('─ Hedged',W-88,18);
+  ctx.fillStyle='rgba(168,162,158,.6)';ctx.fillText('─ Unhedged',W-88,32);
+  // X labels
+  ctx.fillStyle='rgba(168,162,158,.5)';ctx.font='9px IBM Plex Mono';
+  [minP,S,maxP].forEach(p=>ctx.fillText('₹'+Math.round(p).toLocaleString('en-IN'),px(p)-18,H-6));
+}
+
+// ── BASIS RISK ───────────────────────────────────────────────
+let bsType='short';
+function setBsType(t){
+  bsType=t;
+  document.getElementById('bsLongBtn').className='togbtn'+(t==='long'?' lon':'');
+  document.getElementById('bsShortBtn').className='togbtn'+(t==='short'?' sho':'');
+  calcBasis();
+}
+function calcBasis(){
+  const Q=parseInt(document.getElementById('bsQ').value);
+  const S1=parseFloat(document.getElementById('bsS1').value);
+  const F1=parseFloat(document.getElementById('bsF1').value);
+  const S2=parseFloat(document.getElementById('bsS2').value);
+  const F2=parseFloat(document.getElementById('bsF2').value);
+  ['bsQD','bsS1D','bsF1D','bsS2D','bsF2D'].forEach((id,i)=>{
+    const vals=[Q,S1,F1,S2,F2]; document.getElementById(id).textContent=vals[i].toLocaleString('en-IN');
+  });
+  const b1=S1-F1, b2=S2-F2, bChange=b2-b1;
+  document.getElementById('bsB1').textContent=(b1>=0?'+':'')+'₹'+b1.toFixed(0);
+  document.getElementById('bsB1').style.color=b1>=0?'var(--green)':'var(--red)';
+  document.getElementById('bsB2').textContent=(b2>=0?'+':'')+'₹'+b2.toFixed(0);
+  document.getElementById('bsB2').style.color=b2>=0?'var(--green)':'var(--red)';
+  const strengthened=bChange>0;
+  document.getElementById('bsChange').textContent=(bChange>=0?'+':'')+'₹'+bChange.toFixed(0);
+  document.getElementById('bsChange').className=strengthened?'gn':'rd';
+  document.getElementById('bsDir').textContent=(strengthened?'Strengthened':'Weakened')+' by ₹'+Math.abs(bChange).toFixed(0);
+  const spotPnL=bsType==='short'?(S2-S1)*Q:(S1-S2)*Q;
+  const futPnL=bsType==='short'?(F1-F2)*Q:(F2-F1)*Q;
+  const effPrice=S2+(F1-F2);
+  const idealEff=S1; // if basis unchanged
+  const riskImpact=effPrice-idealEff;
+  const fmtL=v=>(v>=0?'+':'')+' ₹'+(Math.abs(v)/1e5).toFixed(2)+'L';
+  document.getElementById('bsSpotPnL').textContent=fmtL(spotPnL);
+  document.getElementById('bsSpotPnL').className='rv '+(spotPnL>=0?'gn':'rd');
+  document.getElementById('bsFutPnL').textContent=fmtL(futPnL);
+  document.getElementById('bsFutPnL').className='rv '+(futPnL>=0?'gn':'rd');
+  document.getElementById('bsEffPrice').textContent='₹'+effPrice.toFixed(2)+'/q';
+  document.getElementById('bsIdeal').textContent='₹'+idealEff.toFixed(2)+'/q';
+  document.getElementById('bsRiskImpact').textContent=(riskImpact>=0?'+':'')+'₹'+riskImpact.toFixed(2)+'/q ('+(riskImpact>=0?'favourable':'adverse')+')';
+  document.getElementById('bsFormula').textContent=`Effective price = S₂ + (F₁ − F₂)\n= ${S2} + (${F1} − ${F2}) = ₹${effPrice.toFixed(2)}/q`;
+  const c=document.getElementById('bsCallout');
+  const favorable=(bsType==='short'&&strengthened)||(bsType==='long'&&!strengthened);
+  c.className='callout '+(favorable?'success':'danger');
+  c.textContent=`Basis ${strengthened?'strengthened':'weakened'}. ${bsType==='short'?'Short':'Long'} hedger ${favorable?'benefits':'is hurt'} by ₹${Math.abs(riskImpact).toFixed(2)}/q × ${Q.toLocaleString('en-IN')} = ₹${(Math.abs(riskImpact)*Q/1e5).toFixed(2)}L.`;
+  upCO(1,15);upCO(2,15);
+}
+
+function drawBasisChart(){
+  const cv=document.getElementById('basisChart');
+  const ctx=cv.getContext('2d');
+  cv.width=cv.offsetWidth*devicePixelRatio; cv.height=200*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=200;
+  ctx.clearRect(0,0,W,H);
+  const S0=3200,F0=3280; const T=90;
+  const pts=[];
+  for(let t=0;t<=T;t++) pts.push(t);
+  // theoretical basis: linear convergence to 0
+  const theorBasis=pts.map(t=>-(F0-S0)*(1-t/T));
+  // actual basis: add some noise
+  const seed=42; let noise=theorBasis[0];
+  const actualBasis=pts.map((t,i)=>{
+    const theo=theorBasis[i];
+    noise=noise*0.85+(Math.sin(t*0.4+seed)*12+Math.cos(t*0.3)*8)*0.15;
+    return theo+noise*(1-t/T);
+  });
+  const allB=[...theorBasis,...actualBasis];
+  const maxB=Math.max(...allB)+5, minB=Math.min(...allB)-5, rng=maxB-minB;
+  const px=t=>55+(t/T)*(W-75);
+  const py=v=>10+((maxB-v)/rng)*(H-30);
+  // Grid
+  for(let i=0;i<=4;i++){const v=minB+(i/4)*rng;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(55,py(v));ctx.lineTo(W-20,py(v));ctx.stroke();ctx.fillStyle='rgba(168,162,158,.4)';ctx.font='9px IBM Plex Mono';ctx.fillText((v>=0?'+':'')+v.toFixed(0),2,py(v)+3);}
+  // Zero
+  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(55,py(0));ctx.lineTo(W-20,py(0));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(168,162,158,.4)';ctx.font='9px IBM Plex Mono';ctx.fillText('0',40,py(0)+3);
+  // Theoretical (amber dashed)
+  ctx.beginPath();pts.forEach((t,i)=>{i===0?ctx.moveTo(px(t),py(theorBasis[i])):ctx.lineTo(px(t),py(theorBasis[i]));});
+  ctx.strokeStyle='rgba(217,119,6,.5)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
+  // Actual (white)
+  ctx.beginPath();pts.forEach((t,i)=>{i===0?ctx.moveTo(px(t),py(actualBasis[i])):ctx.lineTo(px(t),py(actualBasis[i]));});
+  ctx.strokeStyle='rgba(250,250,249,.7)';ctx.lineWidth=2;ctx.stroke();
+  // Fill between
+  ctx.beginPath();pts.forEach((t,i)=>{i===0?ctx.moveTo(px(t),py(actualBasis[i])):ctx.lineTo(px(t),py(actualBasis[i]));});
+  pts.slice().reverse().forEach((t,i,arr)=>{ctx.lineTo(px(t),py(theorBasis[arr.length-1-i]));});
+  ctx.closePath();ctx.fillStyle='rgba(239,68,68,.08)';ctx.fill();
+  // Labels
+  ctx.fillStyle='rgba(217,119,6,.8)';ctx.font='9px IBM Plex Mono';ctx.fillText('─ Theoretical',W-130,18);
+  ctx.fillStyle='rgba(250,250,249,.6)';ctx.fillText('─ Actual',W-130,30);
+  ctx.fillStyle='rgba(168,162,158,.4)';ctx.font='9px IBM Plex Mono';
+  ['Day 0','Day 30','Day 60','Expiry'].forEach((l,i)=>ctx.fillText(l,px(i*30)-18,H-4));
+}
+
+// ── MVH RATIO ────────────────────────────────────────────────
+const MVH_PRESETS={
+  jet:{rho:.928,ss:.0263,sf:.0313,qa:2000000,qf:42000,ctx:'Airline hedges 2M gallons of jet fuel exposure with crude oil futures. Cross-hedge — basis risk present.'},
+  gold:{rho:.91,ss:.018,sf:.016,qa:50000,qf:100,ctx:'Jeweller hedges 50,000g silver exposure with gold futures. Cross-hedge with high but imperfect correlation.'},
+  fx:{rho:.996,ss:.0082,sf:.0079,qa:2000000,qf:1000,ctx:'Indian exporter hedges $2M USD receivables with USD/INR futures. Near-perfect hedge, high correlation.'},
+  equity:{rho:1,ss:.012,sf:.012,qa:100000000,qf:564500,ctx:'Fund manager hedges ₹10 Cr equity portfolio with Nifty futures. Direct hedge — beta = 1 assumed.'},
+  wheat:{rho:.88,ss:.025,sf:.022,qa:100000,qf:2000,ctx:'Wheat farmer hedges 1 lakh quintal crop with wheat futures. Near-direct hedge.'}
+};
+function setMVHPreset(k){
+  const p=MVH_PRESETS[k];
+  document.getElementById('mvhCorr').value=p.rho;
+  document.getElementById('mvhSs').value=p.ss;
+  document.getElementById('mvhSf').value=p.sf;
+  document.getElementById('mvhQa').value=p.qa;
+  document.getElementById('mvhQf').value=p.qf;
+  document.getElementById('mvhContext').textContent=p.ctx;
+  calcMVH(); drawMVHChart();
+}
+function calcMVH(){
+  const rho=parseFloat(document.getElementById('mvhCorr').value);
+  const ss=parseFloat(document.getElementById('mvhSs').value);
+  const sf=parseFloat(document.getElementById('mvhSf').value);
+  const qa=parseInt(document.getElementById('mvhQa').value);
+  const qf=parseInt(document.getElementById('mvhQf').value);
+  ['mvhCorrD','mvhSsD','mvhSfD'].forEach((id,i)=>{document.getElementById(id).textContent=[rho.toFixed(3),ss.toFixed(4),sf.toFixed(4)][i];});
+  document.getElementById('mvhQaD').textContent=qa.toLocaleString('en-IN');
+  document.getElementById('mvhQfD').textContent=qf.toLocaleString('en-IN');
+  const h=rho*(ss/sf);
+  const N=Math.round(h*qa/qf);
+  const r2=(rho*rho*100).toFixed(1);
+  const varRed=(rho*rho*100).toFixed(1);
+  document.getElementById('mvhCorrR').textContent=rho.toFixed(3);
+  document.getElementById('mvhSigR').textContent=(ss/sf).toFixed(3);
+  document.getElementById('mvhH').textContent=h.toFixed(3);
+  document.getElementById('mvhInterp').textContent=`Hedge ${(h*100).toFixed(1)}% of exposure`;
+  document.getElementById('mvhN').textContent=N.toLocaleString('en-IN')+' contracts';
+  document.getElementById('mvhR2').textContent=r2+'%';
+  document.getElementById('mvhVarRed').textContent=varRed+'%';
+  document.getElementById('mvhFormula').textContent=`h* = ${rho.toFixed(3)} × (${ss.toFixed(4)}/${sf.toFixed(4)}) = ${h.toFixed(3)}\nN* = ${h.toFixed(3)} × ${qa.toLocaleString('en-IN')} / ${qf.toLocaleString('en-IN')} = ${N.toLocaleString('en-IN')} contracts`;
+  const c=document.getElementById('mvhCallout');
+  if(rho>0.95){c.className='callout success';c.textContent=`High correlation (ρ=${rho.toFixed(3)}) — effective hedge. ${(varRed)}% variance reduction.`;}
+  else if(rho>0.7){c.className='callout warn';c.textContent=`Moderate correlation (ρ=${rho.toFixed(3)}) — cross-hedge with meaningful basis risk. ${varRed}% variance reduction.`;}
+  else{c.className='callout danger';c.textContent=`Low correlation (ρ=${rho.toFixed(3)}) — poor hedge candidate. Consider direct instrument instead.`;}
+  upCO(1,15);upCO(4,15);drawMVHChart();
+}
+function drawMVHChart(){
+  const cv=document.getElementById('mvhChart');
+  if(!cv) return;
+  const ctx=cv.getContext('2d');
+  cv.width=cv.offsetWidth*devicePixelRatio; cv.height=200*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=200;
+  ctx.clearRect(0,0,W,H);
+  const curRho=parseFloat(document.getElementById('mvhCorr').value);
+  const ss=parseFloat(document.getElementById('mvhSs').value);
+  const sf=parseFloat(document.getElementById('mvhSf').value);
+  const sigRatio=ss/sf;
+  const rhos=[]; for(let r=0;r<=1;r+=0.01) rhos.push(r);
+  const hs=rhos.map(r=>r*sigRatio);
+  const px=r=>55+(r/1)*(W-75);
+  const py=v=>15+((1-v)/1)*(H-35);
+  // Grid
+  for(let i=0;i<=4;i++){const v=i/4;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(55,py(v));ctx.lineTo(W-20,py(v));ctx.stroke();ctx.fillStyle='rgba(168,162,158,.4)';ctx.font='9px IBM Plex Mono';ctx.fillText(v.toFixed(2),2,py(v)+3);}
+  // Curve
+  ctx.beginPath();rhos.forEach((r,i)=>{i===0?ctx.moveTo(px(r),py(hs[i])):ctx.lineTo(px(r),py(hs[i]));});
+  const grad=ctx.createLinearGradient(55,0,W-20,0);
+  grad.addColorStop(0,'rgba(239,68,68,.6)');grad.addColorStop(0.7,'rgba(217,119,6,.8)');grad.addColorStop(1,'rgba(34,197,94,.8)');
+  ctx.strokeStyle=grad;ctx.lineWidth=2.5;ctx.stroke();
+  // Current position
+  const curH=curRho*sigRatio;
+  ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.arc(px(curRho),py(curH),7,0,2*Math.PI);ctx.fill();
+  ctx.fillStyle='#000';ctx.font='bold 9px IBM Plex Mono';ctx.fillText('h*',px(curRho)-6,py(curH)+3);
+  // h*=1 line
+  ctx.strokeStyle='rgba(255,255,255,.1)';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(55,py(1));ctx.lineTo(W-20,py(1));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(168,162,158,.4)';ctx.font='9px IBM Plex Mono';ctx.fillText('h*=1.0',W-60,py(1)-4);
+  ctx.fillStyle='rgba(168,162,158,.4)';ctx.font='9px IBM Plex Mono';
+  [0,.25,.5,.75,1].forEach(r=>ctx.fillText('ρ='+r.toFixed(2),px(r)-14,H-4));
+  ctx.fillStyle='rgba(168,162,158,.5)';ctx.font='9px IBM Plex Mono';
+  ctx.fillText('h*',6,12);
+}
+
+// ── STOCK PORTFOLIO HEDGE ────────────────────────────────────
+const SH_PRESETS={
+  aggressive:{p:10,beta:1.45,targ:0},
+  balanced:{p:25,beta:1.10,targ:0.5},
+  defensive:{p:15,beta:0.72,targ:0},
+  it:{p:8,beta:1.28,targ:0.3}
+};
+function setSHPreset(k){
+  const p=SH_PRESETS[k];
+  document.getElementById('shP').value=p.p;
+  document.getElementById('shBeta').value=p.beta;
+  document.getElementById('shTarg').value=p.targ;
+  calcSH();
+}
+function calcSH(){
+  const P=parseFloat(document.getElementById('shP').value)*1e7;
+  const beta=parseFloat(document.getElementById('shBeta').value);
+  const targ=parseFloat(document.getElementById('shTarg').value);
+  const F=parseFloat(document.getElementById('shF').value);
+  const lot=parseInt(document.getElementById('shLot').value);
+  document.getElementById('shPD').textContent=(P/1e7).toFixed(2);
+  document.getElementById('shBetaD').textContent=beta.toFixed(2);
+  document.getElementById('shTargD').textContent=targ.toFixed(2);
+  document.getElementById('shFD').textContent=F.toLocaleString('en-IN');
+  document.getElementById('shLotD').textContent=lot;
+  const N=Math.round((targ-beta)*P/(F*lot));
+  const fLotV=F*lot;
+  const hedgeV=Math.abs(N)*fLotV;
+  const direction=N<0?'SHORT':'LONG';
+  document.getElementById('shPR').textContent='₹'+(P/1e7).toFixed(2)+' Cr';
+  document.getElementById('shBetaR').textContent=beta.toFixed(2);
+  document.getElementById('shTargR').textContent=targ.toFixed(2)+(targ===0?' (fully hedged)':targ<beta?' (reduced beta)':' (increased beta)');
+  document.getElementById('shFLotV').textContent='₹'+(fLotV/1e5).toFixed(2)+' L';
+  document.getElementById('shN').textContent=Math.abs(N)+' contracts ('+direction+')';
+  document.getElementById('shN').className='rv hl '+(N<0?'rd':'gn');
+  document.getElementById('shHedgeV').textContent='₹'+(hedgeV/1e7).toFixed(2)+' Cr';
+  document.getElementById('shFormula').textContent=`N* = (${targ.toFixed(2)} − ${beta.toFixed(2)}) × ${(P/1e7).toFixed(2)}Cr / (${F.toLocaleString('en-IN')} × ${lot})\n= ${N} contracts (${direction})`;
+  // Scenario table
+  const moves=[-0.15,-0.10,-0.05,-0.02,0,0.02,0.05,0.10,0.15];
+  document.getElementById('shScenBody').innerHTML=moves.map(m=>{
+    const portPnL=beta*m*P;
+    const futPnL=-N*lot*F*m;
+    const net=portPnL+futPnL;
+    const effBeta=net/(m*P||1e-10);
+    const fmtC=v=>(v>=0?'+':'')+'₹'+(Math.abs(v)/1e7).toFixed(3)+' Cr';
+    return`<tr${m===0?' class="hl-row"':''}><td>Nifty ${m>=0?'+':''}${(m*100).toFixed(0)}% (${m>=0?'+':''} ${(m*22450).toFixed(0)} pts)</td><td class="${portPnL>=0?'gn':'rd'}">${fmtC(portPnL)}</td><td class="${futPnL>=0?'gn':'rd'}">${fmtC(futPnL)}</td><td class="${Math.abs(net)<P*0.002?'cp':net>=0?'gn':'rd'}" style="font-weight:700">${fmtC(net)}</td><td class="cp">${Math.abs(m)<0.001?'—':effBeta.toFixed(2)}</td></tr>`;
+  }).join('');
+  upCO(2,15);upCO(4,15);
+}
+
+// ── SCENARIOS ────────────────────────────────────────────────
+const SCENS=[
+  {t:'Scenario 1 — Air India Fuel Hedge',
+   s:'Air India expects to buy 3,000,000 litres of jet fuel in 3 months. Current jet fuel spot = ₹92/litre. Crude oil futures (3-month) = ₹6,920/barrel (1 bbl ≈ 159 litres). Correlation ρ = 0.93, σ_S = 0.022, σ_F = 0.019. Lot = 100 barrels.',
+   q:'What is the correct hedge direction, h*, and number of contracts N*?',
+   opts:['Short crude futures. h* = 0.93 × (0.022/0.019) = 1.081. N* = 1.081 × 3,000,000/15,900 ≈ 204 contracts.',
+         'Long crude futures. h* = 0.93 × (0.022/0.019) = 1.081. N* = 1.081 × 3,000,000/15,900 ≈ 204 contracts.',
+         'Long crude futures. h* = 0.93. N* = 0.93 × 3,000,000/15,900 = 175 contracts.',
+         'Short jet fuel futures at spot. N* = 3,000,000/15,900 = 189 contracts.'],
+   ans:1,
+   right:'✅ LONG hedge — Air India is a future BUYER of fuel, so they BUY (go long) crude futures. h* = ρ × (σ_S/σ_F) = 0.93 × (0.022/0.019) = 1.081. Q_A = 3,000,000 litres ÷ 159 litres/bbl = 18,868 barrels. N* = 1.081 × 18,868 / 100 ≈ 204 contracts. Note h* > 1 because spot is MORE volatile than futures (σ_S > σ_F), requiring over-hedging on a contract basis.',
+   wrong:'❌ Reconsider the direction. Air India will BUY fuel — they fear prices RISING. A position that GAINS when crude rises = LONG position. Also check h* = ρ × σ_S/σ_F, and convert litres to barrels first (Q_A = 3M ÷ 159 = 18,868 bbl). N* = h* × Q_A / lot.'},
+  {t:'Scenario 2 — Basis Strengthening vs Weakening',
+   s:'A rice exporter has hedged 5,000 tonnes of rice using a short futures hedge. Opening basis = S₁ − F₁ = ₹3,400 − ₹3,480 = −₹80/tonne. Two months later: S₂ = ₹3,100, F₂ = ₹3,150. Closing basis = ₹3,100 − ₹3,150 = −₹50/tonne.',
+   q:'Has basis strengthened or weakened? What is the effective selling price?',
+   opts:['Weakened by ₹30. Effective price = ₹3,130/tonne — short hedger hurt.',
+         'Strengthened by ₹30. Effective price = ₹3,430/tonne — short hedger benefits.',
+         'Strengthened by ₹30. Effective price = ₹3,100 + (₹3,480 − ₹3,150) = ₹3,430/tonne.',
+         'Both B and C are equivalent — same calculation, same result.'],
+   ans:3,
+   right:'✅ Correct! Basis moved from −₹80 to −₹50 = became less negative = STRENGTHENED by ₹30. Effective price = S₂ + (F₁ − F₂) = 3,100 + (3,480 − 3,150) = ₹3,430/tonne. Short hedger BENEFITS from strengthening basis. Total revenue = ₹3,430 × 5,000t = ₹1,71,50,000. Compared to unhedged at ₹3,100: saved ₹3,30,000. Options B and C both state this correctly — hence D is the right answer.',
+   wrong:'❌ Recheck. Basis went from −80 to −50: it became LESS negative. That is strengthening (towards zero). For a short hedger, strengthening basis is favourable. Effective price formula: S₂ + (F₁ − F₂). The short hedger receives spot S₂ but gains (F₁ − F₂) per unit on the futures leg.'},
+  {t:'Scenario 3 — Portfolio Beta Hedge',
+   s:'A fund manager holds a ₹20 Cr equity portfolio with β = 1.35. She wants to REDUCE beta to 0.5 (not eliminate, just reduce) ahead of an RBI policy meeting. Nifty futures price = ₹22,500. Nifty lot = 25 units.',
+   q:'How many Nifty futures contracts should she trade, and in which direction?',
+   opts:['SHORT 96 Nifty contracts. N* = (0.5−1.35) × 20Cr / (22,500×25) = −30.2 ≈ 30 contracts.',
+         'SHORT 30 Nifty contracts. N* = (0.5−1.35) × 20,00,00,000 / (22,500×25) ≈ −30 contracts.',
+         'LONG 30 Nifty contracts to reduce beta.',
+         'SHORT 48 Nifty contracts. N* = 1.35 × 20Cr / (22,500×25) ≈ 48 contracts (full hedge).'],
+   ans:1,
+   right:'✅ Correct! N* = (β_target − β_portfolio) × P / (F × Q_F) = (0.5 − 1.35) × 20,00,00,000 / (22,500 × 25) = −0.85 × 20,00,00,000 / 5,62,500 = −30.2 ≈ SHORT 30 contracts. The negative sign means SHORT (sell) futures. Shorting 30 lots will reduce effective portfolio beta from 1.35 to approximately 0.50. Note: full hedge to β=0 would require 48 contracts.',
+   wrong:'❌ Apply the formula correctly: N* = (β_target − β_portfolio) × P / (F × Lot). Here β_target = 0.5, β_portfolio = 1.35, P = ₹20 Cr = ₹20,00,00,000. F × Lot = 22,500 × 25 = 5,62,500. N* = (0.5−1.35) × 20,00,00,000 / 5,62,500 = −30.2 contracts. Negative = SHORT (sell) Nifty futures.'},
+  {t:'Scenario 4 — Cross-Hedge Decision',
+   s:'Titan Company plans to buy 500 kg of gold in 6 months for jewellery manufacturing. Gold futures on MCX are available (lot = 1 kg, 6-month futures = ₹72,500/10g). Titan also considers silver futures (ρ with gold = 0.71). Direct gold hedge: ρ = 0.995, σ_S/σ_F = 0.98.',
+   q:'Should Titan use gold futures or silver futures to hedge? Calculate h* and N* for the gold hedge.',
+   opts:['Silver futures — higher portfolio diversification despite lower correlation.',
+         'Gold futures — h* = 0.995 × 0.98 = 0.975. N* = 0.975 × 5,000 / 1 = 4,875 contracts (500 kg = 5,000 × 10g lots).',
+         'Gold futures — h* = 0.995. N* = 0.995 × 500 / 1 = 498 contracts.',
+         'Either works equally since both are precious metals.'],
+   ans:1,
+   right:'✅ Gold futures — always prefer the direct hedge when available! ρ = 0.995 vs 0.71 for silver = far less basis risk. h* = ρ × σ_S/σ_F = 0.995 × 0.98 = 0.975. Q_A = 500 kg = 5,000 units of 100g = 50,000 units of 10g. Each MCX gold futures lot = 1 kg = 100 × 10g. N* = 0.975 × 50,000 / 100 = 487.5 ≈ 488 contracts. The higher ρ makes gold futures far superior to silver for this hedge.',
+   wrong:'❌ Silver (ρ = 0.71) is a poor hedge choice when direct gold futures are available (ρ = 0.995). Cross-hedge basis risk with silver would be very high. For the gold hedge: h* = ρ × σ_S/σ_F = 0.995 × 0.98 = 0.975. Convert 500 kg: 1 kg = 100 × 10g, so 500 kg = 50,000 × 10g units. One lot = 100 × 10g. N* = 0.975 × 50,000/100 ≈ 488 contracts.'}
+];
+let sAns=new Array(SCENS.length).fill(false);
+function renderScens(){
+  document.getElementById('scenCont').innerHTML=SCENS.map((s,i)=>`
+    <div class="scen">
+      <div class="scen-t">📌 ${s.t}</div>
+      <div class="scen-s">${s.s}</div>
+      <div class="scen-q">${s.q}</div>
+      <div class="sopts" id="so${i}">${s.opts.map((o,j)=>`<button class="sopt" onclick="ansS(${i},${j})">${String.fromCharCode(65+j)}. ${o}</button>`).join('')}</div>
+      <div class="sexp" id="se${i}"></div>
+    </div>`).join('');
+}
+function ansS(si,oi){
+  if(sAns[si])return;sAns[si]=true;
+  const s=SCENS[si];
+  document.querySelectorAll(`#so${si} .sopt`).forEach((o,j)=>{
+    o.classList.add('answered');
+    if(j===s.ans)o.classList.add('correct');
+    else if(j===oi&&oi!==s.ans)o.classList.add('wrong');
+    else o.classList.add('reveal');
+  });
+  const e=document.getElementById('se'+si);
+  const ok=oi===s.ans;
+  e.textContent=ok?s.right:s.wrong;
+  e.className='sexp show '+(ok?'right':'wrong');
+  if(ok){upCO(2,12);upCO(4,10);}upCO(1,8);
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────
+const QS=[
+  {q:'SpiceJet will purchase 4,000,000 litres of jet fuel in 4 months. Jet fuel spot today = ₹95/litre. MCX Crude Oil 4-month futures = ₹7,100/barrel (1 barrel = 159 litres). Historical data: σ_S = 0.025, σ_F = 0.021, ρ = 0.94. Lot size = 100 barrels. (a) Identify the hedge direction with justification. (b) Calculate h*. (c) Convert exposure to barrels and calculate N*. (d) If crude rises to ₹8,200/barrel at expiry, calculate hedged vs unhedged outcome.',
+   hint:'Convert litres to barrels: 4M ÷ 159. h* = ρ × σ_S/σ_F. Long hedge (future buyer). Net outcome: spot loss offset by futures gain.',co:'CO2 & CO4'},
+  {q:'A rice farmer in Punjab has 8,000 quintals of rice to sell in 2 months. She short-hedges using rice futures. Opening: Spot S₁ = ₹3,500/q, Futures F₁ = ₹3,580/q. At hedge close: Spot S₂ = ₹3,200/q, Futures F₂ = ₹3,260/q. (a) Calculate opening and closing basis. (b) Did basis strengthen or weaken? (c) Calculate her effective selling price using the formula. (d) How much better or worse is this than the unhedged outcome?',
+   hint:'Basis = S − F. Opening b₁ = 3500 − 3580 = −80. Closing b₂ = 3200 − 3260 = −60. Effective price = S₂ + (F₁ − F₂). Unhedged = S₂.',co:'CO1 & CO2'},
+  {q:'A fund manager holds a ₹50 Cr Indian equity portfolio. Portfolio beta = 1.40. She wants to (a) fully hedge to β=0 and (b) reduce beta to 0.75, using Nifty futures at ₹22,800 (lot = 25). For both cases: calculate N*, state direction, estimate portfolio P&L if Nifty falls 8%, and compare hedged vs unhedged outcomes.',
+   hint:'N* = (β_target − β_portfolio) × P / (F × lot). Portfolio loss at −8% = β × 8% × ₹50Cr. Futures gain = N × lot × F × 8%.',co:'CO2 & CO4'},
+  {q:'Compare a direct hedge (ρ = 0.99, σ_S/σ_F = 1.0) with a cross-hedge (ρ = 0.78, σ_S/σ_F = 0.95) for a gold jeweller hedging ₹5 Cr of gold exposure. (a) Calculate h* for both. (b) Calculate hedging effectiveness (R²) for both. (c) If basis moves unexpectedly by ₹500/10g, calculate the additional P&L impact for both hedges (exposure = 7,000 units of 10g). (d) Which hedge would you recommend and why?',
+   hint:'h* = ρ × σ_S/σ_F. Hedging effectiveness = ρ². Basis risk impact = unexpected basis change × quantity. Lower ρ → higher basis risk → recommend direct hedge where possible.',co:'CO1 & CO4'},
+  {q:'Design a comprehensive hedging programme for a hypothetical Indian airline facing: (1) ₹200 Cr fuel exposure over next 6 months (crude correlation ρ=0.92, σ_S/σ_F=1.05, lot=100 bbl), and (2) $50M USD payable for aircraft leases (USD/INR futures correlation ρ=0.997, σ_S/σ_F=0.99, lot=$1,000). For each: state hedge type, calculate h* and N*, identify instruments, quantify basis risk, and explain what could go wrong.',
+   hint:'Two separate hedges. Fuel: long crude oil futures (buyer). USD: long USD/INR futures (paying USD). h* for each = ρ × σ_S/σ_F. N* = h* × Q_A/Q_F. Risks: basis risk, roll-over risk, margin calls.',co:'CO2 & CO4'}
+];
+let qIdx=0,qScores=new Array(QS.length).fill(null);
+function renderQDots(){
+  document.getElementById('qDots').innerHTML=QS.map((_,i)=>`<div class="qdot ${qScores[i]!==null?'done':i===qIdx?'cur':''}"></div>`).join('');
+}
+function renderQ(){
+  const q=QS[qIdx];
+  document.getElementById('qBody').innerHTML=`
+    <div class="qn">Question ${qIdx+1} of ${QS.length} · ${q.co}</div>
+    <div class="qt2">${q.q}</div>
+    <div class="qhint">💡 ${q.hint}</div>
+    <textarea class="qarea" id="ans" placeholder="Write your full answer with calculations and reasoning…"></textarea>
+    <div class="aifb" id="aiFb">
+      <div class="aifbh"><div class="aib">AI</div>CLAUDE'S ASSESSMENT<span class="spl" id="spill"></span></div>
+      <div class="aifbb" id="fbBd"></div>
+    </div>`;
+  document.getElementById('qStat').textContent='Answer above';
+  document.getElementById('qBtn').textContent='Submit for Grading';
+  document.getElementById('qBtn').onclick=submitQ;
+  document.getElementById('qBtn').disabled=false;
+}
+async function submitQ(){
+  const ans=document.getElementById('ans')?.value?.trim();
+  if(!ans||ans.length<20){document.getElementById('qStat').textContent='⚠️ Write a more complete answer';return;}
+  const btn=document.getElementById('qBtn');
+  btn.disabled=true;btn.textContent='Grading…';
+  const q=QS[qIdx];
+  const fb=document.getElementById('aiFb');
+  fb.classList.add('show');
+  document.getElementById('fbBd').innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:`You are a Financial Derivatives professor grading a PGDM student on HEDGING WITH DERIVATIVES (NSE India, MCX, FIA401).\n\nQUESTION: ${q.q}\n\nSTUDENT ANSWER: ${ans}\n\nGrade 1-10. Check calculations, hedge direction, h* formula, N* computation, practical reasoning. Return ONLY valid JSON:\n{"score":<1-10>,"grade":"<Excellent|Good|Needs Work>","feedback":"<2-3 paragraphs of specific feedback>","keyMissed":"<key concept or Nothing significant>"}\nNo markdown, no extra text.`}]})});
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'{}';
+    const r=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const sc=r.score||5;
+    const sp=document.getElementById('spill');
+    sp.textContent=`${sc}/10 — ${r.grade}`;
+    sp.className='spl '+(sc>=8?'ex':sc>=6?'gd':'nw');
+    document.getElementById('fbBd').innerHTML=`<p>${r.feedback}</p>${r.keyMissed&&r.keyMissed!=='Nothing significant'?`<div style="margin-top:9px;padding:9px 12px;background:rgba(217,119,6,.07);border-left:2px solid var(--cu);border-radius:2px;font-size:.83rem"><strong style="color:var(--cu2)">Explore further:</strong> ${r.keyMissed}</div>`:''}`;
+    qScores[qIdx]=sc;
+    upCO(2,sc*9);upCO(4,sc*7);
+    btn.textContent=qIdx<QS.length-1?'Next →':'Final Score';
+    btn.disabled=false;btn.onclick=nextQ;
+    document.getElementById('qStat').textContent=`Scored ${sc}/10`;
+    renderQDots();
+  }catch(e){
+    document.getElementById('fbBd').innerHTML='<p style="color:var(--red)">Grading error. Please retry.</p>';
+    btn.disabled=false;btn.textContent='Retry';
+  }
+}
+function nextQ(){if(qIdx<QS.length-1){qIdx++;renderQ();renderQDots();}else showFinal();}
+function skipQ(){if(qIdx<QS.length-1){qIdx++;renderQ();renderQDots();}}
+function showFinal(){
+  const v=qScores.filter(s=>s!==null);
+  const avg=v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):0;
+  document.getElementById('qBody').innerHTML=`<div style="text-align:center;padding:36px 0"><div style="font-size:3rem;margin-bottom:10px">${avg>=8?'🏆':avg>=6?'🎯':'📚'}</div><div style="font-family:'Libre Baskerville',serif;font-size:3.2rem;font-weight:700;color:var(--cu)">${avg}/10</div><div style="color:var(--text2);margin-bottom:20px">Module 4 Complete · ${v.length}/${QS.length} answered</div><button class="btn bcu" onclick="qIdx=0;qScores=new Array(${QS.length}).fill(null);renderQ();renderQDots()">Retake</button></div>`;
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  calcHL();
+  calcBasis();
+  calcMVH();
+  calcSH();
+  renderQ();
+  renderQDots();
+  setTimeout(drawBasisChart,100);
+  setTimeout(drawMVHChart,100);
+});
+</script>
+</body>
+</html>

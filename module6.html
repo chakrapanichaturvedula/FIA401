@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — Module 6: Options Pricing Models</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050508;--surf:#0d0d12;--surf2:#14141c;--surf3:#1e1e2a;
+  --vi:#8b5cf6;--vi2:#a78bfa;--vi3:#c4b5fd;
+  --teal:#2dd4bf;--red:#f87171;--green:#4ade80;--amber:#fbbf24;--blue:#60a5fa;
+  --text:#f8fafc;--text2:#94a3b8;--text3:#475569;
+  --bdr:rgba(139,92,246,.2);--bdr2:rgba(255,255,255,.06);
+  --glow:0 0 60px rgba(139,92,246,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 15% 0%,rgba(139,92,246,.08) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 30% at 85% 100%,rgba(45,212,191,.05) 0%,transparent 60%);}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(139,92,246,.03) 1px,transparent 1px);
+  background-size:32px 32px;}
+.w{max-width:1380px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
+
+header{position:sticky;top:0;z-index:100;background:rgba(5,5,8,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr2);padding:12px 0;}
+.hdr{display:flex;align-items:center;justify-content:space-between;}
+.hdrl{display:flex;align-items:center;gap:13px;}
+.back{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--text3);text-decoration:none;border:1px solid var(--bdr2);padding:5px 10px;border-radius:3px;transition:all .2s;}
+.back:hover{color:var(--vi2);border-color:var(--bdr);}
+.logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:-.02em;}
+.logo b{color:var(--vi2);}
+.mpill{font-family:'Space Mono',monospace;font-size:.57rem;color:var(--vi2);border:1px solid var(--bdr);padding:4px 10px;border-radius:20px;letter-spacing:.1em;}
+.hinfo{font-family:'Space Mono',monospace;font-size:.63rem;display:flex;gap:16px;color:var(--text3);}
+.hinfo span{color:var(--vi3);}
+
+.hero{padding:52px 0 40px;border-bottom:1px solid var(--bdr2);margin-bottom:32px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:start;}
+.htag{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--vi2);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.htag::before{content:'';width:20px;height:1px;background:var(--vi2);}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,5vw,4.6rem);font-weight:700;line-height:1;margin-bottom:8px;}
+.hero h1 em{color:var(--vi2);font-style:italic;}
+.hcode{font-family:'Space Mono',monospace;font-size:.67rem;color:var(--text3);margin-bottom:16px;}
+.hdesc{color:var(--text2);font-size:.93rem;line-height:1.75;max-width:560px;margin-bottom:20px;}
+.cotags{display:flex;gap:7px;flex-wrap:wrap;}
+.cotag{font-family:'Space Mono',monospace;font-size:.57rem;padding:4px 9px;border-radius:2px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);color:var(--vi2);}
+.hstat-box{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:18px 20px;min-width:210px;}
+.hsb-title{font-family:'Space Mono',monospace;font-size:.57rem;color:var(--vi2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;}
+.hsb-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr2);font-size:.82rem;}
+.hsb-row:last-child{border-bottom:none;}
+.hsb-row .l{color:var(--text2);}.hsb-row .v{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--vi3);}
+
+.cobar{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;padding:12px 18px;display:flex;gap:18px;align-items:center;margin-bottom:26px;flex-wrap:wrap;}
+.colbl{font-family:'Space Mono',monospace;font-size:.56rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+.coit{flex:1;min-width:80px;display:flex;flex-direction:column;gap:3px;}
+.conm{font-family:'Space Mono',monospace;font-size:.56rem;color:var(--text3);}
+.cotr{height:3px;background:var(--surf3);border-radius:2px;overflow:hidden;}
+.cofl{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--vi),var(--teal));transition:width 1s ease;}
+.copct{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--vi2);}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--bdr2);margin-bottom:26px;overflow-x:auto;}
+.tab{font-family:'Space Grotesk',sans-serif;font-size:.78rem;font-weight:500;padding:9px 14px;cursor:pointer;border:none;background:none;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
+.tab:hover{color:var(--text2);}
+.tab.active{color:var(--vi3);border-bottom-color:var(--vi);}
+.panel{display:none;}.panel.active{display:block;}
+
+.stag{font-family:'Space Mono',monospace;font-size:.56rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.stag::after{content:'';flex:1;height:1px;background:var(--bdr2);}
+.sh{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:7px;}
+.sp{color:var(--text2);font-size:.91rem;line-height:1.72;margin-bottom:22px;max-width:780px;}
+
+.card{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:18px;}
+.cardh{font-weight:700;font-size:.8rem;color:var(--text2);margin-bottom:10px;}
+
+.fbox{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.22);border-radius:8px;padding:16px 20px;margin-bottom:20px;text-align:center;font-family:'Space Mono',monospace;}
+.fbox-label{font-size:.56rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.fbox-formula{font-size:1.05rem;color:var(--vi3);line-height:1.8;}
+.fbox-sub{font-size:.67rem;color:var(--text3);margin-top:5px;}
+
+.ctrl{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+.ctrlbl{font-family:'Space Mono',monospace;font-size:.57rem;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+.ctrlbl b{color:var(--vi3);}
+input[type=range]{width:100%;height:3px;background:var(--surf3);border-radius:2px;outline:none;-webkit-appearance:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--vi);cursor:pointer;box-shadow:0 0 8px rgba(139,92,246,.5);}
+
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.86rem;}
+.rrow:last-child{border-bottom:none;}
+.rl{color:var(--text2);}.rv{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--text);}
+.rv.hl{color:var(--vi3);font-size:.95rem;}.rv.gn{color:var(--green);}.rv.rd{color:var(--red);}.rv.am{color:var(--amber);}
+
+.btn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.77rem;padding:9px 17px;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.bvi{background:var(--vi);color:#fff;}.bvi:hover{background:var(--vi2);transform:translateY(-1px);}
+.bgh{background:var(--surf3);color:var(--text2);border:1px solid var(--bdr2);}.bgh:hover{border-color:var(--vi);color:var(--vi2);}
+
+.scen{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;padding:20px;margin-bottom:13px;}
+.scen-s{font-size:.86rem;color:var(--text2);line-height:1.65;margin-bottom:13px;padding:10px 14px;background:var(--surf2);border-radius:6px;border-left:3px solid var(--vi);}
+.scen-q{font-weight:600;font-size:.88rem;margin-bottom:11px;}
+.sopts{display:flex;flex-direction:column;gap:7px;}
+.sopt{padding:9px 13px;border-radius:5px;cursor:pointer;border:1px solid var(--bdr2);background:var(--surf2);font-size:.86rem;color:var(--text2);transition:all .2s;text-align:left;}
+.sopt:hover:not(.answered){border-color:var(--vi);color:var(--text);}
+.sopt.correct{background:rgba(74,222,128,.1);border-color:var(--green);color:var(--green);}
+.sopt.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red);}
+.sopt.reveal{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2);color:var(--text2);}
+.sexp{display:none;margin-top:10px;padding:11px 13px;border-radius:6px;font-size:.84rem;line-height:1.65;}
+.sexp.show{display:block;}
+.sexp.right{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.3);}
+.sexp.wrong{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);}
+
+.qbox{background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;margin-bottom:22px;}
+.qhd{padding:14px 20px;border-bottom:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;}
+.qt{font-weight:700;font-size:.86rem;}.qs{font-family:'Space Mono',monospace;font-size:.59rem;color:var(--text3);}
+.qdots{display:flex;gap:5px;}
+.qdot{width:8px;height:8px;border-radius:50%;background:var(--surf3);border:1px solid var(--bdr2);transition:all .3s;}
+.qdot.done{background:var(--vi);}.qdot.cur{background:var(--vi3);animation:glow 1.5s infinite;}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.5}}
+.qbody{padding:22px 20px;}
+.qn{font-family:'Space Mono',monospace;font-size:.57rem;color:var(--vi3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.qt2{font-size:.98rem;font-weight:500;line-height:1.55;margin-bottom:11px;}
+.qhint{font-size:.82rem;color:var(--text2);font-style:italic;padding:9px 13px;background:rgba(139,92,246,.06);border-left:2px solid var(--vi);border-radius:2px;margin-bottom:13px;line-height:1.6;}
+.qarea{width:100%;background:var(--surf2);border:1px solid var(--bdr2);border-radius:6px;padding:12px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:.9rem;resize:vertical;min-height:100px;line-height:1.6;outline:none;transition:border-color .2s;}
+.qarea:focus{border-color:var(--vi);box-shadow:0 0 0 3px rgba(139,92,246,.1);}
+.qft{padding:11px 20px;border-top:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;}
+.qst{font-family:'Space Mono',monospace;font-size:.61rem;color:var(--text3);}
+.aifb{margin-top:12px;border-radius:6px;overflow:hidden;display:none;border:1px solid rgba(139,92,246,.3);}
+.aifb.show{display:block;}
+.aifbh{padding:8px 12px;background:rgba(139,92,246,.07);border-bottom:1px solid rgba(139,92,246,.2);display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:.59rem;color:var(--vi3);}
+.aib{background:var(--vi);color:#fff;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;}
+.spl{margin-left:auto;font-size:.66rem;font-weight:700;}
+.spl.ex{color:var(--green);}.spl.gd{color:var(--vi3);}.spl.nw{color:var(--red);}
+.aifbb{padding:12px;font-size:.85rem;line-height:1.7;background:var(--surf2);}
+.dots{display:flex;gap:4px;padding:5px;}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--vi);animation:db 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes db{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}}
+
+.tree-node{background:var(--surf2);border:1px solid var(--bdr2);border-radius:6px;padding:10px 14px;text-align:center;font-family:'Space Mono',monospace;font-size:.72rem;min-width:120px;}
+.tree-node .price{font-size:1.1rem;color:var(--vi3);font-weight:700;margin-bottom:3px;}
+.tree-node .optval{font-size:.78rem;color:var(--amber);}
+.tree-node .label{font-size:.56rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px;}
+.tree-line{stroke:rgba(139,92,246,.3);stroke-width:1.5;fill:none;}
+canvas{display:block;width:100%;}
+
+@media(max-width:900px){.hero{grid-template-columns:1fr;}.hstat-box{display:none;}}
+@media(max-width:600px){.w{padding:0 14px;}.hero h1{font-size:2.2rem;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="w hdr">
+    <div class="hdrl">
+      <a href="index.html" class="back">← Home</a>
+      <div class="logo">Derivatives<b>Lab</b></div>
+      <div class="mpill">MODULE 06</div>
+    </div>
+    <div class="hinfo">Sessions 11–14 · Hull Ch. 13–15 · <span>Pricing Models</span></div>
+  </div>
+</header>
+
+<div class="w">
+<div class="hero">
+  <div>
+    <div class="htag">Sessions 11–14 · Hull Ch. 13, 14, 15</div>
+    <h1>Options<br><em>Pricing Models</em></h1>
+    <div class="hcode">FIA 401 · BSM · BINOMIAL TREE · RELIANCE ₹1,285 · NSE</div>
+    <p class="hdesc">Derive fair option prices using the Black-Scholes-Merton model and the Binomial Tree. Understand assumptions, input sensitivities, and limitations. Interactive calculators with live charts for every parameter.</p>
+    <div class="cotags">
+      <span class="cotag">CO3 — Pricing Models</span>
+      <span class="cotag">CO1 — Core Concepts</span>
+      <span class="cotag">CO4 — Design Instruments</span>
+    </div>
+  </div>
+  <div class="hstat-box">
+    <div class="hsb-title">Live Model Inputs</div>
+    <div class="hsb-row"><span class="l">Reliance Spot S₀</span><span class="v">₹1,285</span></div>
+    <div class="hsb-row"><span class="l">Strike K</span><span class="v">₹1,300</span></div>
+    <div class="hsb-row"><span class="l">Volatility σ</span><span class="v">28.5%</span></div>
+    <div class="hsb-row"><span class="l">Risk-free rate r</span><span class="v">6.5% p.a.</span></div>
+    <div class="hsb-row"><span class="l">Time to expiry T</span><span class="v">30 days</span></div>
+    <div class="hsb-row"><span class="l">Lot size</span><span class="v">500 shares</span></div>
+  </div>
+</div>
+
+<div class="cobar">
+  <div class="colbl">Progress</div>
+  <div class="coit"><div class="conm">CO1</div><div class="cotr"><div class="cofl" id="c1f" style="width:0%"></div></div><div class="copct" id="c1p">0%</div></div>
+  <div class="coit"><div class="conm">CO3</div><div class="cotr"><div class="cofl" id="c3f" style="width:0%"></div></div><div class="copct" id="c3p">0%</div></div>
+  <div class="coit"><div class="conm">CO4</div><div class="cotr"><div class="cofl" id="c4f" style="width:0%"></div></div><div class="copct" id="c4p">0%</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="sw('bsm',this)">📐 BSM Model</button>
+  <button class="tab" onclick="sw('binom',this)">🌳 Binomial Tree</button>
+  <button class="tab" onclick="sw('compare',this)">⚖️ BSM vs Binomial</button>
+  <button class="tab" onclick="sw('sensitivity',this)">📊 Sensitivity</button>
+  <button class="tab" onclick="sw('scenarios',this)">🧩 Scenarios</button>
+  <button class="tab" onclick="sw('quiz',this)">✏️ AI Quiz</button>
+</div>
+
+<!-- ═══ TAB 1: BSM ═══ -->
+<div class="panel active" id="tab-bsm">
+  <div class="stag">Tab 1 — Black-Scholes-Merton</div>
+  <div class="sh">BSM Option Pricing Calculator</div>
+  <div class="sp">The Black-Scholes-Merton model gives a closed-form solution for European option prices under specific assumptions: no dividends, constant volatility, log-normal stock prices, continuous trading, no transaction costs.</div>
+  <div class="fbox">
+    <div class="fbox-label">BSM Call Price</div>
+    <div class="fbox-formula">C = S₀·N(d₁) − K·e<sup>−rT</sup>·N(d₂)</div>
+    <div class="fbox-sub">d₁ = [ln(S₀/K) + (r + σ²/2)T] / (σ√T) &nbsp;|&nbsp; d₂ = d₁ − σ√T &nbsp;|&nbsp; Put = C − S₀ + K·e<sup>−rT</sup> (Put-Call Parity)</div>
+  </div>
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:18px;margin-bottom:22px">
+    <div class="card">
+      <div class="cardh">Inputs — Reliance Options</div>
+      <div class="ctrl"><div class="ctrlbl">Spot S₀ (₹) <b id="bsS0D">1,285</b></div><input type="range" min="900" max="1700" value="1285" id="bsS0" oninput="calcBSM()"></div>
+      <div class="ctrl"><div class="ctrlbl">Strike K (₹) <b id="bsKD">1,300</b></div><input type="range" min="900" max="1800" step="5" value="1300" id="bsK" oninput="calcBSM()"></div>
+      <div class="ctrl"><div class="ctrlbl">Volatility σ (%) <b id="bsSigD">28.5%</b></div><input type="range" min="5" max="100" step=".5" value="28.5" id="bsSig" oninput="calcBSM()"></div>
+      <div class="ctrl"><div class="ctrlbl">Risk-free rate r (%) <b id="bsRD">6.5%</b></div><input type="range" min="1" max="15" step=".1" value="6.5" id="bsR" oninput="calcBSM()"></div>
+      <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Days to Expiry <b id="bsTD">30</b></div><input type="range" min="1" max="365" value="30" id="bsT" oninput="calcBSM()"></div>
+    </div>
+    <div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="card">
+          <div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">BSM CALL PRICE</div>
+          <div style="font-family:'Space Mono',monospace;font-size:2.4rem;font-weight:700;color:var(--green)" id="bsCall">₹42.18</div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:4px" id="bsCallLot">Lot P&L: ₹21,090</div>
+        </div>
+        <div class="card">
+          <div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">BSM PUT PRICE</div>
+          <div style="font-family:'Space Mono',monospace;font-size:2.4rem;font-weight:700;color:var(--red)" id="bsPut">₹49.12</div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:4px" id="bsPutLot">Lot P&L: ₹24,560</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardh">Intermediate Values</div>
+        <div class="rrow"><span class="rl">d₁</span><span class="rv" id="bsD1">−0.124</span></div>
+        <div class="rrow"><span class="rl">d₂</span><span class="rv" id="bsD2">−0.275</span></div>
+        <div class="rrow"><span class="rl">N(d₁)</span><span class="rv" id="bsNd1">0.451</span></div>
+        <div class="rrow"><span class="rl">N(d₂)</span><span class="rv" id="bsNd2">0.392</span></div>
+        <div class="rrow"><span class="rl">Discount factor e<sup>−rT</sup></span><span class="rv" id="bsDf">0.9946</span></div>
+        <div class="rrow"><span class="rl">Intrinsic Value (Call)</span><span class="rv" id="bsIV">₹0 (OTM)</span></div>
+        <div class="rrow"><span class="rl">Time Value (Call)</span><span class="rv am" id="bsTV">₹42.18</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px;margin-bottom:22px">
+    <div style="font-weight:700;font-size:.85rem;margin-bottom:3px">BSM Price vs Spot Price — Call and Put</div>
+    <div style="font-family:'Space Mono',monospace;font-size:.61rem;color:var(--text3);margin-bottom:12px">Green = Call · Red = Put · Dashed = Intrinsic value · ● = Current position</div>
+    <canvas id="bsmChart" height="220"></canvas>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">
+    <div class="card"><div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--vi2);text-transform:uppercase;margin-bottom:6px">BSM ASSUMPTIONS</div><div style="font-size:.82rem;color:var(--text2);line-height:1.65">Log-normal stock prices · Constant σ · Continuous trading · No dividends · No transaction costs · European exercise only · Risk-free borrowing</div></div>
+    <div class="card"><div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--vi2);text-transform:uppercase;margin-bottom:6px">MONEYNESS IMPACT</div><div style="font-size:.82rem;color:var(--text2);line-height:1.65">Deep ITM: mostly intrinsic value. ATM: maximum time value. Deep OTM: mostly time value but small absolute. ATM options have highest sensitivity to σ changes (vega).</div></div>
+    <div class="card"><div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--vi2);text-transform:uppercase;margin-bottom:6px">BSM LIMITATIONS</div><div style="font-size:.82rem;color:var(--text2);line-height:1.65">Underprices deep OTM options (volatility smile). Assumes constant σ (not true in practice). Cannot handle early exercise (American options). Dividends require modification.</div></div>
+  </div>
+</div>
+
+<!-- ═══ TAB 2: BINOMIAL ═══ -->
+<div class="panel" id="tab-binom">
+  <div class="stag">Tab 2 — Binomial Tree Model</div>
+  <div class="sh">Binomial Option Pricing</div>
+  <div class="sp">The binomial model discretises time into steps. At each step, the stock can go up by factor u or down by factor d. Risk-neutral probabilities p and (1−p) are used to price the option by backward induction. Works for both European and American options.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+    <div class="fbox" style="margin-bottom:0">
+      <div class="fbox-label">Up/Down Factors (CRR)</div>
+      <div class="fbox-formula">u = e<sup>σ√Δt</sup> &nbsp;|&nbsp; d = 1/u = e<sup>−σ√Δt</sup></div>
+      <div class="fbox-sub">Risk-neutral probability: p = (e<sup>rΔt</sup> − d) / (u − d)</div>
+    </div>
+    <div class="fbox" style="margin-bottom:0">
+      <div class="fbox-label">Backward Induction</div>
+      <div class="fbox-formula">f = e<sup>−rΔt</sup> [p·f_u + (1−p)·f_d]</div>
+      <div class="fbox-sub">American option: f = max(intrinsic value, discounted expected value)</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:260px 1fr;gap:18px;margin-bottom:22px">
+    <div class="card">
+      <div class="cardh">Binomial Inputs</div>
+      <div class="ctrl"><div class="ctrlbl">Spot S₀ (₹) <b id="bnS0D">1,285</b></div><input type="range" min="900" max="1700" value="1285" id="bnS0" oninput="calcBinom()"></div>
+      <div class="ctrl"><div class="ctrlbl">Strike K (₹) <b id="bnKD">1,300</b></div><input type="range" min="900" max="1800" step="5" value="1300" id="bnK" oninput="calcBinom()"></div>
+      <div class="ctrl"><div class="ctrlbl">σ (%) <b id="bnSigD">28.5%</b></div><input type="range" min="5" max="100" step=".5" value="28.5" id="bnSig" oninput="calcBinom()"></div>
+      <div class="ctrl"><div class="ctrlbl">r (%) <b id="bnRD">6.5%</b></div><input type="range" min="1" max="15" step=".1" value="6.5" id="bnR" oninput="calcBinom()"></div>
+      <div class="ctrl"><div class="ctrlbl">Days to expiry <b id="bnTD">30</b></div><input type="range" min="7" max="180" value="30" id="bnT" oninput="calcBinom()"></div>
+      <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Steps N <b id="bnND">3</b></div><input type="range" min="1" max="5" value="3" id="bnN" oninput="calcBinom()"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px">
+        <div onclick="setBnType('call',this)" id="bnCallBtn" class="btn bvi" style="text-align:center;font-size:.75rem">📈 CALL</div>
+        <div onclick="setBnType('put',this)" id="bnPutBtn" class="btn bgh" style="text-align:center;font-size:.75rem">📉 PUT</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px">
+        <div onclick="setBnStyle('european',this)" id="bnEurBtn" class="btn bvi" style="text-align:center;font-size:.75rem">European</div>
+        <div onclick="setBnStyle('american',this)" id="bnAmrBtn" class="btn bgh" style="text-align:center;font-size:.75rem">American</div>
+      </div>
+    </div>
+    <div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+        <div class="card" style="text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">OPTION PRICE</div><div style="font-family:'Space Mono',monospace;font-size:1.8rem;color:var(--vi3)" id="bnPrice">₹42.31</div></div>
+        <div class="card" style="text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">u FACTOR</div><div style="font-family:'Space Mono',monospace;font-size:1.8rem;color:var(--green)" id="bnU">1.088</div></div>
+        <div class="card" style="text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">d FACTOR</div><div style="font-family:'Space Mono',monospace;font-size:1.8rem;color:var(--red)" id="bnD">0.919</div></div>
+        <div class="card" style="text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">RISK-NEUTRAL p</div><div style="font-family:'Space Mono',monospace;font-size:1.8rem;color:var(--amber)" id="bnP">0.512</div></div>
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="cardh">Binomial Tree — Stock Prices (top) · Option Values (amber)</div>
+        <div id="bnTreeContainer" style="overflow-x:auto;padding:10px 0"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 3: COMPARE ═══ -->
+<div class="panel" id="tab-compare">
+  <div class="stag">Tab 3 — Model Comparison</div>
+  <div class="sh">BSM vs Binomial — Convergence</div>
+  <div class="sp">As the number of binomial steps N → ∞, the binomial price converges to the BSM price. This tab shows that convergence, and compares the two models side-by-side for the same inputs.</div>
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:18px;margin-bottom:22px">
+    <div class="card">
+      <div class="cardh">Shared Inputs</div>
+      <div class="ctrl"><div class="ctrlbl">Spot S₀ (₹) <b id="cmS0D">1,285</b></div><input type="range" min="900" max="1700" value="1285" id="cmS0" oninput="calcCompare()"></div>
+      <div class="ctrl"><div class="ctrlbl">Strike K (₹) <b id="cmKD">1,300</b></div><input type="range" min="900" max="1800" step="5" value="1300" id="cmK" oninput="calcCompare()"></div>
+      <div class="ctrl"><div class="ctrlbl">σ (%) <b id="cmSigD">28.5%</b></div><input type="range" min="5" max="80" step=".5" value="28.5" id="cmSig" oninput="calcCompare()"></div>
+      <div class="ctrl"><div class="ctrlbl">r (%) <b id="cmRD">6.5%</b></div><input type="range" min="1" max="15" step=".1" value="6.5" id="cmR" oninput="calcCompare()"></div>
+      <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Days <b id="cmTD">30</b></div><input type="range" min="7" max="365" value="30" id="cmT" oninput="calcCompare()"></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="cardh">Side-by-Side Comparison</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+          <div style="background:var(--surf2);border-radius:6px;padding:10px;text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);text-transform:uppercase;margin-bottom:4px">BSM CALL</div><div style="font-family:'Space Mono',monospace;font-size:1.4rem;color:var(--green)" id="cmBSMCall">₹42.18</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:10px;text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);text-transform:uppercase;margin-bottom:4px">BINOM CALL (N=50)</div><div style="font-family:'Space Mono',monospace;font-size:1.4rem;color:var(--vi3)" id="cmBinCall">₹42.31</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:10px;text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);text-transform:uppercase;margin-bottom:4px">BSM PUT</div><div style="font-family:'Space Mono',monospace;font-size:1.4rem;color:var(--red)" id="cmBSMPut">₹49.12</div></div>
+          <div style="background:var(--surf2);border-radius:6px;padding:10px;text-align:center"><div style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--text3);text-transform:uppercase;margin-bottom:4px">BINOM PUT (N=50)</div><div style="font-family:'Space Mono',monospace;font-size:1.4rem;color:var(--amber)" id="cmBinPut">₹49.25</div></div>
+        </div>
+        <div class="rrow"><span class="rl">Difference (Call)</span><span class="rv" id="cmDiffCall">₹0.13</span></div>
+        <div class="rrow"><span class="rl">Error (%)</span><span class="rv" id="cmErrCall">0.31%</span></div>
+        <div class="rrow"><span class="rl">BSM is valid because</span><span class="rv am">Binomial converges as N → ∞</span></div>
+      </div>
+      <div class="card" style="padding:18px">
+        <div style="font-weight:700;font-size:.84rem;margin-bottom:3px">Binomial Convergence to BSM — Call Price</div>
+        <div style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--text3);margin-bottom:12px">Binomial price (violet) → BSM price (dashed amber) as N increases</div>
+        <canvas id="convChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card"><div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--vi2);text-transform:uppercase;margin-bottom:7px">WHEN TO USE BINOMIAL</div><div style="font-size:.83rem;color:var(--text2);line-height:1.68">✅ American options (early exercise possible)<br>✅ Dividend-paying stocks<br>✅ Path-dependent options<br>✅ When you need to see the tree (intuition)<br>❌ Slow for large N<br>❌ Not as elegant as BSM closed form</div></div>
+    <div class="card"><div style="font-family:'Space Mono',monospace;font-size:.56rem;color:var(--vi2);text-transform:uppercase;margin-bottom:7px">WHEN TO USE BSM</div><div style="font-size:.83rem;color:var(--text2);line-height:1.68">✅ European options<br>✅ No dividends (or known dividends)<br>✅ Fast calculation<br>✅ Greeks in closed form<br>❌ Cannot handle early exercise<br>❌ Constant volatility assumption is unrealistic</div></div>
+  </div>
+</div>
+
+<!-- ═══ TAB 4: SENSITIVITY ═══ -->
+<div class="panel" id="tab-sensitivity">
+  <div class="stag">Tab 4 — Model Sensitivity</div>
+  <div class="sh">How Inputs Affect BSM Price</div>
+  <div class="sp">Explore how each BSM input affects option price. These sensitivities are related to the Greeks. Understanding them builds intuition for option pricing and hedging.</div>
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:18px;margin-bottom:22px">
+    <div class="card">
+      <div class="cardh">Base Case & Variable</div>
+      <div class="ctrl"><div class="ctrlbl">Base Spot S₀ (₹) <b id="snS0D">1,285</b></div><input type="range" min="900" max="1700" value="1285" id="snS0" oninput="calcSens()"></div>
+      <div class="ctrl"><div class="ctrlbl">Strike K (₹) <b id="snKD">1,300</b></div><input type="range" min="900" max="1800" step="5" value="1300" id="snK" oninput="calcSens()"></div>
+      <div class="ctrl"><div class="ctrlbl">σ (%) <b id="snSigD">28.5%</b></div><input type="range" min="5" max="80" step=".5" value="28.5" id="snSig" oninput="calcSens()"></div>
+      <div class="ctrl"><div class="ctrlbl">r (%) <b id="snRD">6.5%</b></div><input type="range" min="1" max="15" step=".1" value="6.5" id="snR" oninput="calcSens()"></div>
+      <div class="ctrl" style="margin-bottom:12px"><div class="ctrlbl">Days <b id="snTD">30</b></div><input type="range" min="7" max="180" value="30" id="snT" oninput="calcSens()"></div>
+      <div class="ctrl" style="margin-bottom:0"><div class="ctrlbl">Variable to plot</div>
+        <select id="snVar" onchange="calcSens()" style="background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:7px 9px;color:var(--text);font-family:'Space Mono',monospace;font-size:.72rem;outline:none;width:100%;cursor:pointer">
+          <option value="spot">Spot Price S₀</option>
+          <option value="vol">Volatility σ</option>
+          <option value="time">Time to Expiry T</option>
+          <option value="rate">Risk-free Rate r</option>
+          <option value="strike">Strike K</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="padding:18px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:.84rem;margin-bottom:3px" id="snChartTitle">BSM Call/Put Price vs Spot Price</div>
+        <div style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--text3);margin-bottom:12px">Green = Call · Red = Put · ● = Base case</div>
+        <canvas id="sensChart" height="220"></canvas>
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="cardh" id="snInsightTitle">Spot Price Sensitivity</div>
+        <div style="font-size:.84rem;color:var(--text2);line-height:1.7" id="snInsight">As S₀ increases: call value rises (Delta > 0), put value falls (Delta < 0). The rate of change (Delta) itself changes with S₀ (captured by Gamma). Deep ITM calls have Delta ≈ 1; deep OTM calls have Delta ≈ 0.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 5: SCENARIOS ═══ -->
+<div class="panel" id="tab-scenarios">
+  <div class="stag">Tab 5 — MCQ Practice</div>
+  <div class="sh">Pricing Model Scenarios</div>
+  <div class="sp">Apply BSM and binomial concepts to realistic exam-style questions.</div>
+  <div id="scenCont6"></div>
+</div>
+
+<!-- ═══ TAB 6: QUIZ ═══ -->
+<div class="panel" id="tab-quiz">
+  <div class="stag">Tab 6 — AI Assessment</div>
+  <div class="sh">Module 6 Quiz</div>
+  <div class="sp">Full written answers with calculations. Claude assesses BSM derivation, binomial tree, convergence, and input sensitivities — CO1, CO3, CO4.</div>
+  <div class="qbox">
+    <div class="qhd">
+      <div><div class="qt">Options Pricing Models Assessment</div><div class="qs">5 Questions · CO1, CO3, CO4</div></div>
+      <div class="qdots" id="qDots"></div>
+    </div>
+    <div class="qbody" id="qBody"></div>
+    <div class="qft">
+      <div class="qst" id="qStat">Answer above</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bgh" onclick="skipQ()">Skip →</button>
+        <button class="btn bvi" id="qBtn" onclick="submitQ()">Submit for Grading</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+let co1v=0,co3v=0,co4v=0;
+function upCO(c,v){
+  if(c===1){co1v=Math.min(100,Math.max(co1v,v));document.getElementById('c1f').style.width=co1v+'%';document.getElementById('c1p').textContent=co1v+'%';}
+  if(c===3){co3v=Math.min(100,Math.max(co3v,v));document.getElementById('c3f').style.width=co3v+'%';document.getElementById('c3p').textContent=co3v+'%';}
+  if(c===4){co4v=Math.min(100,Math.max(co4v,v));document.getElementById('c4f').style.width=co4v+'%';document.getElementById('c4p').textContent=co4v+'%';}
+}
+
+function sw(tab,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(tab==='bsm') calcBSM();
+  if(tab==='binom') calcBinom();
+  if(tab==='compare'){calcCompare();drawConvChart();}
+  if(tab==='sensitivity') calcSens();
+  if(tab==='scenarios') renderScens();
+  if(tab==='quiz'){renderQ();renderQDots();}
+}
+
+// ── MATH HELPERS ──────────────────────────────────────────
+function ncdf(x){
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const sign=x<0?-1:1; x=Math.abs(x)/Math.sqrt(2);
+  const t=1/(1+p*x);
+  const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return .5*(1+sign*y);
+}
+function bsm(S,K,r,sig,T,type='call'){
+  if(T<=0) return Math.max(0,(type==='call'?S-K:K-S));
+  const d1=(Math.log(S/K)+(r+sig*sig/2)*T)/(sig*Math.sqrt(T));
+  const d2=d1-sig*Math.sqrt(T);
+  if(type==='call') return S*ncdf(d1)-K*Math.exp(-r*T)*ncdf(d2);
+  return K*Math.exp(-r*T)*ncdf(-d2)-S*ncdf(-d1);
+}
+function bsmD1D2(S,K,r,sig,T){
+  const d1=(Math.log(S/K)+(r+sig*sig/2)*T)/(sig*Math.sqrt(T));
+  return{d1,d2:d1-sig*Math.sqrt(T)};
+}
+
+// ── BSM CALCULATOR ────────────────────────────────────────
+function calcBSM(){
+  const S=parseFloat(document.getElementById('bsS0').value);
+  const K=parseFloat(document.getElementById('bsK').value);
+  const sig=parseFloat(document.getElementById('bsSig').value)/100;
+  const r=parseFloat(document.getElementById('bsR').value)/100;
+  const T=parseFloat(document.getElementById('bsT').value)/365;
+  document.getElementById('bsS0D').textContent=S.toLocaleString('en-IN');
+  document.getElementById('bsKD').textContent=K.toLocaleString('en-IN');
+  document.getElementById('bsSigD').textContent=parseFloat(document.getElementById('bsSig').value).toFixed(1)+'%';
+  document.getElementById('bsRD').textContent=parseFloat(document.getElementById('bsR').value).toFixed(1)+'%';
+  document.getElementById('bsTD').textContent=document.getElementById('bsT').value;
+  const C=bsm(S,K,r,sig,T,'call');
+  const P=bsm(S,K,r,sig,T,'put');
+  const {d1,d2}=bsmD1D2(S,K,r,sig,T);
+  const df=Math.exp(-r*T);
+  const iv=Math.max(0,S-K);
+  document.getElementById('bsCall').textContent='₹'+C.toFixed(2);
+  document.getElementById('bsCallLot').textContent='Lot: ₹'+(C*500).toFixed(0);
+  document.getElementById('bsPut').textContent='₹'+P.toFixed(2);
+  document.getElementById('bsPutLot').textContent='Lot: ₹'+(P*500).toFixed(0);
+  document.getElementById('bsD1').textContent=d1.toFixed(4);
+  document.getElementById('bsD2').textContent=d2.toFixed(4);
+  document.getElementById('bsNd1').textContent=ncdf(d1).toFixed(4);
+  document.getElementById('bsNd2').textContent=ncdf(d2).toFixed(4);
+  document.getElementById('bsDf').textContent=df.toFixed(4);
+  document.getElementById('bsIV').textContent='₹'+iv.toFixed(2)+' ('+(S>K?'ITM':S<K?'OTM':'ATM')+')';
+  document.getElementById('bsTV').textContent='₹'+(C-iv).toFixed(2);
+  drawBSMChart(S,K,r,sig,T);
+  upCO(3,15);upCO(1,10);
+}
+
+function drawBSMChart(S,K,r,sig,T){
+  const cv=document.getElementById('bsmChart');
+  const ctx=cv.getContext('2d');
+  cv.width=cv.offsetWidth*devicePixelRatio;cv.height=220*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=220;
+  ctx.clearRect(0,0,W,H);
+  const minS=S*0.7,maxS=S*1.35;
+  const pts=[];for(let s=minS;s<=maxS;s+=S*0.01)pts.push(s);
+  const calls=pts.map(s=>bsm(s,K,r,sig,T,'call'));
+  const puts=pts.map(s=>bsm(s,K,r,sig,T,'put'));
+  const maxV=Math.max(...calls,...puts),rng=maxV;
+  const px=s=>55+((s-minS)/(maxS-minS))*(W-70);
+  const py=v=>15+((maxV-v)/rng)*(H-35);
+  // Grid
+  for(let i=0;i<=4;i++){const v=i/4*maxV;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(55,py(v));ctx.lineTo(W-15,py(v));ctx.stroke();ctx.fillStyle='rgba(148,163,184,.4)';ctx.font='9px Space Mono';ctx.fillText('₹'+v.toFixed(0),2,py(v)+3);}
+  // Strike
+  ctx.strokeStyle='rgba(251,191,36,.3)';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(px(K),10);ctx.lineTo(px(K),H-18);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(251,191,36,.7)';ctx.font='bold 9px Space Mono';ctx.fillText('K',px(K)-4,H-4);
+  // Intrinsic (call)
+  ctx.beginPath();pts.forEach((s,i)=>{const iv=Math.max(0,s-K);i===0?ctx.moveTo(px(s),py(iv)):ctx.lineTo(px(s),py(iv));});
+  ctx.strokeStyle='rgba(74,222,128,.2)';ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  // Call
+  ctx.beginPath();pts.forEach((s,i)=>{i===0?ctx.moveTo(px(s),py(calls[i])):ctx.lineTo(px(s),py(calls[i]));});
+  ctx.strokeStyle='#4ade80';ctx.lineWidth=2.5;ctx.stroke();
+  // Put
+  ctx.beginPath();pts.forEach((s,i)=>{i===0?ctx.moveTo(px(s),py(puts[i])):ctx.lineTo(px(s),py(puts[i]));});
+  ctx.strokeStyle='#f87171';ctx.lineWidth=2.5;ctx.stroke();
+  // Current dot
+  const cC=bsm(S,K,r,sig,T,'call');
+  ctx.fillStyle='#a78bfa';ctx.beginPath();ctx.arc(px(S),py(cC),7,0,2*Math.PI);ctx.fill();
+  ctx.fillStyle='rgba(74,222,128,.8)';ctx.font='9px Space Mono';ctx.fillText('─ Call',W-80,18);
+  ctx.fillStyle='rgba(248,113,113,.8)';ctx.fillText('─ Put',W-80,30);
+  ctx.fillStyle='rgba(148,163,184,.4)';
+  ['₹'+Math.round(minS),'₹'+Math.round(S),'₹'+Math.round(maxS)].forEach((l,i)=>{ctx.fillText(l,px([minS,S,maxS][i])-16,H-4);});
+}
+
+// ── BINOMIAL ──────────────────────────────────────────────
+let bnType='call',bnStyle='european';
+function setBnType(t,el){bnType=t;document.getElementById('bnCallBtn').className='btn '+(t==='call'?'bvi':'bgh');document.getElementById('bnPutBtn').className='btn '+(t==='put'?'bvi':'bgh');calcBinom();}
+function setBnStyle(s,el){bnStyle=s;document.getElementById('bnEurBtn').className='btn '+(s==='european'?'bvi':'bgh');document.getElementById('bnAmrBtn').className='btn '+(s==='american'?'bvi':'bgh');calcBinom();}
+
+function binomPrice(S,K,r,sig,T,N,type,style){
+  const dt=T/N,u=Math.exp(sig*Math.sqrt(dt)),d=1/u;
+  const p=(Math.exp(r*dt)-d)/(u-d);
+  // Stock prices at terminal nodes
+  const prices=[];for(let j=0;j<=N;j++) prices.push(S*Math.pow(u,N-j)*Math.pow(d,j));
+  // Option values at terminal nodes
+  let vals=prices.map(s=>type==='call'?Math.max(0,s-K):Math.max(0,K-s));
+  // Backward induction (save tree for display, max 5 steps)
+  const tree=[];
+  const stockTree=[];
+  if(N<=5){
+    for(let i=0;i<=N;i++){
+      const row=[];const srow=[];
+      for(let j=0;j<=i;j++){srow.push(S*Math.pow(u,i-j)*Math.pow(d,j));row.push(0);}
+      tree.push(row);stockTree.push(srow);
+    }
+    // terminal option values
+    const tf=prices.map(s=>type==='call'?Math.max(0,s-K):Math.max(0,K-s));
+    for(let j=0;j<=N;j++) tree[N][j]=tf[j];
+    // backward
+    for(let i=N-1;i>=0;i--){
+      for(let j=0;j<=i;j++){
+        const hold=Math.exp(-r*dt)*(p*tree[i+1][j]+(1-p)*tree[i+1][j+1]);
+        const intrinsic=type==='call'?Math.max(0,stockTree[i][j]-K):Math.max(0,K-stockTree[i][j]);
+        tree[i][j]=style==='american'?Math.max(hold,intrinsic):hold;
+      }
+    }
+  }
+  for(let i=N-1;i>=0;i--){
+    const newVals=[];
+    for(let j=0;j<=i;j++){
+      const hold=Math.exp(-r*dt)*(p*vals[j]+(1-p)*vals[j+1]);
+      const stockP=S*Math.pow(u,i-j)*Math.pow(d,j);
+      const intrinsic=type==='call'?Math.max(0,stockP-K):Math.max(0,K-stockP);
+      newVals.push(style==='american'?Math.max(hold,intrinsic):hold);
+    }
+    vals=newVals;
+  }
+  return{price:vals[0],u,d,p,tree,stockTree};
+}
+
+function calcBinom(){
+  const S=parseFloat(document.getElementById('bnS0').value);
+  const K=parseFloat(document.getElementById('bnK').value);
+  const sig=parseFloat(document.getElementById('bnSig').value)/100;
+  const r=parseFloat(document.getElementById('bnR').value)/100;
+  const T=parseFloat(document.getElementById('bnT').value)/365;
+  const N=parseInt(document.getElementById('bnN').value);
+  document.getElementById('bnS0D').textContent=S.toLocaleString('en-IN');
+  document.getElementById('bnKD').textContent=K.toLocaleString('en-IN');
+  document.getElementById('bnSigD').textContent=parseFloat(document.getElementById('bnSig').value).toFixed(1)+'%';
+  document.getElementById('bnRD').textContent=parseFloat(document.getElementById('bnR').value).toFixed(1)+'%';
+  document.getElementById('bnTD').textContent=document.getElementById('bnT').value;
+  document.getElementById('bnND').textContent=N;
+  const{price,u,d,p,tree,stockTree}=binomPrice(S,K,r,sig,T,N,bnType,bnStyle);
+  document.getElementById('bnPrice').textContent='₹'+price.toFixed(2);
+  document.getElementById('bnU').textContent=u.toFixed(4);
+  document.getElementById('bnD').textContent=d.toFixed(4);
+  document.getElementById('bnP').textContent=p.toFixed(4);
+  // Draw tree
+  if(N<=5&&tree.length) renderTree(tree,stockTree,N);
+  upCO(3,15);upCO(1,10);
+}
+
+function renderTree(tree,stockTree,N){
+  const cont=document.getElementById('bnTreeContainer');
+  const nodeW=130,nodeH=68,hGap=60,vGap=80;
+  const W=(N+1)*(nodeW+hGap)+60;
+  const H=(N+1)*(nodeH+vGap)+40;
+  let html=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  // Positions
+  const pos=[];
+  for(let i=0;i<=N;i++){
+    pos.push([]);
+    for(let j=0;j<=i;j++){
+      const x=30+i*(nodeW+hGap);
+      const totalH=i*nodeH+(i-1)*vGap||nodeH;
+      const centerY=H/2;
+      const startY=centerY-(i/2)*(nodeH+vGap);
+      const y=startY+j*(nodeH+vGap);
+      pos[i].push({x,y});
+    }
+  }
+  // Lines
+  for(let i=0;i<N;i++){
+    for(let j=0;j<=i;j++){
+      const{x:x1,y:y1}=pos[i][j];
+      const{x:x2,y:y2}=pos[i+1][j];
+      const{x:x3,y:y3}=pos[i+1][j+1];
+      html+=`<line x1="${x1+nodeW}" y1="${y1+nodeH/2}" x2="${x2}" y2="${y2+nodeH/2}" stroke="rgba(139,92,246,.3)" stroke-width="1.5"/>`;
+      html+=`<line x1="${x1+nodeW}" y1="${y1+nodeH/2}" x2="${x3}" y2="${y3+nodeH/2}" stroke="rgba(139,92,246,.2)" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+    }
+  }
+  // Nodes
+  for(let i=0;i<=N;i++){
+    for(let j=0;j<=i;j++){
+      const{x,y}=pos[i][j];
+      const S=stockTree[i][j];
+      const V=tree[i][j];
+      const isLast=i===N;
+      html+=`<rect x="${x}" y="${y}" width="${nodeW}" height="${nodeH}" rx="5" fill="${isLast?'rgba(139,92,246,.12)':'rgba(20,20,28,.9)'}" stroke="rgba(139,92,246,${isLast?.4:.2})" stroke-width="1"/>
+      <text x="${x+nodeW/2}" y="${y+16}" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(148,163,184,.6)">${i===0?'t=0':'Step '+i}</text>
+      <text x="${x+nodeW/2}" y="${y+34}" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#f8fafc" font-weight="700">₹${S.toFixed(0)}</text>
+      <text x="${x+nodeW/2}" y="${y+52}" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#fbbf24">f=₹${V.toFixed(2)}</text>`;
+    }
+  }
+  html+='</svg>';
+  cont.innerHTML=html;
+}
+
+// ── COMPARE / CONVERGENCE ─────────────────────────────────
+function calcCompare(){
+  const S=parseFloat(document.getElementById('cmS0').value);
+  const K=parseFloat(document.getElementById('cmK').value);
+  const sig=parseFloat(document.getElementById('cmSig').value)/100;
+  const r=parseFloat(document.getElementById('cmR').value)/100;
+  const T=parseFloat(document.getElementById('cmT').value)/365;
+  ['cmS0D','cmKD','cmSigD','cmRD','cmTD'].forEach((id,i)=>{
+    const vals=[S.toLocaleString('en-IN'),K.toLocaleString('en-IN'),parseFloat(document.getElementById('cmSig').value).toFixed(1)+'%',parseFloat(document.getElementById('cmR').value).toFixed(1)+'%',document.getElementById('cmT').value];
+    document.getElementById(id).textContent=vals[i];
+  });
+  const bsmC=bsm(S,K,r,sig,T,'call'),bsmP=bsm(S,K,r,sig,T,'put');
+  const{price:binC}=binomPrice(S,K,r,sig,T,50,'call','european');
+  const{price:binP}=binomPrice(S,K,r,sig,T,50,'put','european');
+  document.getElementById('cmBSMCall').textContent='₹'+bsmC.toFixed(2);
+  document.getElementById('cmBSMPut').textContent='₹'+bsmP.toFixed(2);
+  document.getElementById('cmBinCall').textContent='₹'+binC.toFixed(2);
+  document.getElementById('cmBinPut').textContent='₹'+binP.toFixed(2);
+  document.getElementById('cmDiffCall').textContent='₹'+Math.abs(bsmC-binC).toFixed(2);
+  document.getElementById('cmErrCall').textContent=(Math.abs(bsmC-binC)/bsmC*100).toFixed(2)+'%';
+  drawConvChart(S,K,r,sig,T,bsmC);
+  upCO(3,20);upCO(1,10);
+}
+function drawConvChart(S,K,r,sig,T,bsmC){
+  if(!S){S=1285;K=1300;sig=.285;r=.065;T=30/365;bsmC=bsm(S,K,r,sig,T,'call');}
+  const cv=document.getElementById('convChart');
+  const ctx=cv.getContext('2d');
+  cv.width=cv.offsetWidth*devicePixelRatio;cv.height=200*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=200;ctx.clearRect(0,0,W,H);
+  const Ns=[1,2,3,4,5,6,7,8,9,10,15,20,30,50,75,100];
+  const prices=Ns.map(n=>binomPrice(S,K,r,sig,T,n,'call','european').price);
+  const allV=[...prices,bsmC];
+  const maxV=Math.max(...allV)*1.05,minV=Math.min(...allV)*0.95,rng=maxV-minV;
+  const px=(_,i)=>55+(i/(Ns.length-1))*(W-70);
+  const py=v=>15+((maxV-v)/rng)*(H-35);
+  for(let i=0;i<=4;i++){const v=minV+(i/4)*rng;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(55,py(v));ctx.lineTo(W-15,py(v));ctx.stroke();ctx.fillStyle='rgba(148,163,184,.4)';ctx.font='9px Space Mono';ctx.fillText('₹'+v.toFixed(1),2,py(v)+3);}
+  // BSM dashed
+  ctx.strokeStyle='rgba(251,191,36,.5)';ctx.setLineDash([5,3]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(55,py(bsmC));ctx.lineTo(W-15,py(bsmC));ctx.stroke();ctx.setLineDash([]);
+  // Binomial
+  ctx.beginPath();Ns.forEach((n,i)=>{i===0?ctx.moveTo(px(n,i),py(prices[i])):ctx.lineTo(px(n,i),py(prices[i]));});
+  ctx.strokeStyle='#8b5cf6';ctx.lineWidth=2.5;ctx.stroke();
+  Ns.forEach((n,i)=>{ctx.fillStyle='#a78bfa';ctx.beginPath();ctx.arc(px(n,i),py(prices[i]),4,0,2*Math.PI);ctx.fill();});
+  ctx.fillStyle='rgba(251,191,36,.7)';ctx.font='9px Space Mono';ctx.fillText('─ BSM',W-70,18);
+  ctx.fillStyle='rgba(139,92,246,.8)';ctx.fillText('─ Binomial',W-70,30);
+  ctx.fillStyle='rgba(148,163,184,.4)';ctx.font='9px Space Mono';
+  [1,10,50,100].forEach((n,i)=>{const idx=Ns.indexOf(n);if(idx>=0)ctx.fillText('N='+n,px(n,idx)-14,H-4);});
+}
+
+// ── SENSITIVITY ───────────────────────────────────────────
+function calcSens(){
+  const S=parseFloat(document.getElementById('snS0').value);
+  const K=parseFloat(document.getElementById('snK').value);
+  const sig=parseFloat(document.getElementById('snSig').value)/100;
+  const r=parseFloat(document.getElementById('snR').value)/100;
+  const T=parseFloat(document.getElementById('snT').value)/365;
+  const varType=document.getElementById('snVar').value;
+  ['snS0D','snKD','snSigD','snRD','snTD'].forEach((id,i)=>{
+    const vals=[S.toLocaleString('en-IN'),K.toLocaleString('en-IN'),parseFloat(document.getElementById('snSig').value).toFixed(1)+'%',parseFloat(document.getElementById('snR').value).toFixed(1)+'%',document.getElementById('snT').value];
+    document.getElementById(id).textContent=vals[i];
+  });
+  let xs=[],calls=[],puts=[],xLabel='',curX=S;
+  const insights={
+    spot:{title:'Spot Price Sensitivity (Delta)',text:'As S₀ increases, call value rises (Δ > 0) and put value falls (Δ < 0). The slope at any point = Delta. ATM options have Δ ≈ 0.5. Deep ITM calls Δ → 1. This non-linear relationship is captured by Gamma (rate of change of Delta).'},
+    vol:{title:'Volatility Sensitivity (Vega)',text:'Higher volatility increases both call AND put prices — more uncertainty = more chance of ending in-the-money. Vega measures this sensitivity (∂C/∂σ). ATM options have highest Vega. Deep OTM options benefit most in absolute terms from vol spikes (e.g., before earnings).'},
+    time:{title:'Time Sensitivity (Theta)',text:'As time to expiry decreases (left on chart), both call and put prices fall — time value erodes. This is Theta (time decay). ATM options lose value fastest near expiry. Deep ITM/OTM options lose less time value. "Theta decay accelerates as expiry approaches."'},
+    rate:{title:'Rate Sensitivity (Rho)',text:'Higher risk-free rates increase call prices (Rho > 0 for calls) and decrease put prices (Rho < 0 for puts). The effect is via the discounted strike K·e⁻ʳᵀ. Higher r → lower PV of strike → cheaper for call buyer, dearer for put buyer.'},
+    strike:{title:'Strike Sensitivity',text:'Higher strike K makes calls cheaper (less likely to end ITM) and puts more expensive (more likely to end ITM). The relationship is non-linear and captured by the d₁/d₂ terms in BSM.'}
+  };
+  if(varType==='spot'){xs=[];for(let s=S*.7;s<=S*1.35;s+=S*.01)xs.push(s);calls=xs.map(s=>bsm(s,K,r,sig,T,'call'));puts=xs.map(s=>bsm(s,K,r,sig,T,'put'));xLabel='Spot Price (₹)';curX=S;}
+  if(varType==='vol'){xs=[];for(let v=5;v<=80;v+=.5)xs.push(v);calls=xs.map(v=>bsm(S,K,r,v/100,T,'call'));puts=xs.map(v=>bsm(S,K,r,v/100,T,'put'));xLabel='Volatility (%)';curX=parseFloat(document.getElementById('snSig').value);}
+  if(varType==='time'){xs=[];for(let d=1;d<=180;d+=1)xs.push(d);calls=xs.map(d=>bsm(S,K,r,sig,d/365,'call'));puts=xs.map(d=>bsm(S,K,r,sig,d/365,'put'));xLabel='Days to Expiry';curX=parseFloat(document.getElementById('snT').value);}
+  if(varType==='rate'){xs=[];for(let rv=1;rv<=15;rv+=.1)xs.push(rv);calls=xs.map(rv=>bsm(S,K,r,rv/100,T,'call'));puts=xs.map(rv=>bsm(S,K,r,rv/100,T,'put'));xLabel='Risk-free Rate (%)';curX=parseFloat(document.getElementById('snR').value);}
+  if(varType==='strike'){xs=[];for(let k=K*.7;k<=K*1.35;k+=K*.01)xs.push(k);calls=xs.map(k=>bsm(S,k,r,sig,T,'call'));puts=xs.map(k=>bsm(S,k,r,sig,T,'put'));xLabel='Strike K (₹)';curX=K;}
+  document.getElementById('snChartTitle').textContent='BSM Call/Put Price vs '+xLabel;
+  document.getElementById('snInsightTitle').textContent=insights[varType].title;
+  document.getElementById('snInsight').textContent=insights[varType].text;
+  drawSensChart(xs,calls,puts,curX,xLabel);
+  upCO(3,20);upCO(1,15);
+}
+function drawSensChart(xs,calls,puts,curX,xLabel){
+  const cv=document.getElementById('sensChart');
+  const ctx=cv.getContext('2d');
+  cv.width=cv.offsetWidth*devicePixelRatio;cv.height=220*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=cv.offsetWidth,H=220;ctx.clearRect(0,0,W,H);
+  const allV=[...calls,...puts].filter(v=>isFinite(v)&&v>=0);
+  const maxV=Math.max(...allV),rng=maxV||1;
+  const px=(_,i)=>55+(i/(xs.length-1))*(W-70);
+  const py=v=>15+((maxV-v)/rng)*(H-35);
+  for(let i=0;i<=4;i++){const v=i/4*maxV;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(55,py(v));ctx.lineTo(W-15,py(v));ctx.stroke();ctx.fillStyle='rgba(148,163,184,.4)';ctx.font='9px Space Mono';ctx.fillText('₹'+v.toFixed(0),2,py(v)+3);}
+  // Calls
+  ctx.beginPath();xs.forEach((_,i)=>{if(!isFinite(calls[i]))return;i===0?ctx.moveTo(px(_,i),py(calls[i])):ctx.lineTo(px(_,i),py(calls[i]));});
+  ctx.strokeStyle='#4ade80';ctx.lineWidth=2.5;ctx.stroke();
+  // Puts
+  ctx.beginPath();xs.forEach((_,i)=>{if(!isFinite(puts[i]))return;i===0?ctx.moveTo(px(_,i),py(puts[i])):ctx.lineTo(px(_,i),py(puts[i]));});
+  ctx.strokeStyle='#f87171';ctx.lineWidth=2.5;ctx.stroke();
+  // Current dot
+  const ci=xs.findIndex((x,i)=>xs[i+1]>=curX||i===xs.length-1);
+  if(ci>=0&&isFinite(calls[ci])){ctx.fillStyle='#a78bfa';ctx.beginPath();ctx.arc(px(null,ci),py(calls[ci]),7,0,2*Math.PI);ctx.fill();}
+  ctx.fillStyle='rgba(74,222,128,.8)';ctx.font='9px Space Mono';ctx.fillText('─ Call',W-70,18);
+  ctx.fillStyle='rgba(248,113,113,.8)';ctx.fillText('─ Put',W-70,30);
+  // X labels
+  ctx.fillStyle='rgba(148,163,184,.4)';ctx.font='9px Space Mono';
+  const step=Math.floor(xs.length/4);
+  [0,step,step*2,step*3,xs.length-1].forEach(i=>{if(xs[i]!==undefined)ctx.fillText(xs[i].toFixed(xs[i]>100?0:1),px(null,i)-14,H-4);});
+}
+
+// ── SCENARIOS ──────────────────────────────────────────────
+const SCENS6=[
+  {t:'BSM Calculation',s:'Reliance spot = ₹1,285. Strike = ₹1,300. σ = 30% p.a. r = 6.5% p.a. T = 45 days. d₁ = [ln(1285/1300) + (0.065 + 0.045)×(45/365)] / (0.30×√(45/365)) = [−0.01148 + 0.01356] / 0.0836 = 0.0249. d₂ = 0.0249 − 0.0836 = −0.0587.',q:'Calculate the approximate BSM call price. N(0.0249) ≈ 0.510, N(−0.0587) ≈ 0.477.',opts:['C = 1285×0.510 − 1300×e⁻⁰·⁰⁰⁸×0.477 = 655.35 − 618.91 = ₹36.44','C = 1285 − 1300 = ₹−15 (ITM)','C = σ×S₀×√T = 0.30×1285×0.351 = ₹135.4','C = max(S₀−K,0) = max(1285−1300,0) = ₹0'],ans:0,right:'✅ C = S₀·N(d₁) − K·e⁻ʳᵀ·N(d₂) = 1285×0.510 − 1300×e⁻⁰·⁰⁰⁸×0.477 = 655.35 − 618.91 ≈ ₹36.44. Key steps: compute d₁ and d₂ first, look up N() values, apply the formula. The option is slightly OTM (S<K) so mostly time value.',wrong:'❌ Apply BSM: C = S·N(d₁) − K·e⁻ʳᵀ·N(d₂). With d₁=0.0249, d₂=−0.0587: N(d₁)=0.510, N(d₂)=0.477. C = 1285×0.510 − 1300×0.992×0.477 = 655.35 − 615.22 ≈ ₹40. Check your discounting.'},
+  {t:'Put-Call Parity',s:'BSM Call = ₹45.20. Spot S₀ = ₹1,285. Strike K = ₹1,300. Risk-free rate r = 6.5%. Days to expiry = 30. e⁻ʳᵀ = e⁻⁰·⁰⁰⁵³ = 0.9947.',q:'What is the BSM put price using put-call parity?',opts:['P = C − S₀ + K·e⁻ʳᵀ = 45.20 − 1285 + 1300×0.9947 = 45.20 + 6.11 = ₹51.31','P = K − S₀ = 1300 − 1285 = ₹15 (intrinsic value only)','P = C × K/S₀ = 45.20 × 1300/1285 = ₹45.73','P = C − (S₀−K) = 45.20 + 15 = ₹60.20'],ans:0,right:'✅ Put-Call Parity: P = C − S₀ + K·e⁻ʳᵀ. P = 45.20 − 1285 + 1300×0.9947 = 45.20 − 1285 + 1293.11 = ₹53.31. This is one of the most important relationships in options — it links call and put prices to spot and the present value of strike.',wrong:'❌ Put-Call Parity: P = C − S₀ + K·e⁻ʳᵀ. Do not use intrinsic value alone. Apply the formula: C − S₀ + PV(K) where PV(K) = K × e⁻ʳᵀ. The put is more expensive than the call here because the option is OTM (S < K).'},
+  {t:'Binomial Tree — 1-Step',s:'Stock = ₹100. K = ₹105. u = 1.10, d = 0.91. r = 5% p.a. T = 1 year (1 step). Risk-neutral p = (e⁰·⁰⁵ − 0.91)/(1.10 − 0.91) = (1.0513 − 0.91)/0.19 = 0.7437.',q:'What is the 1-step binomial call price?',opts:['f = e⁻⁰·⁰⁵ × [0.7437×max(110−105,0) + 0.2563×max(91−105,0)] = e⁻⁰·⁰⁵ × [0.7437×5 + 0] = ₹3.54','f = max(100−105,0) = ₹0 (intrinsic value at t=0)','f = p×5 + (1−p)×0 = 0.7437×5 = ₹3.72 (not discounted)','f = (110+91)/2 − 105 = ₹−4.5'],ans:0,right:'✅ Correct! Backward induction: at up-node: S=110, call=5. At down-node: S=91, call=0. Risk-neutral value = e⁻ʳᵀ[p×f_u + (1−p)×f_d] = e⁻⁰·⁰⁵[0.7437×5 + 0.2563×0] = 0.9512 × 3.7185 = ₹3.54. Key: you MUST discount at risk-free rate.',wrong:'❌ The binomial formula is: f = e⁻ʳᵀ[p×f_u + (1−p)×f_d]. Don\'t forget to discount! Using p=0.7437, f_u=5, f_d=0: f = e⁻⁰·⁰⁵ × 3.72 = 0.9512 × 3.72 ≈ ₹3.54. Missing the discount factor e⁻ʳᵀ is a common error.'},
+  {t:'BSM Assumptions and Limitations',s:'A trader observes that deep out-of-the-money (OTM) put options on Nifty 50 are consistently priced much higher than BSM suggests. This is most noticeable for puts 15–20% below current spot. The phenomenon has been consistent for years.',q:'Which BSM limitation best explains this observation?',opts:['BSM assumes constant volatility, but actual volatility is higher for extreme moves (fat tails / volatility smile) — OTM puts are priced for crash scenarios not captured by lognormal distribution.','BSM assumes European exercise. OTM puts trade at a premium because of American early exercise value.','BSM ignores dividends. OTM put premium comes from dividend protection.','BSM uses the risk-free rate. Actual borrowing costs are higher, increasing put premiums.'],ans:0,right:'✅ The "volatility smile" — BSM assumes constant σ and lognormal returns, which underestimates the probability of extreme moves (fat tails). Deep OTM puts are insurance against market crashes. In reality, markets crash more often than lognormal predicts. Traders price in higher implied volatility for these strikes, causing the volatility smile/skew. This is the most fundamental real-world limitation of BSM.',wrong:'❌ The key issue is the constant volatility assumption. BSM assumes log-normal returns, but actual stock returns have fat tails — extreme negative moves happen more often. Deep OTM puts hedge these tail risks, so traders bid them up (higher implied vol for low strikes). This produces the volatility smile. Early exercise (American vs European) is not the issue for Nifty index options.'},
+];
+let sA6=new Array(SCENS6.length).fill(false);
+function renderScens(){
+  document.getElementById('scenCont6').innerHTML=SCENS6.map((s,i)=>`
+    <div class="scen">
+      <div style="font-weight:700;margin-bottom:8px;font-size:.92rem">📌 ${s.t}</div>
+      <div class="scen-s">${s.s}</div>
+      <div class="scen-q">${s.q}</div>
+      <div class="sopts" id="so${i}">${s.opts.map((o,j)=>`<button class="sopt" onclick="ansS(${i},${j})">${String.fromCharCode(65+j)}. ${o}</button>`).join('')}</div>
+      <div class="sexp" id="se${i}"></div>
+    </div>`).join('');
+}
+function ansS(si,oi){
+  if(sA6[si])return;sA6[si]=true;const s=SCENS6[si];
+  document.querySelectorAll(`#so${si} .sopt`).forEach((o,j)=>{o.classList.add('answered');if(j===s.ans)o.classList.add('correct');else if(j===oi&&oi!==s.ans)o.classList.add('wrong');else o.classList.add('reveal');});
+  const e=document.getElementById('se'+si);const ok=oi===s.ans;
+  e.textContent=ok?s.right:s.wrong;e.className='sexp show '+(ok?'right':'wrong');
+  if(ok){upCO(3,12);upCO(1,8);}
+}
+
+// ── QUIZ ───────────────────────────────────────────────────
+const QS6=[
+  {q:'Reliance Industries: Spot = ₹1,285. Strike = ₹1,300. σ = 28% p.a. r = 6.5% p.a. T = 60 days. (a) Calculate d₁ and d₂. (b) Assuming N(d₁) = 0.461 and N(d₂) = 0.403, calculate BSM call price. (c) Use put-call parity to find put price. (d) Is the option ITM, ATM, or OTM?',hint:'d₁ = [ln(1285/1300) + (0.065 + 0.0392)(60/365)] / (0.28×√(60/365)). Use put-call parity: P = C − S + K·e⁻ʳᵀ.',co:'CO3'},
+  {q:'Construct a 2-step binomial tree for a CALL option: S₀=₹100, K=₹105, u=1.12, d=0.89, r=6% p.a., T=6 months (each step = 3 months). (a) Calculate risk-neutral probability p. (b) Build all stock price nodes. (c) Calculate option values at expiry. (d) Use backward induction to find the option price at t=0.',hint:'p = (e^(r×Δt) − d)/(u − d). Each Δt = 0.25 year. Stock nodes: up-up = S×u², up-down = S×u×d, down-down = S×d². Backward induction: f = e^(−rΔt)[p×fu + (1−p)×fd].',co:'CO3 & CO1'},
+  {q:'Compare BSM and Binomial for: S₀=₹500, K=₹480, σ=25%, r=7%, T=90 days. (a) Calculate BSM call price. (b) Calculate binomial call price for N=1,2,3 steps. (c) Show convergence. (d) Which model would you use for an American option and why?',hint:'BSM gives closed-form. Binomial: u=e^(σ√Δt), d=1/u for each N. Show prices for N=1,2,3 approaching BSM. American: binomial allows early exercise check at each node.',co:'CO3 & CO4'},
+  {q:'Explain the volatility smile / volatility skew observed in Indian equity options markets. (a) What does BSM assume about volatility? (b) What is implied volatility? (c) Why do deep OTM puts typically trade at higher implied vol than ATM options on Nifty? (d) What real-world risk does the skew reflect?',hint:'BSM assumes constant σ. Implied vol = σ that makes BSM price = market price. Skew = higher IV for lower strikes. Reflects crash risk/fat tails not in lognormal assumption.',co:'CO1 & CO3'},
+  {q:'A Nifty 50 call option has: BSM price = ₹185. Spot = 22,450. K = 22,500. σ = 18%. r = 6.5%. T = 15 days. Market price = ₹175. (a) Is the option over or under-priced vs BSM? (b) What arbitrage strategy could you deploy? (c) What risks remain? (d) Calculate the intrinsic and time value components.',hint:'Market < BSM = underpriced. Buy the call and delta-hedge. Risks: transaction costs, gamma/vega moves. Intrinsic = max(S−K,0) = 0 (OTM). Time value = market price.',co:'CO3 & CO4'},
+];
+let qIdx=0,qScores=new Array(QS6.length).fill(null);
+function renderQDots(){document.getElementById('qDots').innerHTML=QS6.map((_,i)=>`<div class="qdot ${qScores[i]!==null?'done':i===qIdx?'cur':''}"></div>`).join('');}
+function renderQ(){
+  const q=QS6[qIdx];
+  document.getElementById('qBody').innerHTML=`<div class="qn">Q${qIdx+1}/${QS6.length} · ${q.co}</div><div class="qt2">${q.q}</div><div class="qhint">💡 ${q.hint}</div><textarea class="qarea" id="ans" placeholder="Write your full answer with calculations…"></textarea><div class="aifb" id="aiFb"><div class="aifbh"><div class="aib">AI</div>CLAUDE'S ASSESSMENT<span class="spl" id="spill"></span></div><div class="aifbb" id="fbBd"></div></div>`;
+}
+async function submitQ(){
+  const ans=document.getElementById('ans')?.value?.trim();
+  if(!ans||ans.length<20){document.getElementById('qStat').textContent='⚠️ Write a fuller answer';return;}
+  const btn=document.getElementById('qBtn');btn.disabled=true;btn.textContent='Grading…';
+  const q=QS6[qIdx];document.getElementById('aiFb').classList.add('show');
+  document.getElementById('fbBd').innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`You are a Financial Derivatives professor grading a PGDM student on BSM and Binomial option pricing (FIA401, IMT Hyderabad).\n\nQUESTION: ${q.q}\n\nSTUDENT ANSWER: ${ans}\n\nGrade 1-10. Evaluate: correct BSM formula usage, d1/d2 calculations, put-call parity, binomial tree construction, backward induction, conceptual understanding. Return ONLY valid JSON: {"score":<1-10>,"grade":"<Excellent|Good|Needs Work>","feedback":"<2-3 paragraphs>","keyMissed":"<missing concept or Nothing>"}`}]})});
+    const data=await res.json();const text=data.content?.[0]?.text||'{}';
+    const r=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const sc=r.score||5;const sp=document.getElementById('spill');
+    sp.textContent=`${sc}/10 — ${r.grade}`;sp.className='spl '+(sc>=8?'ex':sc>=6?'gd':'nw');
+    document.getElementById('fbBd').innerHTML=`<p>${r.feedback}</p>${r.keyMissed&&r.keyMissed!=='Nothing'?`<div style="margin-top:8px;padding:8px 11px;background:rgba(139,92,246,.07);border-left:2px solid var(--vi);border-radius:2px;font-size:.82rem"><strong style="color:var(--vi3)">Explore:</strong> ${r.keyMissed}</div>`:''}`;
+    qScores[qIdx]=sc;upCO(3,sc*9);upCO(1,sc*5);
+    btn.textContent=qIdx<QS6.length-1?'Next →':'Final Score';btn.disabled=false;btn.onclick=nextQ;
+    document.getElementById('qStat').textContent=`Scored ${sc}/10`;renderQDots();
+  }catch(e){document.getElementById('fbBd').innerHTML='<p style="color:var(--red)">Error. Retry.</p>';btn.disabled=false;btn.textContent='Retry';}
+}
+function nextQ(){if(qIdx<QS6.length-1){qIdx++;renderQ();renderQDots();}else showFinal();}
+function skipQ(){if(qIdx<QS6.length-1){qIdx++;renderQ();renderQDots();}}
+function showFinal(){
+  const v=qScores.filter(s=>s!==null);const avg=v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):0;
+  document.getElementById('qBody').innerHTML=`<div style="text-align:center;padding:32px 0"><div style="font-size:2.8rem;margin-bottom:8px">${avg>=8?'🏆':avg>=6?'🎯':'📚'}</div><div style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--vi2)">${avg}/10</div><div style="color:var(--text2);margin-top:5px;margin-bottom:18px">Module 6 Complete · ${v.length}/${QS6.length} answered</div><button class="btn bvi" onclick="qIdx=0;qScores=new Array(${QS6.length}).fill(null);renderQ();renderQDots()">Retake</button></div>`;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  calcBSM();calcBinom();calcCompare();calcSens();renderQ();renderQDots();
+  setTimeout(()=>{drawBSMChart(1285,1300,.065,.285,30/365);drawConvChart(1285,1300,.065,.285,30/365,bsm(1285,1300,.065,.285,30/365,'call'));},100);
+});
+</script>
+</body>
+</html>
