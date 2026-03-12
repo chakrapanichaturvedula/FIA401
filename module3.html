@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — Module 3: Options Markets</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#08090f; --surface:#0f1018; --surface2:#171820; --surface3:#1f2030;
+    --mg:#c026d3; --mg2:#e879f9; --amber:#f59e0b; --teal:#2dd4bf;
+    --red:#f87171; --green:#4ade80;
+    --text:#f8f8fc; --text2:#9ca3af; --text3:#4b5563;
+    --border:rgba(192,38,211,0.15); --border2:rgba(255,255,255,0.06);
+    --glow:0 0 40px rgba(192,38,211,0.12);
+    --cc:var(--green); --pc:var(--red);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;} html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(192,38,211,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 35% at 90% 80%,rgba(45,212,191,.05) 0%,transparent 60%);}
+  body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(rgba(192,38,211,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(192,38,211,.025) 1px,transparent 1px);
+    background-size:56px 56px;}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
+
+  /* HEADER */
+  header{position:sticky;top:0;z-index:100;background:rgba(8,9,15,.95);backdrop-filter:blur(24px);border-bottom:1px solid var(--border2);padding:13px 0;}
+  .hdr{display:flex;align-items:center;justify-content:space-between;}
+  .hdr-l{display:flex;align-items:center;gap:14px;}
+  .back{font-family:'Fira Code',monospace;font-size:.65rem;color:var(--text3);text-decoration:none;border:1px solid var(--border2);padding:5px 10px;border-radius:3px;transition:all .2s;}
+  .back:hover{color:var(--mg);border-color:var(--border);}
+  .logo{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.3rem;letter-spacing:-.03em;}
+  .logo em{color:var(--mg);font-style:normal;}
+  .mpill{font-family:'Fira Code',monospace;font-size:.6rem;color:var(--mg);border:1px solid var(--border);padding:4px 10px;border-radius:20px;letter-spacing:.08em;}
+  .tstrip{display:flex;align-items:center;gap:16px;font-family:'Fira Code',monospace;font-size:.68rem;}
+  .ti{display:flex;gap:6px;align-items:center;}
+  .tl{color:var(--text3);} .tv{color:var(--text);font-weight:500;} .tiv{color:var(--mg2);} .tsep{color:var(--text3);}
+
+  /* HERO */
+  .hero{padding:60px 0 50px;display:grid;grid-template-columns:1fr 400px;gap:48px;align-items:center;border-bottom:1px solid var(--border2);margin-bottom:36px;}
+  .htag{font-family:'Fira Code',monospace;font-size:.62rem;color:var(--mg);letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .htag::before{content:'';width:24px;height:1px;background:var(--mg);}
+  .hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(3.2rem,6vw,5.8rem);font-weight:600;line-height:1;margin-bottom:6px;}
+  .hero h1 span{color:var(--mg);font-style:italic;}
+  .hcode{font-family:'Fira Code',monospace;font-size:.72rem;color:var(--text3);margin-bottom:22px;letter-spacing:.06em;}
+  .hdesc{color:var(--text2);font-size:1rem;line-height:1.75;max-width:520px;margin-bottom:28px;}
+  .corow{display:flex;gap:8px;flex-wrap:wrap;}
+  .coch{font-family:'Fira Code',monospace;font-size:.6rem;padding:4px 10px;border-radius:2px;background:rgba(192,38,211,.08);border:1px solid rgba(192,38,211,.25);color:var(--mg);}
+
+  /* CHAIN PANEL */
+  .cpanel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:var(--glow);font-family:'Fira Code',monospace;font-size:.68rem;}
+  .cpttl{font-size:.6rem;color:var(--mg);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+  .csub{display:grid;grid-template-columns:58px 58px 48px 58px 58px;font-size:.56rem;color:var(--text3);text-align:right;margin-bottom:4px;}
+  .csub span:nth-child(3){text-align:center;}
+  .crow{display:grid;grid-template-columns:58px 58px 48px 58px 58px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:background .15s;border-radius:3px;}
+  .crow:hover{background:rgba(192,38,211,.06);}
+  .crow.atm{background:rgba(192,38,211,.1);}
+  .crow span{font-size:.68rem;text-align:right;padding:0 3px;}
+  .crow span:nth-child(3){text-align:center;color:var(--text);font-weight:600;}
+  .cv{color:var(--green);} .pv{color:var(--red);}
+
+  /* CO BAR */
+  .cobar{background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:14px 22px;display:flex;gap:24px;align-items:center;margin-bottom:32px;flex-wrap:wrap;}
+  .colbl{font-family:'Fira Code',monospace;font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+  .coit{flex:1;min-width:100px;display:flex;flex-direction:column;gap:5px;}
+  .conm{font-family:'Fira Code',monospace;font-size:.58rem;color:var(--text3);letter-spacing:.1em;}
+  .cotr{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+  .cofl{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--mg),var(--teal));transition:width 1s ease;}
+  .copct{font-family:'Fira Code',monospace;font-size:.62rem;color:var(--mg);}
+
+  /* TABS */
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border2);margin-bottom:32px;overflow-x:auto;padding-bottom:0;}
+  .tab{font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:500;padding:10px 16px;cursor:pointer;border:none;background:none;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
+  .tab:hover{color:var(--text2);}
+  .tab.active{color:var(--mg2);border-bottom-color:var(--mg);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* SECTION */
+  .stag{font-family:'Fira Code',monospace;font-size:.6rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+  .stag::after{content:'';flex:1;height:1px;background:var(--border2);}
+  .sh{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;margin-bottom:8px;color:var(--text);}
+  .sp{color:var(--text2);font-size:.93rem;line-height:1.7;margin-bottom:28px;max-width:760px;}
+
+  /* CARD */
+  .card{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:22px;}
+  .cardh{font-weight:700;font-size:.85rem;color:var(--text2);margin-bottom:14px;letter-spacing:.02em;}
+
+  /* CONTROLS */
+  .ctrl{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+  .ctrlbl{font-family:'Fira Code',monospace;font-size:.6rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .ctrlbl b{color:var(--mg2);font-weight:500;}
+  input[type=range]{width:100%;height:3px;background:var(--surface3);border-radius:2px;outline:none;-webkit-appearance:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--mg);cursor:pointer;box-shadow:0 0 8px rgba(192,38,211,.5);}
+  .inp{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:8px 12px;color:var(--text);font-family:'Fira Code',monospace;font-size:.78rem;width:100%;outline:none;transition:border-color .2s;}
+  .inp:focus{border-color:var(--mg);}
+  .btn{font-family:'Outfit',sans-serif;font-weight:700;font-size:.78rem;padding:9px 18px;border:none;border-radius:4px;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
+  .bmg{background:var(--mg);color:#fff;}
+  .bmg:hover{background:var(--mg2);transform:translateY(-1px);}
+  .bgh{background:var(--surface3);color:var(--text2);border:1px solid var(--border2);}
+  .bgh:hover{border-color:var(--mg);color:var(--mg);}
+
+  /* TYPE TOGGLE */
+  .ttog{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+  .tbtn{padding:11px 8px;border-radius:6px;cursor:pointer;text-align:center;font-family:'Outfit',sans-serif;font-weight:700;font-size:.82rem;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);transition:all .2s;}
+  .tbtn.ca{background:rgba(74,222,128,.1);border-color:var(--green);color:var(--green);}
+  .tbtn.pa{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red);}
+
+  /* MONEYNESS BADGE */
+  .mbadge{display:inline-block;padding:3px 10px;border-radius:20px;font-family:'Fira Code',monospace;font-size:.65rem;font-weight:500;letter-spacing:.06em;transition:all .3s;}
+  .mitm{background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.4);color:var(--green);}
+  .matm{background:rgba(192,38,211,.15);border:1px solid rgba(192,38,211,.4);color:var(--mg2);}
+  .motm{background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.2);color:var(--text3);}
+
+  /* RESULT ROWS */
+  .rrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem;}
+  .rrow:last-child{border-bottom:none;}
+  .rl{color:var(--text2);} .rv{font-family:'Fira Code',monospace;font-size:.85rem;color:var(--text);font-weight:500;}
+  .rv.mg{color:var(--mg2);font-size:1rem;} .rv.gr{color:var(--green);} .rv.am{color:var(--amber);} .rv.rd{color:var(--red);}
+
+  canvas{display:block;width:100%;}
+
+  /* CHAIN TABLE */
+  .ctbl{width:100%;border-collapse:collapse;font-family:'Fira Code',monospace;font-size:.7rem;}
+  .ctbl th{padding:9px 12px;text-align:right;font-size:.58rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border2);background:var(--surface2);}
+  .ctbl th.stk{text-align:center;color:var(--text);}
+  .ctbl td{padding:9px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s;}
+  .ctbl td.stk{text-align:center;color:var(--text);font-weight:600;font-size:.75rem;}
+  .ctbl tr:hover td{background:rgba(192,38,211,.04);}
+  .ctbl tr.atrow td{background:rgba(192,38,211,.07);}
+  .ctbl .cv{color:var(--green);} .ctbl .pv{color:var(--red);}
+  .itmcb{background:rgba(74,222,128,.04);} .itmpb{background:rgba(248,113,113,.04);}
+
+  /* CONCEPT GRID */
+  .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+  .ccard{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:18px;transition:border-color .2s;}
+  .ccard:hover{border-color:var(--border);}
+  .cci{font-size:1.6rem;margin-bottom:10px;}
+  .cct{font-weight:700;font-size:.88rem;margin-bottom:6px;color:var(--text);}
+  .ccb{font-size:.83rem;color:var(--text2);line-height:1.6;}
+  .ccf{font-family:'Fira Code',monospace;font-size:.72rem;color:var(--mg2);margin-top:8px;padding:6px 10px;background:var(--surface2);border-radius:3px;}
+
+  /* MONEYNESS CARDS */
+  .mcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+  .mcard{border-radius:8px;padding:20px;border:1px solid var(--border2);}
+  .mcard.itm{background:linear-gradient(135deg,var(--surface) 0%,rgba(74,222,128,.05) 100%);border-color:rgba(74,222,128,.2);}
+  .mcard.atm{background:linear-gradient(135deg,var(--surface) 0%,rgba(192,38,211,.06) 100%);border-color:rgba(192,38,211,.25);}
+  .mcard.otm{background:var(--surface);}
+  .mct{font-family:'Fira Code',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .mct.itm{color:var(--green);} .mct.atm{color:var(--mg2);} .mct.otm{color:var(--text3);}
+  .mctt{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;margin-bottom:8px;line-height:1;}
+  .mcard.itm .mctt{color:var(--green);} .mcard.atm .mctt{color:var(--mg2);} .mcard.otm .mctt{color:var(--text2);}
+  .mcd{font-size:.86rem;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+  .mce{font-family:'Fira Code',monospace;font-size:.68rem;padding:8px 10px;background:var(--surface2);border-radius:4px;margin-bottom:10px;}
+  .mcard.itm .mce{color:var(--green);} .mcard.atm .mce{color:var(--mg);} .mcard.otm .mce{color:var(--text3);}
+  .mcn{font-size:.8rem;color:var(--text2);line-height:1.55;}
+
+  /* PREMIUM BAR */
+  .prembar{height:28px;border-radius:4px;overflow:hidden;display:flex;margin-bottom:8px;}
+  .premi{background:linear-gradient(90deg,var(--mg),var(--mg2));height:100%;transition:width .6s ease;}
+  .premt{background:rgba(245,158,11,.4);height:100%;flex:1;}
+
+  /* PROFILES */
+  .profiles{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+  .pfc{background:var(--surface);border-radius:8px;padding:20px;border:1px solid var(--border2);position:relative;overflow:hidden;}
+  .pfc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .pfc.lc::before{background:var(--green);}
+  .pfc.lp::before{background:var(--red);}
+  .pfc.sc::before{background:rgba(74,222,128,.4);}
+  .pfc.sp::before{background:rgba(248,113,113,.4);}
+  .pft{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;margin-bottom:4px;}
+  .pfc.lc .pft{color:var(--green);} .pfc.lp .pft{color:var(--red);}
+  .pfc.sc .pft{color:rgba(74,222,128,.7);} .pfc.sp .pft{color:rgba(248,113,113,.7);}
+  .pfc2{font-family:'Fira Code',monospace;font-size:.62rem;color:var(--text3);margin-bottom:12px;}
+  .pfr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.83rem;}
+  .pfr:last-child{border-bottom:none;}
+  .pfrl{color:var(--text2);} .pfrv{font-family:'Fira Code',monospace;font-size:.75rem;}
+
+  /* DATA TABLE */
+  .dtbl{width:100%;border-collapse:collapse;font-size:.85rem;}
+  .dtbl th{padding:9px 14px;text-align:left;font-family:'Fira Code',monospace;font-size:.6rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border2);background:var(--surface2);}
+  .dtbl td{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2);}
+  .dtbl tr:hover td{background:rgba(255,255,255,.02);}
+
+  /* FLASHCARDS */
+  .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
+  .flash{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:20px;cursor:pointer;transition:all .2s;min-height:110px;display:flex;flex-direction:column;justify-content:center;}
+  .flash:hover{border-color:var(--border);transform:translateY(-2px);}
+  .flash.flipped{background:var(--surface2);border-color:rgba(192,38,211,.3);}
+  .ff{font-weight:700;font-size:.9rem;}
+  .fb{font-size:.82rem;color:var(--text2);line-height:1.6;display:none;}
+  .fh{font-family:'Fira Code',monospace;font-size:.58rem;color:var(--text3);margin-top:6px;}
+  .flash.flipped .ff{display:none;}
+  .flash.flipped .fb{display:block;}
+
+  /* SCENARIO */
+  .sc2{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:24px;margin-bottom:16px;}
+  .sct{font-weight:700;margin-bottom:10px;font-size:.95rem;}
+  .scs{font-size:.88rem;color:var(--text2);line-height:1.65;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--mg);}
+  .scq{font-weight:600;font-size:.92rem;margin-bottom:14px;}
+  .scopts{display:flex;flex-direction:column;gap:8px;}
+  .scopt{padding:10px 14px;border-radius:6px;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);font-size:.88rem;color:var(--text2);transition:all .2s;text-align:left;}
+  .scopt:hover:not(.answered){border-color:var(--mg);color:var(--text);}
+  .scopt.correct{background:rgba(74,222,128,.1);border-color:var(--green);color:var(--green);}
+  .scopt.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red);}
+  .scopt.reveal{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2);color:var(--text2);}
+  .scexp{display:none;margin-top:12px;padding:12px 14px;border-radius:6px;font-size:.86rem;line-height:1.65;}
+  .scexp.show{display:block;}
+  .scexp.right{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.3);}
+  .scexp.wrong{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);}
+
+  /* QUIZ */
+  .qbox{background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:28px;}
+  .qhd{padding:16px 22px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+  .qt2{font-weight:700;font-size:.9rem;margin-bottom:3px;}
+  .qs2{font-family:'Fira Code',monospace;font-size:.62rem;color:var(--text3);}
+  .qdots{display:flex;gap:5px;}
+  .qdot{width:8px;height:8px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);transition:all .3s;}
+  .qdot.done{background:var(--mg);border-color:var(--mg);}
+  .qdot.cur{background:var(--amber);border-color:var(--amber);animation:p2 1.5s infinite;}
+  @keyframes p2{0%,100%{opacity:1}50%{opacity:.5}}
+  .qbody{padding:26px 22px;}
+  .qn{font-family:'Fira Code',monospace;font-size:.6rem;color:var(--mg2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+  .qt3{font-size:1rem;font-weight:500;line-height:1.55;margin-bottom:14px;}
+  .qhint{font-size:.84rem;color:var(--text2);font-style:italic;padding:10px 14px;background:rgba(192,38,211,.06);border-left:2px solid var(--mg);border-radius:2px;margin-bottom:16px;line-height:1.6;}
+  .qarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:14px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.95rem;resize:vertical;min-height:110px;line-height:1.6;outline:none;transition:border-color .2s;}
+  .qarea:focus{border-color:var(--mg);box-shadow:0 0 0 3px rgba(192,38,211,.1);}
+  .qft{padding:12px 22px;border-top:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+  .qst{font-family:'Fira Code',monospace;font-size:.65rem;color:var(--text3);}
+  .aifb{margin-top:14px;border-radius:6px;overflow:hidden;display:none;border:1px solid rgba(192,38,211,.3);}
+  .aifb.show{display:block;}
+  .aifbh{padding:9px 14px;background:rgba(192,38,211,.08);border-bottom:1px solid rgba(192,38,211,.2);display:flex;align-items:center;gap:8px;font-family:'Fira Code',monospace;font-size:.64rem;color:var(--mg2);letter-spacing:.05em;}
+  .aib{background:var(--mg);color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;}
+  .spl{margin-left:auto;font-size:.7rem;font-weight:700;}
+  .spl.ex{color:var(--green);} .spl.gd{color:var(--amber);} .spl.nw{color:var(--red);}
+  .aifbb{padding:14px;font-size:.88rem;line-height:1.7;color:var(--text);background:var(--surface2);}
+  .dots{display:flex;gap:4px;padding:6px;}
+  .dots span{width:6px;height:6px;border-radius:50%;background:var(--mg);animation:b2 1.2s infinite;}
+  .dots span:nth-child(2){animation-delay:.2s;} .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes b2{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}}
+
+  @media(max-width:1000px){
+    .hero{grid-template-columns:1fr;} .cpanel{display:none;}
+    .cgrid,.mcards,.profiles{grid-template-columns:1fr 1fr;}
+    .fgrid{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:600px){
+    .wrap{padding:0 14px;} .hero h1{font-size:2.5rem;}
+    .cgrid,.mcards,.fgrid,.profiles{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hdr">
+    <div class="hdr-l">
+      <a href="index.html" class="back">← Home</a>
+      <div class="logo">Derivatives<em>Lab</em></div>
+      <div class="mpill">MODULE 03</div>
+    </div>
+    <div class="tstrip">
+      <div class="ti"><span class="tl">RELIANCE</span><span class="tv" id="hSpot">₹1,285.40</span><span class="tiv" id="hChg">▲ +0.12%</span></div>
+      <span class="tsep">·</span>
+      <div class="ti"><span class="tl">ATM 1300 CE</span><span class="tv" id="atmCE">₹18.50</span></div>
+      <span class="tsep">·</span>
+      <div class="ti"><span class="tl">IV</span><span class="tiv">24.6%</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="htag">Sessions 6–7 · Hull Ch. 9–10</div>
+      <h1>Options<br><span>Markets</span></h1>
+      <div class="hcode">FIA 401 · RELIANCE INDUSTRIES (NSE) · LOT 500</div>
+      <p class="hdesc">Discover calls and puts — the asymmetric power instruments of derivatives markets. Explore moneyness, premium decomposition, payoff profiles, and the live Reliance options chain with interactive pricing.</p>
+      <div class="corow">
+        <span class="coch">CO1 — Options Concepts</span>
+        <span class="coch">CO2 — Risk Profiles</span>
+        <span class="coch">CO3 — Pricing Intuition</span>
+      </div>
+    </div>
+    <div class="cpanel">
+      <div class="cpttl"><div class="ldot"></div>RELIANCE OPTIONS — 30-MAR-2026</div>
+      <div class="csub">
+        <span style="color:var(--green)">CE LTP</span><span style="color:var(--green)">OI</span>
+        <span>STRIKE</span>
+        <span style="color:var(--red)">LTP</span><span style="color:var(--red)">OI</span>
+      </div>
+      <div id="miniChain"></div>
+    </div>
+  </div>
+
+  <!-- CO PROGRESS -->
+  <div class="cobar">
+    <div class="colbl">Progress</div>
+    <div class="coit"><div class="conm">CO1</div><div class="cotr"><div class="cofl" id="c1f" style="width:0%"></div></div><div class="copct" id="c1p">0%</div></div>
+    <div class="coit"><div class="conm">CO2</div><div class="cotr"><div class="cofl" id="c2f" style="width:0%"></div></div><div class="copct" id="c2p">0%</div></div>
+    <div class="coit"><div class="conm">CO3</div><div class="cotr"><div class="cofl" id="c3f" style="width:0%"></div></div><div class="copct" id="c3p">0%</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="sw('intro',this)">📖 Intro to Options</button>
+    <button class="tab" onclick="sw('chain',this)">📋 Options Chain</button>
+    <button class="tab" onclick="sw('moneyness',this)">🎯 Moneyness</button>
+    <button class="tab" onclick="sw('premium',this)">💰 Option Premium</button>
+    <button class="tab" onclick="sw('payoff',this)">📈 Payoff Profiles</button>
+    <button class="tab" onclick="sw('scenarios',this)">🧩 Scenarios</button>
+    <button class="tab" onclick="sw('quiz',this)">✏️ AI Quiz</button>
+  </div>
+
+  <!-- TAB 1: INTRO -->
+  <div class="panel active" id="tab-intro">
+    <div class="stag">Tab 1 — The Basics</div>
+    <div class="sh">What is an Option?</div>
+    <div class="sp">An option gives the buyer the <em>right but not the obligation</em> to buy or sell an underlying asset at a specified price (strike) on or before a specified date. The seller receives a premium and bears the obligation if exercised.</div>
+    <div class="cgrid">
+      <div class="ccard"><div class="cci">📞</div><div class="cct">Call Option</div><div class="ccb">Right to <strong style="color:var(--green)">BUY</strong> at strike. Profits when spot rises above K + premium. Seller profits when spot stays below strike.</div><div class="ccf">Payoff = max(S_T − K, 0) − Premium</div></div>
+      <div class="ccard"><div class="cci">📤</div><div class="cct">Put Option</div><div class="ccb">Right to <strong style="color:var(--red)">SELL</strong> at strike. Profits when spot falls below K − premium. Seller profits when spot stays above strike.</div><div class="ccf">Payoff = max(K − S_T, 0) − Premium</div></div>
+      <div class="ccard"><div class="cci">🏷️</div><div class="cct">Strike Price (K)</div><div class="ccb">The pre-agreed exercise price. NSE lists Reliance options at ₹20 intervals (₹1,260, ₹1,280, ₹1,300, ₹1,320…).</div><div class="ccf">Strike intervals: ₹20 (Reliance NSE)</div></div>
+      <div class="ccard"><div class="cci">📅</div><div class="cct">Expiry Date</div><div class="ccb">Reliance options expire on the <strong style="color:var(--mg2)">last Tuesday</strong> of each month (SEBI Nov 2024). Near month: 30-MAR-2026. Next: 28-APR-2026.</div><div class="ccf">Expiry: Last Tuesday of month</div></div>
+      <div class="ccard"><div class="cci">💎</div><div class="cct">Option Premium</div><div class="ccb">Price paid by buyer to seller for the right. Two components: Intrinsic Value (immediate exercise value) + Time Value (uncertainty premium).</div><div class="ccf">Premium = Intrinsic + Time Value</div></div>
+      <div class="ccard"><div class="cci">🔄</div><div class="cct">European Style</div><div class="ccb">All NSE stock and index options are <strong style="color:var(--mg2)">European-style</strong> — exercisable only AT expiry. No early exercise allowed in Indian F&O markets.</div><div class="ccf">NSE: All options = European style</div></div>
+    </div>
+    <div class="stag">Calls vs Puts — Quick Reference</div>
+    <div class="card" style="margin-bottom:28px">
+      <table class="dtbl">
+        <thead><tr><th>Feature</th><th style="color:var(--green)">Call Option</th><th style="color:var(--red)">Put Option</th></tr></thead>
+        <tbody>
+          <tr><td>Right granted</td><td style="color:var(--green)">Buy at K</td><td style="color:var(--red)">Sell at K</td></tr>
+          <tr><td>Buyer profits when</td><td style="color:var(--green)">Spot > K + Premium</td><td style="color:var(--red)">Spot &lt; K − Premium</td></tr>
+          <tr><td>Break-even (buyer)</td><td style="color:var(--green)">K + Premium paid</td><td style="color:var(--red)">K − Premium paid</td></tr>
+          <tr><td>Max profit (buyer)</td><td style="color:var(--green)">Unlimited</td><td style="color:var(--red)">K − Premium (spot → 0)</td></tr>
+          <tr><td>Max loss (buyer)</td><td style="color:var(--green)">Premium paid only</td><td style="color:var(--red)">Premium paid only</td></tr>
+          <tr><td>Max loss (seller)</td><td style="color:var(--red)">Unlimited</td><td style="color:var(--red)">K − Premium (large)</td></tr>
+          <tr><td>Reliance example</td><td style="color:var(--green)">₹1,300 CE @ ₹18.50 → profit if RELIANCE > ₹1,318.50</td><td style="color:var(--red)">₹1,280 PE @ ₹15.20 → profit if RELIANCE &lt; ₹1,264.80</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stag">Key Terms — Click to Flip</div>
+    <div class="fgrid" id="flashGrid"></div>
+  </div>
+
+  <!-- TAB 2: OPTIONS CHAIN -->
+  <div class="panel" id="tab-chain">
+    <div class="stag">Tab 2 — Reading the Chain</div>
+    <div class="sh">Reliance Options Chain</div>
+    <div class="sp">Calls on the left, puts on the right, strikes in the middle. Green (ITM calls) and red (ITM puts) rows are highlighted. ✦ marks the ATM strike closest to current spot ₹1,285.</div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+      <div style="font-family:'Fira Code',monospace;font-size:.68rem;color:var(--text2)">Spot: <strong id="chainSpotLbl" style="color:var(--mg2)">₹1,285</strong></div>
+      <select id="expSel" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Fira Code',monospace;font-size:.68rem;padding:5px 10px;border-radius:4px;outline:none;" onchange="renderChain()">
+        <option value="19">30-MAR-2026 (19 days)</option>
+        <option value="50">28-APR-2026 (50 days)</option>
+        <option value="81">26-MAY-2026 (81 days)</option>
+      </select>
+      <span style="font-family:'Fira Code',monospace;font-size:.68rem;color:var(--text3)">Lot: 500 · Base IV ≈ 24.6%</span>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px">
+      <div style="overflow-x:auto"><table class="ctbl"><thead><tr>
+        <th style="color:var(--green)">OI(K)</th><th style="color:var(--green)">Vol</th><th style="color:var(--green)">IV%</th><th style="color:var(--green)">LTP</th>
+        <th class="stk">✦ STRIKE</th>
+        <th style="color:var(--red)">LTP</th><th style="color:var(--red)">IV%</th><th style="color:var(--red)">Vol</th><th style="color:var(--red)">OI(K)</th>
+      </tr></thead><tbody id="chainBody"></tbody></table></div>
+    </div>
+    <div class="cgrid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="ccard"><div class="cci">📊</div><div class="cct">Open Interest (OI)</div><div class="ccb">Total outstanding contracts. High call OI above spot = resistance. High put OI below spot = support. Max Pain = strike with maximum combined OI.</div></div>
+      <div class="ccard"><div class="cci">🌊</div><div class="cct">Implied Volatility (IV)</div><div class="ccb">Market's expected future volatility from option prices. Higher IV = expensive premium. IV spikes before events; "IV crush" kills premium buyers after events.</div><div class="ccf">Higher IV → Higher C & P premiums</div></div>
+      <div class="ccard"><div class="cci">⚖️</div><div class="cct">Put-Call Ratio (PCR)</div><div class="ccb">Put OI ÷ Call OI. PCR &gt; 1 = bearish sentiment. PCR &lt; 0.7 = bullish. Used as a contrarian indicator — extreme PCR often precedes reversals.</div><div class="ccf">PCR = Put OI / Call OI</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: MONEYNESS -->
+  <div class="panel" id="tab-moneyness">
+    <div class="stag">Tab 3 — In, At, or Out of the Money?</div>
+    <div class="sh">Moneyness Explorer</div>
+    <div class="sp">Moneyness describes the relationship between spot and strike. It determines intrinsic value, delta, and how the option behaves as the underlying moves.</div>
+    <div class="mcards">
+      <div class="mcard itm"><div class="mct itm">ITM — In The Money</div><div class="mctt">Has Value Now</div><div class="mcd">Positive intrinsic value. Immediate exercise yields a profit (before premium cost).</div><div class="mce">Call ITM: Spot ₹1,285 > Strike ₹1,260 ✓<br>Put ITM: Spot ₹1,285 &lt; Strike ₹1,320 ✓</div><div class="mcn">Higher premium. Higher delta. Deep ITM behaves like a futures position (delta ≈ 1).</div></div>
+      <div class="mcard atm"><div class="mct atm">ATM — At The Money</div><div class="mctt">On the Edge</div><div class="mcd">Strike ≈ spot price. Pure time value. Maximum gamma and theta sensitivity.</div><div class="mce">Call ATM: Spot ₹1,285 ≈ Strike ₹1,280<br>Most liquid. Delta ≈ 0.50</div><div class="mcn">Most trading activity here. Greatest daily time decay in absolute ₹ terms.</div></div>
+      <div class="mcard otm"><div class="mct otm">OTM — Out of The Money</div><div class="mctt">No Intrinsic Value</div><div class="mcd">Zero intrinsic value. Only time value remains. Worthless at expiry unless spot crosses strike.</div><div class="mce">Call OTM: Spot ₹1,285 &lt; Strike ₹1,340<br>Expires worthless ~80% of the time</div><div class="mcn">Cheap premium. High leverage on capital invested. High-risk, high-reward for buyers.</div></div>
+    </div>
+    <div class="stag">Interactive Moneyness Calculator</div>
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:20px;margin-bottom:28px">
+      <div class="card">
+        <div class="cardh">Set Parameters</div>
+        <div class="ctrl"><div class="ctrlbl">Spot Price (₹) <b id="mSpotD">1,285</b></div><input type="range" min="1100" max="1500" value="1285" id="mSpot" oninput="calcMoney()"></div>
+        <div class="ctrl"><div class="ctrlbl">Strike Price (₹) <b id="mStrikeD">1,300</b></div><input type="range" min="1080" max="1520" step="20" value="1300" id="mStrike" oninput="calcMoney()"></div>
+        <div class="ttog" style="margin-top:4px">
+          <div class="tbtn ca" id="mCB" onclick="setMT('call')">📞 Call</div>
+          <div class="tbtn" id="mPB" onclick="setMT('put')">📤 Put</div>
+        </div>
+        <div style="margin-top:14px;text-align:center">
+          <div style="font-family:'Fira Code',monospace;font-size:.62rem;color:var(--text3);margin-bottom:8px">MONEYNESS</div>
+          <div id="mBadge" class="mbadge motm" style="font-size:1rem;padding:6px 20px">OTM</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardh">Moneyness Analysis</div>
+        <div class="rrow"><span class="rl">Option Type</span><span class="rv" id="mType">Call</span></div>
+        <div class="rrow"><span class="rl">Spot (S)</span><span class="rv" id="mSpotR">₹1,285</span></div>
+        <div class="rrow"><span class="rl">Strike (K)</span><span class="rv" id="mStrikeR">₹1,300</span></div>
+        <div class="rrow"><span class="rl">S − K</span><span class="rv" id="mDiff">−₹15</span></div>
+        <div class="rrow"><span class="rl">Intrinsic Value</span><span class="rv mg" id="mIV">₹0</span></div>
+        <div class="rrow"><span class="rl">Moneyness</span><span class="rv" id="mMoney">OTM</span></div>
+        <div class="rrow"><span class="rl">Approx. Delta</span><span class="rv gr" id="mDelta">~0.28</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--surface2);border-radius:6px;font-size:.83rem;color:var(--text2);line-height:1.6" id="mExpl">This call is OTM. Spot (₹1,285) is below strike (₹1,300). No intrinsic value. For profit at expiry, Reliance must exceed ₹1,300 + premium paid.</div>
+      </div>
+    </div>
+    <div class="stag">Moneyness Spectrum — Reliance Calls, Mar 2026</div>
+    <div class="card" style="margin-bottom:28px"><div style="overflow-x:auto"><table class="dtbl" id="specTbl"><thead><tr><th>Strike</th><th>Moneyness</th><th>Intrinsic Value</th><th>Approx. Premium</th><th>% from Spot</th><th>Delta</th></tr></thead><tbody id="specBody"></tbody></table></div></div>
+  </div>
+
+  <!-- TAB 4: PREMIUM -->
+  <div class="panel" id="tab-premium">
+    <div class="stag">Tab 4 — Decomposing Option Price</div>
+    <div class="sh">Option Premium Anatomy</div>
+    <div class="sp">The option premium has two components — Intrinsic Value (the floor, exercise value right now) and Time Value (the uncertainty premium that decays to zero at expiry).</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
+      <div class="card">
+        <div class="cardh">Premium Calculator</div>
+        <div class="ctrl"><div class="ctrlbl">Spot (₹) <b id="pSpD">1,285</b></div><input type="range" min="1100" max="1500" value="1285" id="pSp" oninput="calcPrem()"></div>
+        <div class="ctrl"><div class="ctrlbl">Strike K (₹) <b id="pKD">1,280</b></div><input type="range" min="1080" max="1520" step="20" value="1280" id="pK" oninput="calcPrem()"></div>
+        <div class="ctrl"><div class="ctrlbl">Days to Expiry <b id="pTD">19</b></div><input type="range" min="1" max="90" value="19" id="pT" oninput="calcPrem()"></div>
+        <div class="ctrl"><div class="ctrlbl">Implied Volatility % <b id="pIVD">24.6%</b></div><input type="range" min="10" max="60" step="0.5" value="24.6" id="pIV" oninput="calcPrem()"></div>
+        <div class="ttog" style="margin-top:4px">
+          <div class="tbtn ca" id="pCB" onclick="setPT('call')">📞 Call</div>
+          <div class="tbtn" id="pPB" onclick="setPT('put')">📤 Put</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardh">Premium Decomposition</div>
+        <div class="rrow"><span class="rl">Intrinsic Value</span><span class="rv mg" id="pIntr">₹5.00</span></div>
+        <div class="rrow"><span class="rl">Time Value</span><span class="rv am" id="pTime">₹13.80</span></div>
+        <div class="rrow" style="padding:12px 0"><span class="rl" style="font-weight:700">Total Premium</span><span class="rv" style="font-size:1.15rem;color:var(--mg2)" id="pTot">₹18.80</span></div>
+        <div class="rrow"><span class="rl">% Intrinsic</span><span class="rv gr" id="pPI">26.6%</span></div>
+        <div class="rrow"><span class="rl">% Time Value</span><span class="rv am" id="pPT">73.4%</span></div>
+        <div class="rrow"><span class="rl">Break-even</span><span class="rv" id="pBE">₹1,298.80</span></div>
+        <div class="rrow"><span class="rl">Moneyness</span><span class="rv" id="pMon">Slightly ITM</span></div>
+        <div style="margin-top:16px">
+          <div style="font-family:'Fira Code',monospace;font-size:.6rem;color:var(--text3);margin-bottom:6px;letter-spacing:.08em">COMPOSITION</div>
+          <div class="prembar"><div class="premi" id="premI" style="width:27%"></div><div class="premt"></div></div>
+          <div style="display:flex;gap:16px;font-family:'Fira Code',monospace;font-size:.62rem">
+            <span style="color:var(--mg)">■ Intrinsic: <span id="pBarI">27%</span></span>
+            <span style="color:var(--amber)">■ Time: <span id="pBarT">73%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+      <div class="ccard"><div class="cci">⏰</div><div class="cct">Theta — Time Decay</div><div class="ccb">Time value erodes every day. Accelerates in final 30 days. ATM options suffer most theta in absolute ₹ terms. At expiry, time value = zero always.</div><div class="ccf">Time Value → 0 as T → 0</div></div>
+      <div class="ccard"><div class="cci">📉</div><div class="cct">Vega — IV Effect</div><div class="ccb">1% rise in IV increases premium significantly. IV spikes before events. "IV crush" — premium collapses after the event. Kills option buyers who paid high IV.</div><div class="ccf">Premium ∝ σ × √T (roughly)</div></div>
+      <div class="ccard"><div class="cci">🔗</div><div class="cct">Put-Call Parity</div><div class="ccb">No-arbitrage relationship tying C and P prices at the same K and T. If violated by more than transaction costs, risk-free arbitrage exists.</div><div class="ccf">C + Ke^(−rT) = P + S</div></div>
+    </div>
+    <div class="stag">Put-Call Parity — Live Check</div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="cardh">Verify: C + Ke^(−rT) = P + S</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div class="rrow"><span class="rl">Call Price (C)</span><span class="rv" id="pcC">₹18.80</span></div>
+          <div class="rrow"><span class="rl">Put Price (P)</span><span class="rv" id="pcP">₹15.25</span></div>
+          <div class="rrow"><span class="rl">Strike (K)</span><span class="rv" id="pcK">₹1,280</span></div>
+          <div class="rrow"><span class="rl">Spot (S)</span><span class="rv" id="pcS">₹1,285</span></div>
+          <div class="rrow"><span class="rl">Ke^(−rT)</span><span class="rv" id="pcKe">₹1,275.56</span></div>
+        </div>
+        <div>
+          <div class="rrow"><span class="rl">LHS: C + Ke^(−rT)</span><span class="rv mg" id="pcLHS">₹1,294.36</span></div>
+          <div class="rrow"><span class="rl">RHS: P + S</span><span class="rv mg" id="pcRHS">₹1,300.25</span></div>
+          <div class="rrow"><span class="rl">Difference</span><span class="rv" id="pcDiff">₹5.89</span></div>
+          <div id="pcRes" style="margin-top:12px;padding:12px;border-radius:6px;font-size:.85rem;line-height:1.6"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: PAYOFF PROFILES -->
+  <div class="panel" id="tab-payoff">
+    <div class="stag">Tab 5 — Visual P&L at Expiry</div>
+    <div class="sh">Option Payoff Profiles</div>
+    <div class="sp">See how each of the 4 basic option positions makes or loses money. Select position, set parameters, observe the non-linear payoff — the defining characteristic of options vs futures.</div>
+    <div style="display:grid;grid-template-columns:290px 1fr;gap:20px;margin-bottom:28px">
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="cardh">Select Position</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="tbtn ca" id="posLC" onclick="setPos('lc')">📞 Long Call<br><small style="font-weight:400;font-size:.7rem">Buy CE</small></div>
+            <div class="tbtn" id="posLP" onclick="setPos('lp')">📤 Long Put<br><small style="font-weight:400;font-size:.7rem">Buy PE</small></div>
+            <div class="tbtn" id="posSC" onclick="setPos('sc')">📞 Short Call<br><small style="font-weight:400;font-size:.7rem">Sell CE</small></div>
+            <div class="tbtn" id="posSP" onclick="setPos('sp')">📤 Short Put<br><small style="font-weight:400;font-size:.7rem">Sell PE</small></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="cardh">Parameters</div>
+          <div class="ctrl"><div class="ctrlbl">Strike K (₹) <b id="posKD">1,300</b></div><input type="range" min="1080" max="1520" step="20" value="1300" id="posK" oninput="drawPay()"></div>
+          <div class="ctrl"><div class="ctrlbl">Premium (₹) <b id="posPreD">18.50</b></div><input type="range" min="2" max="100" step=".5" value="18.5" id="posPre" oninput="drawPay()"></div>
+          <div class="ctrl"><div class="ctrlbl">Lots <b id="posLotD">1</b></div><input type="range" min="1" max="5" value="1" id="posLot" oninput="drawPay()"></div>
+          <div class="ctrl" style="margin-bottom:0">
+            <div class="ctrlbl" style="margin-bottom:6px">Scenario Spot at Expiry (₹)</div>
+            <input type="number" class="inp" id="posScen" value="1320" oninput="drawPay()">
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-family:'Fira Code',monospace;font-size:.58rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">P&L AT SCENARIO</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600" id="posAmt">—</div>
+          <div style="font-family:'Fira Code',monospace;font-size:.68rem;color:var(--text2);margin-top:4px" id="posDet">—</div>
+        </div>
+      </div>
+      <div class="card" style="padding:18px">
+        <div style="font-weight:700;font-size:.88rem;margin-bottom:4px" id="payLbl">Long Call — Payoff at Expiry</div>
+        <div style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--text3);margin-bottom:14px">Reliance Industries · Lot 500 shares · European</div>
+        <canvas id="payChart" height="360"></canvas>
+      </div>
+    </div>
+    <div class="stag">The 4 Basic Option Positions</div>
+    <div class="profiles">
+      <div class="pfc lc"><div class="pft">Long Call</div><div class="pfc2">Buy CE · Pay Premium</div>
+        <div class="pfr"><span class="pfrl">Outlook</span><span class="pfrv" style="color:var(--green)">Bullish</span></div>
+        <div class="pfr"><span class="pfrl">Max Profit</span><span class="pfrv" style="color:var(--green)">Unlimited</span></div>
+        <div class="pfr"><span class="pfrl">Max Loss</span><span class="pfrv" style="color:var(--red)">Premium paid</span></div>
+        <div class="pfr"><span class="pfrl">Break-even</span><span class="pfrv">K + Premium</span></div>
+        <div class="pfr"><span class="pfrl">Example</span><span class="pfrv">Buy ₹1,300 CE @ ₹18.50 → BE = ₹1,318.50</span></div>
+      </div>
+      <div class="pfc lp"><div class="pft">Long Put</div><div class="pfc2">Buy PE · Pay Premium</div>
+        <div class="pfr"><span class="pfrl">Outlook</span><span class="pfrv" style="color:var(--red)">Bearish / Insurance</span></div>
+        <div class="pfr"><span class="pfrl">Max Profit</span><span class="pfrv" style="color:var(--green)">K − Premium (spot → 0)</span></div>
+        <div class="pfr"><span class="pfrl">Max Loss</span><span class="pfrv" style="color:var(--red)">Premium paid</span></div>
+        <div class="pfr"><span class="pfrl">Break-even</span><span class="pfrv">K − Premium</span></div>
+        <div class="pfr"><span class="pfrl">Example</span><span class="pfrv">Buy ₹1,280 PE @ ₹15.20 → BE = ₹1,264.80</span></div>
+      </div>
+      <div class="pfc sc"><div class="pft">Short Call</div><div class="pfc2">Sell CE · Collect Premium</div>
+        <div class="pfr"><span class="pfrl">Outlook</span><span class="pfrv" style="color:rgba(74,222,128,.7)">Neutral-to-Bearish</span></div>
+        <div class="pfr"><span class="pfrl">Max Profit</span><span class="pfrv" style="color:var(--green)">Premium received</span></div>
+        <div class="pfr"><span class="pfrl">Max Loss</span><span class="pfrv" style="color:var(--red)">Unlimited</span></div>
+        <div class="pfr"><span class="pfrl">Break-even</span><span class="pfrv">K + Premium</span></div>
+        <div class="pfr"><span class="pfrl">Risk</span><span class="pfrv" style="color:var(--red)">⚠ Requires high margin</span></div>
+      </div>
+      <div class="pfc sp"><div class="pft">Short Put</div><div class="pfc2">Sell PE · Collect Premium</div>
+        <div class="pfr"><span class="pfrl">Outlook</span><span class="pfrv" style="color:rgba(248,113,113,.7)">Neutral-to-Bullish</span></div>
+        <div class="pfr"><span class="pfrl">Max Profit</span><span class="pfrv" style="color:var(--green)">Premium received</span></div>
+        <div class="pfr"><span class="pfrl">Max Loss</span><span class="pfrv" style="color:var(--red)">K − Premium (spot → 0)</span></div>
+        <div class="pfr"><span class="pfrl">Break-even</span><span class="pfrv">K − Premium</span></div>
+        <div class="pfr"><span class="pfrl">Example</span><span class="pfrv">Sell ₹1,260 PE @ ₹12 → BE = ₹1,248</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 6: SCENARIOS -->
+  <div class="panel" id="tab-scenarios">
+    <div class="stag">Tab 6 — Applied Scenarios</div>
+    <div class="sh">Scenario Practice</div>
+    <div class="sp">Apply your understanding to real-world situations using Reliance as the underlying. Identify the correct option strategy and see the full explanation.</div>
+    <div id="scenCont"></div>
+  </div>
+
+  <!-- TAB 7: QUIZ -->
+  <div class="panel" id="tab-quiz">
+    <div class="stag">Tab 7 — AI-Graded Assessment</div>
+    <div class="sh">Module 3 Quiz</div>
+    <div class="sp">Write full answers with calculations. Claude assesses conceptual understanding, calculation accuracy, and practical application — mapped to CO1, CO2, CO3.</div>
+    <div class="qbox">
+      <div class="qhd">
+        <div><div class="qt2">Options Markets Assessment</div><div class="qs2">5 Questions · CO1, CO2, CO3</div></div>
+        <div class="qdots" id="qDots"></div>
+      </div>
+      <div class="qbody" id="qBody"></div>
+      <div class="qft">
+        <div class="qst" id="qStat">Answer the question above</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bgh" onclick="skipQ()">Skip →</button>
+          <button class="btn bmg" id="qBtn" onclick="submitQ()">Submit for Grading</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SPOT=1285, LOT=500, R=0.065, IV0=0.246;
+const STRIKES=[1160,1180,1200,1220,1240,1260,1280,1300,1320,1340,1360,1380,1400];
+let co1v=0,co2v=0,co3v=0;
+
+// BSM
+function N(x){const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+p*x);return .5*(1+s*(1-(((a5*t+a4)*t+a3)*t+a2)*t+a1)*t*Math.exp(-x*x/2));}
+function bsm(S,K,T,r,iv,t){if(T<=0)return t==='call'?Math.max(S-K,0):Math.max(K-S,0);const d1=(Math.log(S/K)+(r+iv*iv/2)*T)/(iv*Math.sqrt(T)),d2=d1-iv*Math.sqrt(T);return t==='call'?S*N(d1)-K*Math.exp(-r*T)*N(d2):K*Math.exp(-r*T)*N(-d2)-S*N(-d1);}
+function delta(S,K,T,r,iv,t){if(T<=0)return t==='call'?(S>K?1:0):(S<K?-1:0);const d1=(Math.log(S/K)+(r+iv*iv/2)*T)/(iv*Math.sqrt(T));return t==='call'?N(d1):N(d1)-1;}
+function getIV(K,T){return IV0+Math.abs(Math.log(SPOT/K))*.3+.005*(1-Math.min(T*12,1));}
+
+// Ticker
+setInterval(()=>{const j=(Math.random()-.5)*2;document.getElementById('hSpot').textContent='₹'+(SPOT+j).toFixed(2);document.getElementById('hChg').textContent=(j>=0?'▲ +':'▼ ')+Math.abs(j).toFixed(2)+'%';document.getElementById('hChg').style.color=j>=0?'var(--green)':'var(--red)';document.getElementById('atmCE').textContent='₹'+bsm(SPOT,1300,19/365,R,IV0,'call').toFixed(2);},5000);
+
+// Mini Chain
+function buildMini(){const T=19/365;const html=[1260,1280,1300,1320,1340].map(k=>{const cp=bsm(SPOT,k,T,R,getIV(k,T),'call'),pp=bsm(SPOT,k,T,R,getIV(k,T),'put');const atm=Math.abs(k-SPOT)<15;const coi=Math.round((600000-Math.abs(k-SPOT)*3000)/1000),poi=Math.round((500000-Math.abs(k-SPOT)*2500)/1000);return`<div class="crow${atm?' atm':''}"><span class="cv">${cp.toFixed(1)}</span><span class="cv">${coi}K</span><span>${k}</span><span class="pv">${pp.toFixed(1)}</span><span class="pv">${poi}K</span></div>`;}).join('');document.getElementById('miniChain').innerHTML=html;}
+
+// Full Chain
+function renderChain(){const days=parseInt(document.getElementById('expSel').value),T=days/365;document.getElementById('chainBody').innerHTML=STRIKES.map(k=>{const iv=getIV(k,T),cp=bsm(SPOT,k,T,R,iv,'call'),pp=bsm(SPOT,k,T,R,iv,'put'),d=delta(SPOT,k,T,R,iv,'call');const atm=Math.abs(k-SPOT)<15,itmC=k<SPOT,itmP=k>SPOT;const coi=Math.round((800000-Math.abs(k-SPOT)*4000)/1000),poi=Math.round((700000-Math.abs(k-SPOT)*3500)/1000);const cv=Math.round(coi*.3),pv=Math.round(poi*.3);return`<tr class="${atm?'atrow':''}"><td class="cv${itmC?' itmcb':''}">${coi}K</td><td class="cv${itmC?' itmcb':''}">${cv}K</td><td class="cv${itmC?' itmcb':''}">${(iv*100).toFixed(1)}%</td><td class="cv${itmC?' itmcb':''}" style="font-weight:600">${cp.toFixed(2)}</td><td class="stk">${atm?'✦':''} ${k}</td><td class="pv${itmP?' itmpb':''}" style="font-weight:600">${pp.toFixed(2)}</td><td class="pv${itmP?' itmpb':''}">${(iv*100).toFixed(1)}%</td><td class="pv${itmP?' itmpb':''}">${pv}K</td><td class="pv${itmP?' itmpb':''}">${poi}K</td></tr>`;}).join('');}
+
+// Moneyness
+let mt='call';
+function setMT(t){mt=t;document.getElementById('mCB').className='tbtn'+(t==='call'?' ca':'');document.getElementById('mPB').className='tbtn'+(t==='put'?' pa':'');calcMoney();}
+function calcMoney(){const S=parseInt(document.getElementById('mSpot').value),K=parseInt(document.getElementById('mStrike').value);document.getElementById('mSpotD').textContent=S.toLocaleString('en-IN');document.getElementById('mStrikeD').textContent=K.toLocaleString('en-IN');document.getElementById('mSpotR').textContent='₹'+S.toLocaleString('en-IN');document.getElementById('mStrikeR').textContent='₹'+K.toLocaleString('en-IN');document.getElementById('mType').textContent=mt==='call'?'Call (CE)':'Put (PE)';const T=19/365,iv=getIV(K,T),d=delta(S,K,T,R,iv,mt);const intr=mt==='call'?Math.max(S-K,0):Math.max(K-S,0);const diff=S-K;let money,expl;if(mt==='call'){if(S>K+5){money='ITM';expl=`Call is ITM by ₹${S-K}. Intrinsic value = ₹${intr}. Profitable to exercise immediately (before premium).`;}else if(S<K-5){money='OTM';expl=`Call is OTM. Needs ₹${K-S} more move to reach strike. Zero intrinsic value.`;}else{money='ATM';expl='Call is ATM. Pure time value. Highest gamma — small moves create big delta change.';}}else{if(K>S+5){money='ITM';expl=`Put is ITM by ₹${K-S}. Intrinsic value = ₹${intr}.`;}else if(K<S-5){money='OTM';expl=`Put is OTM. Needs Reliance to fall ₹${S-K} to reach strike.`;}else{money='ATM';expl='Put is ATM. Pure time value.';}}
+document.getElementById('mDiff').textContent=(diff>=0?'+':'')+'₹'+diff;document.getElementById('mIV').textContent='₹'+intr;document.getElementById('mMoney').textContent=money;document.getElementById('mDelta').textContent='~'+d.toFixed(2);document.getElementById('mExpl').textContent=expl;const b=document.getElementById('mBadge');b.textContent=money;b.className='mbadge '+(money==='ITM'?'mitm':money==='ATM'?'matm':'motm');upCO('co1',10);}
+
+function buildSpec(){const T=19/365;document.getElementById('specBody').innerHTML=STRIKES.map(k=>{const iv=getIV(k,T),intr=Math.max(SPOT-k,0),p=bsm(SPOT,k,T,R,iv,'call'),d=delta(SPOT,k,T,R,iv,'call'),pct=((SPOT-k)/SPOT*100).toFixed(1);const m=k<SPOT-5?'ITM':k>SPOT+5?'OTM':'ATM';const mc=m==='ITM'?'var(--green)':m==='ATM'?'var(--mg2)':'var(--text3)';return`<tr><td style="font-family:'Fira Code',monospace;color:var(--text)">₹${k}</td><td><span style="color:${mc};font-family:'Fira Code',monospace;font-size:.72rem">${m}</span></td><td style="font-family:'Fira Code',monospace;color:var(--green)">₹${intr}</td><td style="font-family:'Fira Code',monospace;color:var(--mg2)">₹${p.toFixed(2)}</td><td style="font-family:'Fira Code',monospace;color:var(--text3)">${pct}%</td><td style="font-family:'Fira Code',monospace;color:var(--amber)">${d.toFixed(2)}</td></tr>`;}).join('');}
+
+// Premium
+let pt='call';
+function setPT(t){pt=t;document.getElementById('pCB').className='tbtn'+(t==='call'?' ca':'');document.getElementById('pPB').className='tbtn'+(t==='put'?' pa':'');calcPrem();}
+function calcPrem(){const S=parseInt(document.getElementById('pSp').value),K=parseInt(document.getElementById('pK').value),T=parseInt(document.getElementById('pT').value)/365,iv=parseFloat(document.getElementById('pIV').value)/100;document.getElementById('pSpD').textContent=S.toLocaleString('en-IN');document.getElementById('pKD').textContent=K.toLocaleString('en-IN');document.getElementById('pTD').textContent=parseInt(document.getElementById('pT').value);document.getElementById('pIVD').textContent=(iv*100).toFixed(1)+'%';const intr=pt==='call'?Math.max(S-K,0):Math.max(K-S,0),prem=bsm(S,K,T,R,iv,pt),tv=Math.max(prem-intr,0),be=pt==='call'?K+prem:K-prem;const pi=prem>0?(intr/prem*100).toFixed(1):'0.0',pti=prem>0?(tv/prem*100).toFixed(1):'100.0';const m=pt==='call'?(S>K+5?'ITM':S<K-5?'OTM':'ATM'):(K>S+5?'ITM':K<S-5?'OTM':'ATM');document.getElementById('pIntr').textContent='₹'+intr.toFixed(2);document.getElementById('pTime').textContent='₹'+tv.toFixed(2);document.getElementById('pTot').textContent='₹'+prem.toFixed(2);document.getElementById('pPI').textContent=pi+'%';document.getElementById('pPT').textContent=pti+'%';document.getElementById('pBE').textContent='₹'+be.toFixed(2);document.getElementById('pMon').textContent=m;document.getElementById('premI').style.width=pi+'%';document.getElementById('pBarI').textContent=pi+'%';document.getElementById('pBarT').textContent=pti+'%';const cp=bsm(S,K,T,R,iv,'call'),pp=bsm(S,K,T,R,iv,'put'),Ke=K*Math.exp(-R*T),lhs=cp+Ke,rhs=pp+S,dif=Math.abs(lhs-rhs);document.getElementById('pcC').textContent='₹'+cp.toFixed(2);document.getElementById('pcP').textContent='₹'+pp.toFixed(2);document.getElementById('pcK').textContent='₹'+K.toLocaleString('en-IN');document.getElementById('pcS').textContent='₹'+S.toLocaleString('en-IN');document.getElementById('pcKe').textContent='₹'+Ke.toFixed(2);document.getElementById('pcLHS').textContent='₹'+lhs.toFixed(2);document.getElementById('pcRHS').textContent='₹'+rhs.toFixed(2);document.getElementById('pcDiff').textContent='₹'+dif.toFixed(2);const r2=document.getElementById('pcRes');if(dif<1){r2.style.background='rgba(74,222,128,.08)';r2.style.border='1px solid rgba(74,222,128,.3)';r2.innerHTML='✅ <strong style="color:var(--green)">Parity holds</strong> — No arbitrage.';}else{r2.style.background='rgba(248,113,113,.08)';r2.style.border='1px solid rgba(248,113,113,.3)';r2.innerHTML=`⚠️ <strong style="color:var(--red)">Violated by ₹${dif.toFixed(2)}</strong> — in real markets, transaction costs close this gap.`;}upCO('co3',15);}
+
+// Payoff
+let curPos='lc';
+function setPos(p){curPos=p;['lc','lp','sc','sp'].forEach(id=>{document.getElementById('pos'+id.toUpperCase()).className='tbtn';});const c=p==='lc'||p==='sc'?'ca':'pa';document.getElementById('pos'+p.toUpperCase()).className='tbtn '+c;const lbl={lc:'Long Call — Payoff at Expiry',lp:'Long Put — Payoff at Expiry',sc:'Short Call — Payoff at Expiry',sp:'Short Put — Payoff at Expiry'};document.getElementById('payLbl').textContent=lbl[p];drawPay();}
+function drawPay(){const K=parseInt(document.getElementById('posK').value),prem=parseFloat(document.getElementById('posPre').value),lots=parseInt(document.getElementById('posLot').value),scen=parseFloat(document.getElementById('posScen').value);document.getElementById('posKD').textContent=K.toLocaleString('en-IN');document.getElementById('posPreD').textContent=prem.toFixed(2);document.getElementById('posLotD').textContent=lots;const isC=curPos==='lc'||curPos==='sc',isL=curPos==='lc'||curPos==='lp';function pnl(S){const iv2=isC?Math.max(S-K,0):Math.max(K-S,0);return isL?(iv2-prem)*LOT*lots:(prem-iv2)*LOT*lots;}const sp=pnl(scen);document.getElementById('posAmt').textContent=(sp>=0?'+':'')+'₹'+Math.abs(Math.round(sp)).toLocaleString('en-IN');document.getElementById('posAmt').style.color=sp>0?'var(--green)':sp<0?'var(--red)':'var(--text2)';document.getElementById('posDet').textContent=`At ₹${scen} | ${lots} lot${lots>1?'s':''} × 500`;upCO('co2',15);const canvas=document.getElementById('payChart');const ctx=canvas.getContext('2d');canvas.width=canvas.offsetWidth*devicePixelRatio;canvas.height=360*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);const W=canvas.offsetWidth,H=360;ctx.clearRect(0,0,W,H);const pad=200,minS=K-pad,maxS=K+pad,ps=[];for(let s=minS;s<=maxS;s+=2)ps.push(s);const pvs=ps.map(pnl),mxP=Math.max(...pvs,prem*LOT*lots*.5),mnP=Math.min(...pvs,-prem*LOT*lots*1.2),rng=mxP-mnP;const px=s=>65+((s-minS)/(maxS-minS))*(W-85),py=v=>20+((mxP-v)/rng)*(H-55);ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;for(let i=0;i<=4;i++){const v=mnP+(i/4)*rng;ctx.beginPath();ctx.moveTo(65,py(v));ctx.lineTo(W-20,py(v));ctx.stroke();ctx.fillStyle='rgba(148,163,184,.5)';ctx.font='10px Fira Code';ctx.fillText((v>=0?'+':'')+'₹'+(Math.abs(v/1000).toFixed(0))+'K',2,py(v)+4);}ctx.strokeStyle='rgba(255,255,255,.15)';ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(65,py(0));ctx.lineTo(W-20,py(0));ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='rgba(192,38,211,.3)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(px(K),10);ctx.lineTo(px(K),H-30);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(192,38,211,.8)';ctx.font='bold 10px Fira Code';ctx.fillText('K=₹'+K,px(K)-20,H-12);const posC=isC?'rgba(74,222,128,':'rgba(248,113,113,',negC=isL?'rgba(248,113,113,':'rgba(74,222,128,';ctx.beginPath();ps.forEach((s,i)=>{i===0?ctx.moveTo(px(s),py(pnl(s))):ctx.lineTo(px(s),py(pnl(s)));});ctx.lineTo(px(maxS),py(0));ctx.lineTo(px(minS),py(0));ctx.closePath();const gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,posC+'.12)');gr.addColorStop(.5,posC+'.04)');gr.addColorStop(.5,negC+'.04)');gr.addColorStop(1,negC+'.12)');ctx.fillStyle=gr;ctx.fill();ctx.beginPath();ps.forEach((s,i)=>{i===0?ctx.moveTo(px(s),py(pnl(s))):ctx.lineTo(px(s),py(pnl(s)));});ctx.strokeStyle=isL?(isC?'#4ade80':'#f87171'):(isC?'rgba(74,222,128,.6)':'rgba(248,113,113,.6)');ctx.lineWidth=2.5;ctx.stroke();if(scen>=minS&&scen<=maxS){const sv=pnl(scen);ctx.fillStyle=sv>=0?'#4ade80':'#f87171';ctx.beginPath();ctx.arc(px(scen),py(sv),7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 10px Outfit';ctx.fillText('₹'+Math.round(scen),px(scen)-16,py(sv)-12);}ctx.fillStyle='rgba(148,163,184,.5)';ctx.font='10px Fira Code';[minS,K-100,K,K+100,maxS].forEach(s=>ctx.fillText('₹'+s,px(s)-14,H-10));}
+
+// Flashcards
+const flashData=[
+  {f:'Strike Price (K)',b:'Pre-agreed exercise price. NSE Reliance options: ₹20 intervals (₹1,260, ₹1,280…). K=₹1,300 = right to buy/sell at ₹1,300.'},
+  {f:'Intrinsic Value',b:'Immediate exercise value. Call IV = max(S−K,0). Put IV = max(K−S,0). ₹1,260 call with S=₹1,285 has IV = ₹25.'},
+  {f:'Time Value',b:'Premium above intrinsic value. Reflects uncertainty and time remaining. Always decays to zero at expiry. ATM options have maximum time value.'},
+  {f:'European Option',b:'Exercisable only AT expiry, not before. All NSE stock & index options are European-style. No early exercise in Indian F&O.'},
+  {f:'Open Interest',b:'Total outstanding option contracts. High put OI below spot = support. High call OI above spot = resistance. Rises with new positions, falls when closed.'},
+  {f:'Put-Call Parity',b:'No-arbitrage: C + Ke^(−rT) = P + S. Ties call & put prices together. Violated only momentarily before arbitrageurs correct it.'},
+  {f:'Implied Volatility',b:"Market's expected future volatility from option price. High IV = expensive. Spikes before events. IV crush = premium collapse after event."},
+  {f:'Break-even Price',b:'Spot price where option buyer neither gains nor loses at expiry. Call BE = K + Premium. Put BE = K − Premium. ₹1,300 CE @ ₹18.50 → BE = ₹1,318.50.'},
+  {f:'Covered Call',b:'Long stock + Short call. Income strategy. Caps upside at K + premium. Most popular options income strategy for long-term holders.'},
+];
+function renderFlash(){document.getElementById('flashGrid').innerHTML=flashData.map((f,i)=>`<div class="flash" id="fl${i}" onclick="document.getElementById('fl${i}').classList.toggle('flipped');upCO('co1',5)"><div class="ff">${f.f}</div><div class="fb">${f.b}</div><div class="fh">Click to flip</div></div>`).join('');}
+
+// Scenarios
+const scenData=[
+  {title:"Scenario 1 — Priya's Defensive Move",story:"Priya holds 2,000 Reliance shares (cost ₹980, current spot ₹1,285). She fears a 10–15% correction before 30-MAR-2026 due to an RBI policy meeting. She does NOT want to sell but wants downside protection.",q:"Which option strategy is most appropriate for Priya?",opts:["Buy Reliance calls (₹1,300 CE @ ₹18.50)","Sell Reliance futures to hedge","Buy Reliance puts (₹1,260 PE @ ₹20) — Protective Put","Write covered calls on her holding"],ans:2,right:"✅ Protective Put! Priya buys 4 lots (2,000÷500) of ₹1,260 PE. Cost = ₹20×500×4 = ₹40,000. If Reliance falls to ₹1,100: shares lose ₹3.7L, puts gain ₹(1,260−1,100)×2,000 = ₹3.2L — substantial protection. She retains full upside if Reliance rises. This is the classic option 'insurance' use case.",wrong:"❌ Reconsider. Buying calls adds bullish exposure (wrong direction). Selling futures eliminates upside too. Covered calls provide only minimal protection (just the premium ~1–2%). The protective put uniquely provides downside insurance while retaining upside."},
+  {title:"Scenario 2 — Rahul's Earnings Play",story:"Rahul expects Reliance to have a strong Q4 earnings announcement in 3 weeks (before 30-MAR expiry). He expects a 5–8% move but is uncertain of direction — could gap up OR gap down. He has ₹50,000 to deploy.",q:"Which option strategy best captures Rahul's view?",opts:["Buy a ₹1,300 call — directional bet on rally","Buy a ₹1,280 put — directional bet on fall","Buy a straddle: ₹1,280 CE + ₹1,280 PE (both ATM)","Sell both call and put (short straddle)"],ans:2,right:"✅ Long Straddle! Buy both CE and PE at same ATM strike (₹1,280). Profits if Reliance moves significantly in EITHER direction. Cost ≈ ₹20 + ₹18 = ₹38/share × 500 = ₹19,000/lot. Break-even: above ₹1,318 or below ₹1,242. A 5–8% move would clear this. Classic 'big move expected, direction uncertain' strategy.",wrong:"❌ Reconsider. Directional bets risk being wrong on direction. Short straddle is the OPPOSITE — profits from no movement and has unlimited risk. When uncertain of direction but expecting high volatility, the long straddle is the textbook answer."},
+  {title:"Scenario 3 — Nisha's Income Strategy",story:"Nisha holds 1,000 Reliance shares at ₹1,200 average. Current spot ₹1,285. She expects Reliance to stay range-bound ₹1,250–₹1,340 for the next 3 weeks. She wants to generate monthly income from her holding without selling.",q:"Which option strategy should Nisha use?",opts:["Buy a ₹1,300 call on Reliance","Write covered calls: Sell ₹1,340 CE against her holding","Buy a ₹1,280 put for protection","Buy a straddle on Reliance"],ans:1,right:"✅ Covered Call! Nisha sells 2 lots of ₹1,340 CE (1,000 shares ÷ 500). Collects say ₹12/share = ₹12,000 income. If Reliance stays below ₹1,340, call expires worthless — she keeps the premium. If Reliance rises above ₹1,340, shares are 'called away' but she still profits: bought at ₹1,200, sold at ₹1,340 + ₹12 premium = ₹152/share profit. Covered calls are the most popular options income strategy.",wrong:"❌ Reconsider. Buying calls adds bullish exposure (she's already long — doubles up). Buying puts protects but costs premium — reduces income. Straddle is expensive and uncertain. Only the covered call generates income using existing shares as collateral — perfect for Nisha's neutral view."},
+  {title:"Scenario 4 — The Arbitrageur",story:"Reliance spot = ₹1,285. ₹1,280 Call trades at ₹28. ₹1,280 Put trades at ₹18. r = 6.5% p.a., days to expiry = 19. Check Put-Call Parity: C + Ke^(−rT) = P + S.",q:"What does Put-Call Parity tell you?",opts:["No arbitrage — call and put fairly priced","Call overpriced — sell call, buy put, buy stock","Put overpriced — buy call, sell put, short stock","Cannot determine without volatility"],ans:0,right:"✅ Parity holds! C + Ke^(−rT) = 28 + 1280×e^(−0.065×19/365) = 28 + 1280×0.9966 = 28 + 1275.6 = ₹1,303.6. P + S = 18 + 1285 = ₹1,303. Difference = ₹0.6 — within transaction costs. No real arbitrage opportunity exists here.",wrong:"❌ Recalculate. e^(−0.065×19/365) ≈ 0.9966. LHS = 28 + 1275.6 = 1303.6. RHS = 18 + 1285 = 1303. Difference = ₹0.6 — within bid-ask spreads and transaction costs. Parity holds. No arbitrage."},
+];
+let scenAns=new Array(scenData.length).fill(false);
+function renderScens(){document.getElementById('scenCont').innerHTML=scenData.map((s,i)=>`<div class="sc2"><div class="sct">📌 ${s.title}</div><div class="scs">${s.story}</div><div class="scq">${s.q}</div><div class="scopts" id="so${i}">${s.opts.map((o,j)=>`<button class="scopt" onclick="ansScen(${i},${j})">${String.fromCharCode(65+j)}. ${o}</button>`).join('')}</div><div class="scexp" id="se${i}"></div></div>`).join('');}
+function ansScen(si,oi){if(scenAns[si])return;scenAns[si]=true;const s=scenData[si];document.querySelectorAll(`#so${si} .scopt`).forEach((o,j)=>{o.classList.add('answered');if(j===s.ans)o.classList.add('correct');else if(j===oi&&oi!==s.ans)o.classList.add('wrong');else o.classList.add('reveal');});const e=document.getElementById('se'+si);const ok=oi===s.ans;e.textContent=ok?s.right:s.wrong;e.className='scexp show '+(ok?'right':'wrong');if(ok)upCO('co2',12);upCO('co1',8);}
+
+// CO Progress
+function upCO(name,val){if(name.includes('co1')||name.includes('CO1')){co1v=Math.min(100,Math.max(co1v,val));document.getElementById('c1f').style.width=co1v+'%';document.getElementById('c1p').textContent=co1v+'%';}if(name.includes('co2')||name.includes('CO2')){co2v=Math.min(100,Math.max(co2v,val));document.getElementById('c2f').style.width=co2v+'%';document.getElementById('c2p').textContent=co2v+'%';}if(name.includes('co3')||name.includes('CO3')){co3v=Math.min(100,Math.max(co3v,val));document.getElementById('c3f').style.width=co3v+'%';document.getElementById('c3p').textContent=co3v+'%';}}
+
+// Quiz
+const Qs=[
+  {q:"Reliance spot = ₹1,285. A trader buys a ₹1,300 Call at ₹22 and a ₹1,280 Put at ₹18 (both 30-MAR-2026, lot 500). (a) Classify each as ITM/ATM/OTM. (b) Calculate intrinsic value of each. (c) If Reliance rises to ₹1,340 at expiry, calculate net P&L per lot on the call. (d) What is the call buyer's break-even?",hint:"OTM call: intrinsic = 0. ITM put: intrinsic = K−S = 1280−1285 = −5 → 0. At expiry: call payoff = max(1340−1300,0)−22 = 18. Per lot = 18×500. BE = K + premium.",co:"CO1"},
+  {q:"The ₹1,260 Call (Reliance spot = ₹1,285, 19 days to expiry) trades at ₹32. (a) Calculate intrinsic value. (b) Calculate time value. (c) What happens to time value as expiry approaches? (d) If IV jumps from 24% to 35%, will the premium increase or decrease and why?",hint:"Intrinsic = max(S−K,0) = max(1285−1260,0) = ₹25. Time value = 32−25 = ₹7. Higher IV → higher premium (vega effect). Time value → 0 at expiry (theta decay).",co:"CO1 & CO3"},
+  {q:"Verify Put-Call Parity: Reliance spot ₹1,285, K = ₹1,280, T = 19 days, r = 6.5%, Call = ₹22, Put = ₹14. (a) Calculate both sides. (b) Is parity violated? (c) If violation > ₹2, describe the exact arbitrage trade.",hint:"LHS = C + Ke^(−rT). RHS = P + S. e^(−0.065×19/365) ≈ 0.9966. LHS = 22 + 1275.6 = 1297.6. RHS = 14 + 1285 = 1299. Difference = ₹1.4 — within transaction costs.",co:"CO1 & CO3"},
+  {q:"An investor holds 5,000 Reliance shares (current ₹1,285). She buys 10 lots of ₹1,260 PE at ₹20. (a) Total cost of protection? (b) If Reliance falls to ₹1,150 at expiry, calculate net loss including put payoff. (c) Compare hedged vs unhedged outcome. (d) What is the effective floor price?",hint:"Lots = 5000÷500 = 10. Cost = ₹20×500×10. Put payoff at ₹1,150 = max(1260−1150,0)×500×10. Unhedged loss = (1285−1150)×5000. Floor = K−premium = 1260−20 = ₹1,240.",co:"CO2"},
+  {q:"A fund manager sells 10 lots of Reliance ₹1,340 Call at ₹8.50/share. (a) Maximum profit? (b) Break-even price? (c) At what spot price does she start losing? (d) She also holds 5,000 Reliance shares — classify this strategy and explain risk/reward. (e) If she holds no underlying, what is maximum loss?",hint:"Short call max profit = premium × lot × lots. BE = K + premium. With underlying = covered call (limited upside but premium income). Without underlying = naked short call, max loss = unlimited.",co:"CO2"},
+];
+let qIdx=0,qScores=new Array(Qs.length).fill(null);
+function renderQDots(){document.getElementById('qDots').innerHTML=Qs.map((_,i)=>`<div class="qdot ${qScores[i]!==null?'done':i===qIdx?'cur':''}"></div>`).join('');}
+function renderQ(){const q=Qs[qIdx];document.getElementById('qBody').innerHTML=`<div class="qn">Question ${qIdx+1} of ${Qs.length} · ${q.co}</div><div class="qt3">${q.q}</div><div class="qhint">💡 ${q.hint}</div><textarea class="qarea" id="ans" placeholder="Write your full answer — show calculations and reasoning..."></textarea><div class="aifb" id="aiFb"><div class="aifbh"><div class="aib">AI</div>CLAUDE'S ASSESSMENT<span class="spl" id="spill"></span></div><div class="aifbb" id="fbBd"></div></div>`;document.getElementById('qStat').textContent='Answer above';document.getElementById('qBtn').textContent='Submit for Grading';document.getElementById('qBtn').onclick=submitQ;document.getElementById('qBtn').disabled=false;}
+async function submitQ(){const ans=document.getElementById('ans')?.value?.trim();if(!ans||ans.length<20){document.getElementById('qStat').textContent='⚠️ Please write a more complete answer';return;}const btn=document.getElementById('qBtn');btn.disabled=true;btn.textContent='Grading...';const q=Qs[qIdx];const fb=document.getElementById('aiFb'),fbb=document.getElementById('fbBd');fb.classList.add('show');fbb.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`You are a Financial Derivatives professor grading a PGDM student on OPTIONS MARKETS (NSE India, Reliance Industries, lot 500).\n\nQUESTION: ${q.q}\n\nSTUDENT ANSWER: ${ans}\n\nGrade 1-10. Check calculations, concepts, application. Return ONLY JSON:\n{"score":<1-10>,"grade":"<Excellent|Good|Needs Work>","feedback":"<2-3 paragraphs>","keyMissed":"<concept missed or Nothing significant>"}\nNo markdown.`}]})});const data=await res.json();const text=data.content?.[0]?.text||'{}';const r=JSON.parse(text.replace(/```json|```/g,'').trim());const sc=r.score||5;document.getElementById('spill').textContent=`${sc}/10 — ${r.grade}`;document.getElementById('spill').className='spl '+(sc>=8?'ex':sc>=6?'gd':'nw');fbb.innerHTML=`<p>${r.feedback}</p>${r.keyMissed&&r.keyMissed!=='Nothing significant'?`<div style="margin-top:10px;padding:10px 12px;background:rgba(245,158,11,.08);border-left:2px solid var(--amber);border-radius:2px;font-size:.85rem"><strong style="color:var(--amber)">Explore further:</strong> ${r.keyMissed}</div>`:''}`;qScores[qIdx]=sc;const co=q.co.includes('CO2')?'co2':q.co.includes('CO3')?'co3':'co1';upCO(co,sc*10);btn.textContent=qIdx<Qs.length-1?'Next Question →':'See Final Score';btn.disabled=false;btn.onclick=nextQ;document.getElementById('qStat').textContent=`Scored ${sc}/10`;renderQDots();}catch(e){fbb.innerHTML='<p style="color:var(--red)">Grading error. Please try again.</p>';btn.disabled=false;btn.textContent='Retry';}}
+function nextQ(){if(qIdx<Qs.length-1){qIdx++;renderQ();renderQDots();}else showFinal();}
+function skipQ(){if(qIdx<Qs.length-1){qIdx++;renderQ();renderQDots();}}
+function showFinal(){const v=qScores.filter(s=>s!==null),avg=v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):0;document.getElementById('qBody').innerHTML=`<div style="text-align:center;padding:40px 0"><div style="font-size:3rem;margin-bottom:12px">${avg>=8?'🏆':avg>=6?'🎯':'📚'}</div><div style="font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-weight:600;color:var(--mg)">${avg}/10</div><div style="color:var(--text2);margin-bottom:24px">Module 3 Complete · ${v.length}/${Qs.length} answered</div><button class="btn bmg" onclick="qIdx=0;qScores=new Array(${Qs.length}).fill(null);renderQ();renderQDots()">Retake</button></div>`;}
+
+// Tab switch
+function sw(tab,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');btn.classList.add('active');if(tab==='chain')renderChain();if(tab==='payoff')drawPay();if(tab==='moneyness'){calcMoney();buildSpec();}if(tab==='premium')calcPrem();if(tab==='scenarios')renderScens();if(tab==='quiz'){renderQ();renderQDots();}}
+
+// Init
+document.addEventListener('DOMContentLoaded',()=>{buildMini();renderFlash();calcMoney();calcPrem();renderQ();renderQDots();buildSpec();});
+</script>
+</body>
+</html>
