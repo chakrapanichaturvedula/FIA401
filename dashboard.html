@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — Instructor Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05080f;--surf:#0a0f1a;--surf2:#111827;--surf3:#1a2438;--accent:#e8c547;--accent2:#4ecdc4;--green:#00e676;--red:#ff6b6b;--blue:#60a5fa;--text:#eef2f7;--text2:#7f8fa6;--text3:#3d4f6b;--border:rgba(232,197,71,0.12);--border2:rgba(255,255,255,0.06);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(232,197,71,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(232,197,71,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+.w{max-width:1500px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
+
+/* HEADER */
+header{background:rgba(5,8,15,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:100;}
+.hd{display:flex;align-items:center;justify-content:space-between;}
+.hlogo{font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;}
+.hlogo span{color:var(--accent);}
+.hbadge{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--accent);border:1px solid var(--border);padding:3px 9px;border-radius:20px;letter-spacing:0.08em;}
+.hbtns{display:flex;align-items:center;gap:10px;}
+.btn{font-family:'Syne',sans-serif;font-size:0.73rem;font-weight:700;padding:7px 14px;border-radius:5px;cursor:pointer;border:none;transition:all 0.2s;}
+.btn-ghost{background:var(--surf2);color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-acc{background:var(--accent);color:#000;}
+.btn-acc:hover{background:#f0d060;}
+
+/* AUTH GATE */
+#authGate{display:flex;align-items:center;justify-content:center;min-height:85vh;}
+.authbox{background:var(--surf);border:1px solid var(--border2);border-radius:12px;padding:44px;width:340px;text-align:center;}
+.authbox h2{font-size:1.15rem;font-weight:700;margin-bottom:6px;}
+.authbox p{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text3);margin-bottom:24px;letter-spacing:0.06em;}
+.authbox input{width:100%;background:var(--surf2);border:1px solid var(--border2);border-radius:6px;padding:11px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.85rem;outline:none;margin-bottom:12px;transition:border-color 0.2s;text-align:center;letter-spacing:0.1em;}
+.authbox input:focus{border-color:rgba(232,197,71,0.4);}
+.aerr{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--red);margin-top:8px;display:none;}
+.aerr.show{display:block;}
+
+/* MAIN */
+#dashMain{display:none;padding:28px 0;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px;}
+.stat{background:var(--surf);border:1px solid var(--border2);border-radius:8px;padding:16px 18px;}
+.sv{font-size:1.9rem;font-weight:800;letter-spacing:-0.02em;line-height:1;}
+.sl{font-family:'JetBrains Mono',monospace;font-size:0.55rem;color:var(--text3);margin-top:4px;letter-spacing:0.08em;text-transform:uppercase;}
+.ss{font-family:'JetBrains Mono',monospace;font-size:0.6rem;margin-top:3px;}
+
+/* MODULE COMPLETION */
+.modbars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:26px;}
+.mb{background:var(--surf);border:1px solid var(--border2);border-radius:8px;padding:12px 10px;text-align:center;}
+.mb-lbl{font-family:'JetBrains Mono',monospace;font-size:0.55rem;color:var(--text3);margin-bottom:8px;letter-spacing:0.06em;}
+.mb-track{height:56px;background:var(--surf2);border-radius:4px;position:relative;overflow:hidden;margin-bottom:6px;}
+.mb-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,var(--accent),rgba(232,197,71,0.35));border-radius:4px;transition:height 1.2s ease;}
+.mb-pct{font-size:0.78rem;font-weight:700;color:var(--accent);}
+.mb-avg{font-family:'JetBrains Mono',monospace;font-size:0.55rem;color:var(--text3);margin-top:2px;}
+
+/* SECTION */
+.sec{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;}
+.sec-t{font-size:0.95rem;font-weight:700;}
+.sec-s{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--text3);}
+
+/* FILTERS */
+.frow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.ftag{font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surf2);color:var(--text3);cursor:pointer;transition:all 0.15s;}
+.ftag.on,.ftag:hover{border-color:var(--accent);color:var(--accent);background:rgba(232,197,71,0.06);}
+.fsearch{margin-left:auto;}
+.fsearch input{background:var(--surf2);border:1px solid var(--border2);border-radius:5px;padding:6px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.7rem;outline:none;width:175px;transition:border-color 0.2s;}
+.fsearch input:focus{border-color:rgba(232,197,71,0.35);}
+
+/* GRADEBOOK TABLE */
+.twrap{background:var(--surf);border:1px solid var(--border2);border-radius:10px;overflow:auto;margin-bottom:26px;}
+.gt{width:100%;border-collapse:collapse;font-size:0.8rem;white-space:nowrap;}
+.gt th{padding:9px 12px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.54rem;color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;border-bottom:1px solid var(--border2);background:var(--surf2);}
+.gt th:first-child,.gt th:nth-child(2){text-align:left;}
+.gt td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center;vertical-align:middle;}
+.gt td:first-child,.gt td:nth-child(2){text-align:left;}
+.gt tr:last-child td{border-bottom:none;}
+.gt tr:hover td{background:rgba(255,255,255,0.012);}
+.eid{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--accent);}
+.sname{font-weight:600;font-size:0.83rem;}
+/* score badges */
+.sc{font-family:'JetBrains Mono',monospace;font-size:0.68rem;font-weight:600;}
+.sc.hi{color:var(--green);}
+.sc.md{color:var(--accent);}
+.sc.lo{color:var(--red);}
+.sc.na{color:var(--text3);}
+/* seen / not seen */
+.seen{font-size:0.75rem;}
+.seen.yes{color:var(--green);}
+.seen.no{color:var(--text3);}
+/* time cell */
+.tc{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2);}
+/* module group header */
+.mgh{background:rgba(232,197,71,0.04)!important;font-weight:700;color:var(--accent)!important;font-size:0.6rem!important;}
+/* progress col */
+.prog{display:flex;align-items:center;gap:7px;min-width:100px;}
+.progbar{flex:1;height:4px;background:var(--surf3);border-radius:2px;overflow:hidden;}
+.progfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;}
+.progpct{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);width:26px;text-align:right;}
+.last{font-family:'JetBrains Mono',monospace;font-size:0.63rem;color:var(--text3);}
+
+/* ACTIVITY LOG */
+.logwrap{background:var(--surf);border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:26px;}
+.logitem{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid rgba(255,255,255,0.03);}
+.logitem:last-child{border-bottom:none;}
+.logdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.logdot.LOGIN{background:var(--accent2);}
+.logdot.MODULE_OPEN{background:var(--accent);}
+.logdot.MODULE_EXIT{background:rgba(232,197,71,0.4);}
+.logdot.QUIZ_SUBMIT{background:var(--green);}
+.logdot.SCENARIO{background:var(--blue);}
+.logtime{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);width:140px;flex-shrink:0;}
+.logid{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--accent);width:110px;flex-shrink:0;}
+.logdesc{font-size:0.8rem;color:var(--text2);}
+.logscore{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--green);margin-left:auto;flex-shrink:0;}
+.empty{text-align:center;padding:44px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text3);}
+.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bt 1.2s infinite;margin:0 2px;}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bt{0%,100%{transform:translateY(0);opacity:.3}50%{transform:translateY(-5px);opacity:1}}
+
+@media(max-width:1200px){.stats{grid-template-columns:repeat(3,1fr)}.modbars{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}.modbars{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="w hd">
+    <div style="display:flex;align-items:center;gap:12px">
+      <a href="index.html" style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);text-decoration:none;border:1px solid var(--border2);padding:4px 9px;border-radius:3px;">← Course</a>
+      <div class="hlogo">Derivatives<span>Lab</span></div>
+      <div class="hbadge">INSTRUCTOR DASHBOARD</div>
+    </div>
+    <div class="hbtns">
+      <button class="btn btn-ghost" onclick="loadDashboard()">↻ Refresh</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-acc"   onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</header>
+
+<div class="w">
+
+  <!-- AUTH GATE -->
+  <div id="authGate">
+    <div class="authbox">
+      <h2>Instructor Access</h2>
+      <p>ENTER DASHBOARD PASSWORD</p>
+      <input type="password" id="dashPwd" placeholder="••••••••••" onkeydown="if(event.key==='Enter')checkAuth()">
+      <button class="btn btn-acc" style="width:100%;padding:11px" onclick="checkAuth()">Open Dashboard</button>
+      <div class="aerr" id="aerr">Incorrect password. Try again.</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashMain">
+
+    <div class="stats" id="statsRow">
+      <div class="stat"><div class="sv" id="stTotal" style="color:var(--accent)">—</div><div class="sl">Students</div><div class="ss" style="color:var(--text3)">enrolled</div></div>
+      <div class="stat"><div class="sv" id="stActive" style="color:var(--accent2)">—</div><div class="sl">Active (7d)</div><div class="ss" id="stActivePct" style="color:var(--accent2)">—</div></div>
+      <div class="stat"><div class="sv" id="stComp" style="color:var(--green)">—</div><div class="sl">All 7 Done</div><div class="ss" id="stCompPct" style="color:var(--text3)">—</div></div>
+      <div class="stat"><div class="sv" id="stAvg" style="color:var(--accent)">—</div><div class="sl">Avg Score</div><div class="ss" style="color:var(--text3)">all quizzes</div></div>
+      <div class="stat"><div class="sv" id="stQuiz" style="color:var(--blue)">—</div><div class="sl">Quiz Attempts</div><div class="ss" style="color:var(--text3)">total</div></div>
+      <div class="stat"><div class="sv" id="stMins" style="color:var(--accent2)">—</div><div class="sl">Total Mins</div><div class="ss" style="color:var(--text3)">across all students</div></div>
+    </div>
+
+    <div class="sec"><div><div class="sec-t">Module Completion &amp; Avg Time</div><div class="sec-s">% of students who opened each module · average time spent</div></div></div>
+    <div class="modbars" id="modBars"></div>
+
+    <!-- GRADEBOOK -->
+    <div class="sec">
+      <div><div class="sec-t">Student Gradebook</div><div class="sec-s" id="gbCount">Loading...</div></div>
+    </div>
+    <div class="frow">
+      <button class="ftag on" onclick="filterBy('all',this)">All Students</button>
+      <button class="ftag" onclick="filterBy('active',this)">Active (7d)</button>
+      <button class="ftag" onclick="filterBy('complete',this)">All Modules Done</button>
+      <button class="ftag" onclick="filterBy('noQuiz',this)">No Quiz Yet</button>
+      <div class="fsearch"><input type="text" id="searchBox" placeholder="Search ID or name..." oninput="renderTable()"></div>
+    </div>
+    <div class="twrap">
+      <table class="gt" id="gbTable">
+        <thead>
+          <tr>
+            <th rowspan="2">Enrollment ID</th>
+            <th rowspan="2">Name</th>
+            <th rowspan="2">Progress</th>
+            <th colspan="3" class="mgh">Module 1</th>
+            <th colspan="3" class="mgh">Module 2</th>
+            <th colspan="3" class="mgh">Module 3</th>
+            <th colspan="3" class="mgh">Module 4</th>
+            <th colspan="3" class="mgh">Module 5</th>
+            <th colspan="3" class="mgh">Module 6</th>
+            <th colspan="3" class="mgh">Module 7</th>
+            <th rowspan="2">Last Active</th>
+          </tr>
+          <tr id="subheadRow">
+            <!-- M1-M7 sub-headers injected by JS -->
+          </tr>
+        </thead>
+        <tbody id="gbBody"><tr><td colspan="25" class="empty"><div class="dots"><span></span><span></span><span></span></div></td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="sec">
+      <div><div class="sec-t">Recent Activity</div><div class="sec-s">Last 50 events across all students</div></div>
+    </div>
+    <div class="logwrap" id="logWrap">
+      <div class="empty"><div class="dots"><span></span><span></span><span></span></div></div>
+    </div>
+
+  </div><!-- /dashMain -->
+</div><!-- /w -->
+
+<script>
+// ── CONFIG ──
+const APPS_SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbzxgpQSW_9Ui0N8tdYcmROATenlo_ceVGpXpOkv7S8ruoJp-4B6RNwuDJA7AEMW4siAiQ/exec';
+const DASH_PWD_HASH     = ''; // leave blank — password checked server-side
+const INSTRUCTOR_SECRET = 'IMTFD26_INSTRUCTOR'; // sent to Apps Script for auth
+
+let allStudents = [];
+let allActivity = [];
+let currentFilter = 'all';
+
+// ── SHA256 helper ──
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── AUTH ──
+async function checkAuth(){
+  const pwd = document.getElementById('dashPwd').value.trim();
+  // Simple local check — instructor sets their own password hash here
+  // For now, checking a hardcoded hash of 'IMTFD26_INSTRUCTOR'
+  const h = await sha256(pwd);
+  // Hash of 'FIA401dash' — change this to your preferred dashboard password
+  if(h === '7615db60a85adf8fcfae8d9a081ea89d77ae2a900835f2ebb57ca9c2eae3290a'){
+    document.getElementById('authGate').style.display='none';
+    document.getElementById('dashMain').style.display='block';
+    loadDashboard();
+  } else {
+    document.getElementById('aerr').classList.add('show');
+  }
+}
+
+// ── LOAD DATA ──
+async function loadDashboard(){
+  try{
+    const res  = await fetch(`${APPS_SCRIPT_URL}?action=summary&pwd=${encodeURIComponent(INSTRUCTOR_SECRET)}`);
+    const data = await res.json();
+    if(!data.success){ alert('Error: '+data.message); return; }
+    allStudents = data.students || [];
+    allActivity = data.recentActivity || [];
+    renderStats();
+    renderModBars();
+    renderTable();
+    renderLog();
+  }catch(e){
+    console.error('Dashboard load error:',e);
+    // Show demo data if Apps Script not configured yet
+    loadDemoData();
+  }
+}
+
+function loadDemoData(){
+  allStudents = [
+    {'Enrollment ID':'24A1HP013','Name':'Student 1','M1 Seen':'✅','M1 Mins':34,'M1 Quiz':'8/10','M2 Seen':'✅','M2 Mins':28,'M2 Quiz':'7/10','M3 Seen':'✅','M3 Mins':22,'M3 Quiz':'—','M4 Seen':'❌','M4 Mins':0,'M4 Quiz':'—','M5 Seen':'❌','M5 Mins':0,'M5 Quiz':'—','M6 Seen':'❌','M6 Mins':0,'M6 Quiz':'—','M7 Seen':'❌','M7 Mins':0,'M7 Quiz':'—'},
+    {'Enrollment ID':'24A1HP085','Name':'Student 2','M1 Seen':'✅','M1 Mins':41,'M1 Quiz':'9/10','M2 Seen':'✅','M2 Mins':35,'M2 Quiz':'8/10','M3 Seen':'✅','M3 Mins':30,'M3 Quiz':'9/10','M4 Seen':'✅','M4 Mins':25,'M4 Quiz':'7/10','M5 Seen':'✅','M5 Mins':28,'M5 Quiz':'8/10','M6 Seen':'✅','M6 Mins':32,'M6 Quiz':'7/10','M7 Seen':'✅','M7 Mins':29,'M7 Quiz':'8/10'},
+    {'Enrollment ID':'24A1HP153','Name':'Student 3','M1 Seen':'✅','M1 Mins':18,'M1 Quiz':'6/10','M2 Seen':'✅','M2 Mins':12,'M2 Quiz':'5/10','M3 Seen':'❌','M3 Mins':0,'M3 Quiz':'—','M4 Seen':'❌','M4 Mins':0,'M4 Quiz':'—','M5 Seen':'❌','M5 Mins':0,'M5 Quiz':'—','M6 Seen':'❌','M6 Mins':0,'M6 Quiz':'—','M7 Seen':'❌','M7 Mins':0,'M7 Quiz':'—'},
+    {'Enrollment ID':'24A3HP640','Name':'Student 4','M1 Seen':'✅','M1 Mins':29,'M1 Quiz':'7/10','M2 Seen':'✅','M2 Mins':24,'M2 Quiz':'8/10','M3 Seen':'✅','M3 Mins':19,'M3 Quiz':'6/10','M4 Seen':'✅','M4 Mins':21,'M4 Quiz':'—','M5 Seen':'❌','M5 Mins':0,'M5 Quiz':'—','M6 Seen':'❌','M6 Mins':0,'M6 Quiz':'—','M7 Seen':'❌','M7 Mins':0,'M7 Quiz':'—'},
+    {'Enrollment ID':'24A1HP215','Name':'Student 5','M1 Seen':'✅','M1 Mins':22,'M1 Quiz':'5/10','M2 Seen':'❌','M2 Mins':0,'M2 Quiz':'—','M3 Seen':'❌','M3 Mins':0,'M3 Quiz':'—','M4 Seen':'❌','M4 Mins':0,'M4 Quiz':'—','M5 Seen':'❌','M5 Mins':0,'M5 Quiz':'—','M6 Seen':'❌','M6 Mins':0,'M6 Quiz':'—','M7 Seen':'❌','M7 Mins':0,'M7 Quiz':'—'},
+  ];
+  allActivity = [
+    [new Date().toLocaleString(),'24A1HP085','MODULE_OPEN','Module 3','',''],
+    [new Date().toLocaleString(),'24A1HP013','QUIZ_SUBMIT','Module 2','8/10',''],
+    [new Date().toLocaleString(),'24A3HP640','MODULE_EXIT','Module 4','','21'],
+    [new Date().toLocaleString(),'24A1HP215','LOGIN','','Session started',''],
+    [new Date().toLocaleString(),'24A1HP153','MODULE_OPEN','Module 1','',''],
+  ];
+  renderStats(); renderModBars(); renderTable(); renderLog();
+}
+
+// ── STATS ──
+function renderStats(){
+  const n = allStudents.length;
+  document.getElementById('stTotal').textContent = n;
+
+  // Active = logged in within 7 days (approximate from activity log)
+  const week=7*24*60*60*1000, now=Date.now();
+  const activeIds=new Set(allActivity.filter(r=>r[2]==='LOGIN'&&(now-new Date(r[0]).getTime())<week).map(r=>r[1]));
+  document.getElementById('stActive').textContent=activeIds.size;
+  document.getElementById('stActivePct').textContent=n?Math.round(activeIds.size/n*100)+'% of class':'';
+
+  // Completed all 7
+  const comp=allStudents.filter(s=>['M1 Seen','M2 Seen','M3 Seen','M4 Seen','M5 Seen','M6 Seen','M7 Seen'].every(k=>s[k]==='✅')).length;
+  document.getElementById('stComp').textContent=comp;
+  document.getElementById('stCompPct').textContent=n?Math.round(comp/n*100)+'% of class':'';
+
+  // Avg quiz score
+  let scores=[],quizCount=0;
+  allStudents.forEach(s=>{
+    for(let i=1;i<=7;i++){const q=s[`M${i} Quiz`];if(q&&q!=='—'){const m=q.match(/(\d+)\/10/);if(m){scores.push(parseInt(m[1]));quizCount++;}}}
+  });
+  document.getElementById('stAvg').textContent=scores.length?( scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1)+'/10':'—';
+  document.getElementById('stQuiz').textContent=quizCount;
+
+  // Total mins
+  let totalMins=0;
+  allStudents.forEach(s=>{for(let i=1;i<=7;i++)totalMins+=parseFloat(s[`M${i} Mins`])||0;});
+  document.getElementById('stMins').textContent=Math.round(totalMins);
+}
+
+// ── MODULE BARS ──
+function renderModBars(){
+  const n=allStudents.length||1;
+  const bars=document.getElementById('modBars');
+  const mNames=['Markets','Futures','Options','Hedging','Strategies','Pricing','Greeks & MC'];
+  bars.innerHTML='';
+  for(let i=1;i<=7;i++){
+    const seen=allStudents.filter(s=>s[`M${i} Seen`]==='✅').length;
+    const pct=Math.round(seen/n*100);
+    const avgMins=(allStudents.reduce((a,s)=>a+(parseFloat(s[`M${i} Mins`])||0),0)/n).toFixed(0);
+    const scores=[];
+    allStudents.forEach(s=>{const q=s[`M${i} Quiz`];if(q&&q!=='—'){const m=q.match(/(\d+)\/10/);if(m)scores.push(parseInt(m[1]));}});
+    const avgQ=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'—';
+    bars.innerHTML+=`<div class="mb">
+      <div class="mb-lbl">M${i} · ${mNames[i-1]}</div>
+      <div class="mb-track"><div class="mb-fill" style="height:${pct}%"></div></div>
+      <div class="mb-pct">${pct}%</div>
+      <div class="mb-avg">${avgMins}m avg · quiz ${avgQ}</div>
+    </div>`;
+  }
+}
+
+// ── TABLE ──
+function filterBy(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.ftag').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderTable();
+}
+
+function renderTable(){
+  // Build sub-header
+  const sub=document.getElementById('subheadRow');
+  sub.innerHTML='';
+  for(let i=0;i<7;i++) sub.innerHTML+=`<th>Seen</th><th>Mins</th><th>Quiz</th>`;
+
+  const search=(document.getElementById('searchBox')?.value||'').toLowerCase();
+  let rows=allStudents.filter(s=>{
+    const id=(s['Enrollment ID']||'').toLowerCase();
+    const nm=(s['Name']||'').toLowerCase();
+    if(search&&!id.includes(search)&&!nm.includes(search))return false;
+    if(currentFilter==='active') return allActivity.some(a=>a[1]===s['Enrollment ID']&&(Date.now()-new Date(a[0]).getTime())<7*24*60*60*1000);
+    if(currentFilter==='complete') return [1,2,3,4,5,6,7].every(i=>s[`M${i} Seen`]==='✅');
+    if(currentFilter==='noQuiz') return [1,2,3,4,5,6,7].every(i=>!s[`M${i} Quiz`]||s[`M${i} Quiz`]==='—');
+    return true;
+  });
+
+  document.getElementById('gbCount').textContent=`${rows.length} student${rows.length!==1?'s':''}`;
+  const tbody=document.getElementById('gbBody');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="25" class="empty">No students match this filter.</td></tr>`;return;}
+
+  tbody.innerHTML=rows.map(s=>{
+    const seen=[1,2,3,4,5,6,7].filter(i=>s[`M${i} Seen`]==='✅').length;
+    const pct=Math.round(seen/7*100);
+    let mCells='';
+    for(let i=1;i<=7;i++){
+      const isSeen=s[`M${i} Seen`]==='✅';
+      const mins=parseFloat(s[`M${i} Mins`])||0;
+      const quiz=s[`M${i} Quiz`]||'—';
+      const qClass=quiz==='—'?'na':parseInt(quiz)>=8?'hi':parseInt(quiz)>=6?'md':'lo';
+      mCells+=`<td class="seen ${isSeen?'yes':'no'}">${isSeen?'✅':'—'}</td>`;
+      mCells+=`<td class="tc">${mins>0?mins+'m':'—'}</td>`;
+      mCells+=`<td><span class="sc ${qClass}">${quiz}</span></td>`;
+    }
+    // Last active from activity log
+    const acts=allActivity.filter(a=>a[1]===s['Enrollment ID']);
+    const last=acts.length?acts[acts.length-1][0]:'Never';
+    return `<tr>
+      <td class="eid">${s['Enrollment ID']}</td>
+      <td class="sname">${s['Name']}</td>
+      <td><div class="prog"><div class="progbar"><div class="progfill" style="width:${pct}%"></div></div><span class="progpct">${pct}%</span></div></td>
+      ${mCells}
+      <td class="last">${formatDate(last)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ACTIVITY LOG ──
+function renderLog(){
+  const wrap=document.getElementById('logWrap');
+  const recent=[...allActivity].reverse().slice(0,50);
+  if(!recent.length){wrap.innerHTML=`<div class="empty">No activity recorded yet.</div>`;return;}
+  wrap.innerHTML=recent.map(r=>{
+    const [ts,id,event,module,detail,mins]=r;
+    const dot=`<div class="logdot ${event||'LOGIN'}"></div>`;
+    const desc=event==='MODULE_OPEN'?`Opened ${module}`
+              :event==='MODULE_EXIT'?`Exited ${module} (${mins||0} mins)`
+              :event==='QUIZ_SUBMIT'?`Quiz submitted — ${module}`
+              :event==='SCENARIO'?`Scenario completed — ${module}`
+              :event==='LOGIN'?'Logged in'
+              :detail||event;
+    const score=(event==='QUIZ_SUBMIT'||event==='SCENARIO')&&detail?`<span class="logscore">${detail}</span>`:'';
+    return `<div class="logitem">${dot}<div class="logtime">${formatDate(ts)}</div><div class="logid">${id}</div><div class="logdesc">${desc}</div>${score}</div>`;
+  }).join('');
+}
+
+// ── EXPORT CSV ──
+function exportCSV(){
+  if(!allStudents.length){alert('No data to export.');return;}
+  const headers=['Enrollment ID','Name','M1 Seen','M1 Mins','M1 Quiz','M2 Seen','M2 Mins','M2 Quiz','M3 Seen','M3 Mins','M3 Quiz','M4 Seen','M4 Mins','M4 Quiz','M5 Seen','M5 Mins','M5 Quiz','M6 Seen','M6 Mins','M6 Quiz','M7 Seen','M7 Mins','M7 Quiz'];
+  const rows=allStudents.map(s=>headers.map(h=>`"${(s[h]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`FIA401_Gradebook_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function formatDate(ts){
+  if(!ts||ts==='Never')return 'Never';
+  try{const d=new Date(ts);return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return ts;}
+}
+
+function logout(){
+  document.getElementById('authGate').style.display='flex';
+  document.getElementById('dashMain').style.display='none';
+  document.getElementById('dashPwd').value='';
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('authGate').style.display!=='none')checkAuth();});
+</script>
+</body>
+</html>
