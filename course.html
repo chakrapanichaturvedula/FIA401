@@ -860,6 +860,13 @@
     <div class="header-right">
       <div class="term-badge">Term IV · AY 2025–26</div>
       <div class="inst-badge">PGDM · PGDM(Fin) · PGDM(Mkt)</div>
+      <div id="studentInfo" style="display:none;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:7px;background:rgba(232,197,71,0.07);border:1px solid rgba(232,197,71,0.2);border-radius:20px;padding:5px 12px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:#00e676;box-shadow:0 0 6px #00e676;flex-shrink:0;"></div>
+          <span id="studentNameDisplay" style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:#e8c547;letter-spacing:0.06em;"></span>
+        </div>
+        <button onclick="doLogout()" style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:5px 12px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:20px;color:#7f8fa6;cursor:pointer;transition:all 0.2s;letter-spacing:0.05em;" onmouseover="this.style.borderColor='#ff6b6b';this.style.color='#ff6b6b';" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='#7f8fa6';">Sign Out</button>
+      </div>
     </div>
   </div>
 </header>
@@ -885,16 +892,7 @@
         <div class="meta-label">Textbook</div>
         <div class="meta-value">Hull — 9th Edition</div>
       </div>
-      <div class="meta-divider"></div>
-      <div class="meta-item">
-        <div class="meta-label">Underlying</div>
-        <div class="meta-value">Reliance Industries (NSE)</div>
-      </div>
-      <div class="meta-divider"></div>
-      <div class="meta-item">
-        <div class="meta-label">Near Month Expiry</div>
-        <div class="meta-value">30-MAR-2026</div>
-      </div>
+
     </div>
   </div>
 
@@ -1173,14 +1171,22 @@
       window.location.href = 'index.html';
       return;
     }
-    // Show student name in header if element exists
-    const nameEl = document.getElementById('studentName');
-    if (nameEl) nameEl.textContent = s.name || s.enrollId;
+    const info = document.getElementById('studentInfo');
+    const nameEl = document.getElementById('studentNameDisplay');
+    if (info) info.style.display = 'flex';
+    if (nameEl) nameEl.textContent = s.enrollId || s.name;
   } catch(e) {
     localStorage.removeItem('dlabSession');
     window.location.href = 'index.html';
   }
 })();
+
+function doLogout() {
+  if (confirm('Sign out of DerivativesLab?')) {
+    localStorage.removeItem('dlabSession');
+    window.location.href = 'index.html';
+  }
+}
 </script>
 </body>
 </html>
