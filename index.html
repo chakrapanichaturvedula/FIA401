@@ -80,7 +80,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
     <div class="field">
       <label>Enrollment ID</label>
-      <input type="text" id="enrollId" placeholder="e.g. 24A1HP013" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
+      <input type="text" id="enrollId" placeholder="e.g. 26A1HP013" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
       <div class="hint">Your IMT enrollment / roll number</div>
     </div>
     <div class="field">
@@ -110,7 +110,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
 const CLASS_KEY      = 'IMTFD26';  // plain comparison — safe, file is on HTTPS
-const VALID_IDS      = ['24A1HP013','24A1HP085','24A1HP153','24A3HP640','24A1HP215'];
+const VALID_IDS      = ['26A1HP013','26A1HP085','26A1HP153','26A3HP640','26A1HP215'];
 
 // JSONP helper — bypasses CORS for Google Apps Script
 function callAppsScript(params){
