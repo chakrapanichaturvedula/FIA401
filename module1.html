@@ -1899,5 +1899,76 @@ document.getElementById('participantModal').addEventListener('click', function(e
   if (e.target === this) closeModal();
 });
 </script>
+
+<script>
+// ── DerivativesLab Tracking — Module 1 ──
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
+const MODULE_NUM = '1';
+
+// Get session
+function getSession() {
+  try { return JSON.parse(localStorage.getItem('dlabSession') || 'null'); } catch(e) { return null; }
+}
+
+// JSONP call to Apps Script
+function track(params) {
+  try {
+    const s = getSession();
+    if (!s || !s.enrollId) return;
+    params.id = s.enrollId;
+    const cbName = 'tcb_' + Math.random().toString(36).slice(2);
+    const qs = Object.entries(params).map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
+    const sc = document.createElement('script');
+    sc.src = APPS_SCRIPT_URL + '?' + qs + '&callback=' + cbName;
+    window[cbName] = function() { delete window[cbName]; sc.remove(); };
+    sc.onerror = function() { delete window[cbName]; sc.remove(); };
+    document.head.appendChild(sc);
+  } catch(e) {}
+}
+
+// Time tracking
+let startTime = Date.now();
+let totalMins = 0;
+let isVisible = true;
+let activeStart = Date.now();
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    if (isVisible) totalMins += (Date.now() - activeStart) / 60000;
+    isVisible = false;
+  } else {
+    isVisible = true;
+    activeStart = Date.now();
+  }
+});
+
+// Send time every 5 minutes while active
+setInterval(function() {
+  if (!document.hidden) {
+    totalMins += (Date.now() - activeStart) / 60000;
+    activeStart = Date.now();
+    if (totalMins >= 1) {
+      track({ action: 'time', module: MODULE_NUM, mins: totalMins.toFixed(1) });
+      totalMins = 0;
+    }
+  }
+}, 5 * 60 * 1000);
+
+// Send on page unload
+window.addEventListener('beforeunload', function() {
+  if (!document.hidden) totalMins += (Date.now() - activeStart) / 60000;
+  if (totalMins > 0.1) {
+    track({ action: 'time', module: MODULE_NUM, mins: totalMins.toFixed(1) });
+  }
+  track({ action: 'log', event: 'MODULE_EXIT', module: MODULE_NUM, detail: '', mins: totalMins.toFixed(1) });
+});
+
+// Fire MODULE_OPEN on load
+window.addEventListener('load', function() {
+  const s = getSession();
+  if (!s || !s.enrollId) return;
+  track({ action: 'log', event: 'MODULE_OPEN', module: MODULE_NUM, detail: '', mins: 0 });
+});
+</script>
 </body>
 </html>
