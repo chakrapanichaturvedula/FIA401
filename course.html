@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — FIA 401 Financial Derivatives</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05080f;
+    --surface: #0a0f1a;
+    --surface2: #111827;
+    --surface3: #1a2438;
+    --accent: #e8c547;
+    --accent2: #4ecdc4;
+    --accent3: #ff6b6b;
+    --text: #eef2f7;
+    --text2: #7f8fa6;
+    --text3: #3d4f6b;
+    --border: rgba(232,197,71,0.12);
+    --border2: rgba(255,255,255,0.06);
+    --green: #00e676;
+    --glow-gold: 0 0 40px rgba(232,197,71,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Playfair Display', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── DIAGONAL GRID ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(232,197,71,0.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(232,197,71,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5,8,15,0.92);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .logo-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .inst-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .term-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text2);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 0 70px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-number {
+    position: absolute;
+    right: -40px;
+    top: -20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 28rem;
+    font-weight: 800;
+    color: rgba(232,197,71,0.03);
+    line-height: 1;
+    pointer-events: none;
+    letter-spacing: -0.05em;
+    user-select: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-course-code {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 28px;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--text2);
+    max-width: 580px;
+    line-height: 1.75;
+    font-weight: 400;
+    margin-bottom: 40px;
+  }
+
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .meta-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border2);
+  }
+
+  /* ── PROGRESS STRIP ── */
+  .progress-strip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 24px;
+    margin-bottom: 56px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .progress-modules {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .progress-pip {
+    flex: 1;
+    height: 4px;
+    background: var(--surface3);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-pip-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .progress-pip-fill.done { background: var(--accent); }
+  .progress-pip-fill.active { background: var(--accent2); width: 40% !important; animation: shimmer 2s infinite; }
+  .progress-pip-fill.locked { background: var(--surface3); width: 0%; }
+
+  @keyframes shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .progress-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* ── SECTION HEADINGS ── */
+  .section-heading {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  /* ── MODULE GRID ── */
+  .module-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 64px;
+  }
+
+  .module-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    cursor: pointer;
+  }
+
+  .module-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  .module-card.available:hover {
+    border-color: var(--accent);
+    box-shadow: var(--glow-gold);
+  }
+
+  .module-card.active-module {
+    border-color: rgba(78,205,196,0.4);
+  }
+
+  .module-card.active-module:hover {
+    border-color: var(--accent2);
+    box-shadow: 0 12px 40px rgba(78,205,196,0.15);
+  }
+
+  .module-card.locked {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .module-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border2);
+  }
+
+  /* Accent bar top */
+  .module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .module-card.available::before { background: linear-gradient(90deg, var(--accent), transparent); }
+  .module-card.active-module::before { background: linear-gradient(90deg, var(--accent2), transparent); opacity: 1; }
+  .module-card.available:hover::before { opacity: 1; }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .module-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .module-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .status-live {
+    background: rgba(232,197,71,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(232,197,71,0.25);
+  }
+
+  .status-building {
+    background: rgba(78,205,196,0.1);
+    color: var(--accent2);
+    border: 1px solid rgba(78,205,196,0.2);
+  }
+
+  .status-soon {
+    background: rgba(255,255,255,0.04);
+    color: var(--text3);
+    border: 1px solid var(--border2);
+  }
+
+  .module-icon {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+    display: block;
+    line-height: 1;
+  }
+
+  .module-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .module-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .module-subtitle.teal { color: var(--accent2); }
+  .module-subtitle.muted { color: var(--text3); }
+
+  .module-desc {
+    font-size: 0.9rem;
+    color: var(--text2);
+    line-height: 1.65;
+    margin-bottom: 18px;
+  }
+
+  .module-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .topic-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    color: var(--text3);
+    letter-spacing: 0.04em;
+  }
+
+  .module-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border2);
+  }
+
+  .session-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text3);
+  }
+
+  .module-cta {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: gap 0.2s;
+  }
+
+  .module-card.available .module-cta { color: var(--accent); }
+  .module-card.active-module .module-cta { color: var(--accent2); }
+  .module-card.locked .module-cta { color: var(--text3); }
+
+  .module-card:hover .module-cta { gap: 10px; }
+
+  /* ── FEATURED MODULE (FULL WIDTH) ── */
+  .module-card.featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 32px;
+    align-items: center;
+    padding: 36px 40px;
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(78,205,196,0.05) 100%);
+    border-color: rgba(78,205,196,0.25);
+  }
+
+  .featured-content {}
+  .featured-visual {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+  }
+
+  .featured-visual .fv-title {
+    color: var(--accent2);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .fv-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text2);
+    font-size: 0.68rem;
+  }
+
+  .fv-row:last-child { border-bottom: none; }
+  .fv-row span:last-child { color: var(--text); }
+  .fv-row .up { color: var(--green); }
+  .fv-row .accent { color: var(--accent2); }
+
+  /* ── CURRICULUM TABLE ── */
+  .curriculum {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 64px;
+  }
+
+  .curriculum-header {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .curriculum-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .hull-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text3);
+  }
+
+  .curr-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .curr-table th {
+    padding: 10px 20px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border2);
+    background: var(--surface2);
+  }
+
+  .curr-table td {
+    padding: 12px 20px;
+    font-size: 0.88rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text2);
+  }
+
+  .curr-table tr:last-child td { border-bottom: none; }
+  .curr-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+  .curr-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text3);
+    width: 60px;
+  }
+
+  .curr-table td.topic-name { color: var(--text); font-weight: 400; }
+
+  .curr-status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .dot-live { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .dot-next { background: var(--accent2); }
+  .dot-soon { background: var(--text3); }
+
+  /* ── FORMULA STRIP ── */
+  .formula-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 64px;
+  }
+
+  .formula-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 18px 20px;
+    transition: border-color 0.2s;
+  }
+
+  .formula-card:hover { border-color: rgba(232,197,71,0.3); }
+
+  .formula-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .formula-expr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .formula-desc {
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  /* ── INSTRUCTOR CARD ── */
+  .instructor-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 64px;
+  }
+
+  .instructor-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 28px;
+  }
+
+  .instr-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .instr-avatar {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, rgba(232,197,71,0.2), rgba(232,197,71,0.05));
+    border: 1px solid rgba(232,197,71,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .instr-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .instr-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+  }
+
+  .instr-detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border2);
+    font-size: 0.86rem;
+  }
+
+  .instr-detail:last-child { border-bottom: none; }
+  .instr-detail .di-label { color: var(--text3); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; width: 90px; flex-shrink: 0; }
+  .instr-detail .di-value { color: var(--text2); }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 28px;
+  }
+
+  .info-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text2);
+    letter-spacing: 0.04em;
+  }
+
+  .assessment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border2);
+    font-size: 0.86rem;
+  }
+
+  .assessment-row:last-child { border-bottom: none; }
+  .assessment-row .ar-name { color: var(--text2); }
+  .assessment-row .ar-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border2);
+    padding: 32px 0;
+    margin-top: 32px;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .footer-logo span { color: var(--accent); }
+
+  .footer-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 20px;
+  }
+
+  .footer-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text3);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--accent); }
+
+  /* ── ANIMATIONS ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up:nth-child(1) { animation-delay: 0.1s; }
+  .fade-up:nth-child(2) { animation-delay: 0.2s; }
+  .fade-up:nth-child(3) { animation-delay: 0.3s; }
+  .fade-up:nth-child(4) { animation-delay: 0.4s; }
+  .fade-up:nth-child(5) { animation-delay: 0.5s; }
+  .fade-up:nth-child(6) { animation-delay: 0.6s; }
+  .fade-up:nth-child(7) { animation-delay: 0.7s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .module-grid { grid-template-columns: 1fr; }
+    .module-card.featured { grid-template-columns: 1fr; }
+    .featured-visual { display: none; }
+    .formula-strip { grid-template-columns: 1fr 1fr; }
+    .instructor-section { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 0 16px; }
+    .hero h1 { font-size: 2.2rem; }
+    .formula-strip { grid-template-columns: 1fr; }
+    .hero-meta { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="logo-wrap">
+      <div class="logo">Derivatives<span>Lab</span></div>
+      <div class="logo-sub">FIA 401 · IMT Hyderabad</div>
+    </div>
+    <div class="header-right">
+      <div class="term-badge">Term IV · AY 2025–26</div>
+      <div class="inst-badge">PGDM · PGDM(Fin) · PGDM(Mkt)</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-bg-number">F</div>
+    <div class="hero-eyebrow fade-up">Interactive Learning Platform</div>
+    <h1 class="fade-up">Financial<br><em>Derivatives</em></h1>
+    <div class="hero-course-code fade-up">FIA 401 · 20 Sessions · 90 Min Each</div>
+    <p class="hero-desc fade-up">
+      An interactive course platform built around real NSE market data, live simulations, and AI-graded exercises. Learn by doing — not just reading.
+    </p>
+    <div class="hero-meta fade-up">
+      <div class="meta-item">
+        <div class="meta-label">Instructor</div>
+        <div class="meta-value">Dr. Chakrapani Chaturvedula</div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <div class="meta-label">Textbook</div>
+        <div class="meta-value">Hull — 9th Edition</div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <div class="meta-label">Underlying</div>
+        <div class="meta-value">Reliance Industries (NSE)</div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <div class="meta-label">Near Month Expiry</div>
+        <div class="meta-value">30-MAR-2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-strip">
+    <div class="progress-label">Course Progress</div>
+    <div class="progress-modules">
+      <div class="progress-pip"><div class="progress-pip-fill done" style="width:100%"></div></div>
+      <div class="progress-pip"><div class="progress-pip-fill done" style="width:100%"></div></div>
+      <div class="progress-pip"><div class="progress-pip-fill done" style="width:100%"></div></div>
+      <div class="progress-pip"><div class="progress-pip-fill done" style="width:100%"></div></div>
+      <div class="progress-pip"><div class="progress-pip-fill done" style="width:100%"></div></div>
+      <div class="progress-pip"><div class="progress-pip-fill done" style="width:100%"></div></div>
+      <div class="progress-pip"><div class="progress-pip-fill done" style="width:100%"></div></div>
+    </div>
+    <div class="progress-count">7 / 7 Modules Live</div>
+  </div>
+
+  <!-- ── MODULES ── -->
+  <div class="section-heading">Course Modules</div>
+
+  <div class="module-grid">
+
+    <a href="module1.html" class="module-card available">
+      <div class="card-top"><div class="module-num">Module 01</div><div class="module-status status-live">Live</div></div>
+      <span class="module-icon">🌐</span>
+      <div class="module-title">Markets &amp; Instruments</div>
+      <div class="module-subtitle">Sessions 1–3 · Hull Ch. 1–2</div>
+      <div class="module-desc">Explore live NSE data, dissect a Reliance futures contract field by field, understand who trades derivatives and why, and test yourself on core terminology.</div>
+      <div class="module-topics"><span class="topic-tag">Derivatives Intro</span><span class="topic-tag">Futures vs Forwards</span><span class="topic-tag">Market Participants</span><span class="topic-tag">Basis</span><span class="topic-tag">Open Interest</span></div>
+      <div class="module-footer"><div class="session-info">Sessions 1–3</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+    <a href="module2.html" class="module-card available">
+      <div class="card-top"><div class="module-num">Module 02</div><div class="module-status status-live">Live</div></div>
+      <span class="module-icon">📈</span>
+      <div class="module-title">Futures Contracts</div>
+      <div class="module-subtitle">Sessions 2–5 · Hull Ch. 2, 3, 5</div>
+      <div class="module-desc">Deep dive into how futures contracts work — daily MTM, margin mechanics, cost-of-carry pricing, convergence, and hedging with futures using Reliance as the live example.</div>
+      <div class="module-topics"><span class="topic-tag">MTM Simulation</span><span class="topic-tag">Margin Mechanics</span><span class="topic-tag">Cost of Carry</span><span class="topic-tag">Basis Decay</span><span class="topic-tag">Hedge Ratio</span></div>
+      <div class="module-footer"><div class="session-info">Sessions 2–5</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+    <a href="module3.html" class="module-card available">
+      <div class="card-top"><div class="module-num">Module 03</div><div class="module-status status-live">Live</div></div>
+      <span class="module-icon">⚙️</span>
+      <div class="module-title">Options Markets</div>
+      <div class="module-subtitle">Sessions 6–7 · Hull Ch. 9–10</div>
+      <div class="module-desc">Introduction to call and put options — payoff diagrams, moneyness (ITM/ATM/OTM), option premium components, and the live Reliance options chain.</div>
+      <div class="module-topics"><span class="topic-tag">Calls &amp; Puts</span><span class="topic-tag">Payoff Diagrams</span><span class="topic-tag">Moneyness</span><span class="topic-tag">Intrinsic vs Time Value</span><span class="topic-tag">Options Chain</span></div>
+      <div class="module-footer"><div class="session-info">Sessions 6–7</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+    <a href="module4.html" class="module-card available">
+      <div class="card-top"><div class="module-num">Module 04</div><div class="module-status status-live">Live</div></div>
+      <span class="module-icon">🛡️</span>
+      <div class="module-title">Hedging with Derivatives</div>
+      <div class="module-subtitle">Sessions 8, 15 · Hull Ch. 3</div>
+      <div class="module-desc">Real-world hedging simulations — minimum variance hedge ratio, basis risk, stock portfolio hedging, and evaluating complete hedging strategies using futures and options.</div>
+      <div class="module-topics"><span class="topic-tag">Hedge Ratio</span><span class="topic-tag">Minimum Variance Hedge</span><span class="topic-tag">Basis Risk</span><span class="topic-tag">Stock Portfolio Hedge</span><span class="topic-tag">MVH Simulation</span></div>
+      <div class="module-footer"><div class="session-info">Sessions 8, 15</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+    <a href="module5.html" class="module-card available">
+      <div class="card-top"><div class="module-num">Module 05</div><div class="module-status status-live">Live</div></div>
+      <span class="module-icon">🎯</span>
+      <div class="module-title">Options Strategies</div>
+      <div class="module-subtitle">Sessions 9–10 · Hull Ch. 11</div>
+      <div class="module-desc">Build and visualise option strategies — spreads, straddles, strangles, and collars. Live payoff diagrams update as you add legs to your strategy.</div>
+      <div class="module-topics"><span class="topic-tag">Bull/Bear Spreads</span><span class="topic-tag">Straddle</span><span class="topic-tag">Strangle</span><span class="topic-tag">Collar</span><span class="topic-tag">Payoff Builder</span></div>
+      <div class="module-footer"><div class="session-info">Sessions 9–10</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+    <a href="module6.html" class="module-card available">
+      <div class="card-top"><div class="module-num">Module 06</div><div class="module-status status-live">Live</div></div>
+      <span class="module-icon">🧮</span>
+      <div class="module-title">Pricing Models</div>
+      <div class="module-subtitle">Sessions 11–14 · Hull Ch. 12–13, 17</div>
+      <div class="module-desc">Interactive binomial tree builder, Black-Scholes calculator with live Greeks, and sensitivity analysis — all computed in real time as you adjust inputs.</div>
+      <div class="module-topics"><span class="topic-tag">Binomial Tree</span><span class="topic-tag">Black-Scholes</span><span class="topic-tag">Risk-Neutral Pricing</span><span class="topic-tag">Greeks Dashboard</span><span class="topic-tag">Volatility Surface</span></div>
+      <div class="module-footer"><div class="session-info">Sessions 11–14</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+    <a href="module7.html" class="module-card available">
+      <div class="card-top"><div class="module-num">Module 07</div><div class="module-status status-live">Live</div></div>
+      <span class="module-icon">🎲</span>
+      <div class="module-title">Greeks &amp; Monte Carlo</div>
+      <div class="module-subtitle">Sessions 16–20 · Hull Ch. 17, 19</div>
+      <div class="module-desc">Options Greeks explorer and calculator, exotic derivatives deep-dive, and a live Monte Carlo simulation engine — price any option type with N paths of GBM.</div>
+      <div class="module-topics"><span class="topic-tag">Delta/Gamma/Vega</span><span class="topic-tag">Theta Decay</span><span class="topic-tag">Exotic Options</span><span class="topic-tag">Monte Carlo</span><span class="topic-tag">GBM Simulation</span></div>
+      <div class="module-footer"><div class="session-info">Sessions 16–20</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+  </div>
+
+  <!-- ── CURRICULUM ── -->
+  <div class="section-heading">Session Plan</div>
+
+  <div class="curriculum">
+    <div class="curriculum-header">
+      <h3>20-Session Curriculum</h3>
+      <div class="hull-ref">Reference: Hull, Fundamentals of Futures & Options Markets, 9th Ed.</div>
+    </div>
+    <table class="curr-table">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Topic</th>
+          <th>Hull Chapter</th>
+          <th>Module</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="topic-name">Derivatives: An Introduction</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 1</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 1</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>2</td><td class="topic-name">Futures and Forwards Markets</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 2</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 1 &amp; 2</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>3</td><td class="topic-name">Futures and Forwards Markets (contd.)</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 2, 3</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 1 &amp; 2</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>4</td><td class="topic-name">Pricing of Forward and Futures</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 5</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 2</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>5</td><td class="topic-name">Pricing of Forward and Futures (contd.)</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 5</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 2</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>6</td><td class="topic-name">Introduction to Options Markets</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 9</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 3</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>7</td><td class="topic-name">Introduction to Options Markets (contd.)</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 10</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 3</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>8</td><td class="topic-name">Hedging using Derivatives</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 3 · Lufthansa Case</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 4</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>9</td><td class="topic-name">Trading Strategies using Options</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 11</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 5</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>10</td><td class="topic-name">Trading Strategies using Options (contd.)</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 11</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 5</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>11</td><td class="topic-name">Introduction to Binomial Trees</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 12</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 6</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>12</td><td class="topic-name">Binomial Trees Option Pricing</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 12</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 6</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>13</td><td class="topic-name">Black-Scholes Option Pricing Model</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 13</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 6</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>14</td><td class="topic-name">Black-Scholes Option Pricing (contd.)</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 13</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 6</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>15</td><td class="topic-name">Hedging using Options and Futures</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 3 · Barrick Case</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 4</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>16</td><td class="topic-name">Option Greeks</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 17</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 7</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>17</td><td class="topic-name">Option Greeks (contd.)</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 17</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 7</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>18</td><td class="topic-name">Exotic Options</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 25</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 7</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>19</td><td class="topic-name">Exotic Options (contd.)</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 25</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 7</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+        <tr><td>20</td><td class="topic-name">Pricing using Monte Carlo Simulations</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">Ch. 19</td><td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">Module 7</td><td><span class="curr-status-dot dot-live"></span><span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent)">Live</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── KEY FORMULAS ── -->
+  <div class="section-heading">Key Formulas — Quick Reference</div>
+
+  <div class="formula-strip">
+    <div class="formula-card">
+      <div class="formula-label">Cost of Carry</div>
+      <div class="formula-expr">F = S · e^(r−d)·T</div>
+      <div class="formula-desc">Theoretical futures price. r = risk-free rate, d = dividend yield, T = time in years.</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-label">Basis</div>
+      <div class="formula-expr">Basis = F − S</div>
+      <div class="formula-desc">Converges to zero at expiry. Positive in contango, negative in backwardation.</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-label">Black-Scholes (Call)</div>
+      <div class="formula-expr">C = S·N(d₁) − K·e^(−rT)·N(d₂)</div>
+      <div class="formula-desc">European call option price. d₁ and d₂ are functions of S, K, r, σ, T.</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-label">Hedge Ratio</div>
+      <div class="formula-expr">N* = (P/F) · β</div>
+      <div class="formula-desc">Number of futures contracts to hedge a portfolio of value P with beta β.</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-label">Put-Call Parity</div>
+      <div class="formula-expr">C + K·e^(−rT) = P + S</div>
+      <div class="formula-desc">No-arbitrage relationship between European calls and puts with same K, T.</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-label">MTM P&L</div>
+      <div class="formula-expr">ΔP = (F_t − F_{t−1}) · L</div>
+      <div class="formula-desc">Daily mark-to-market. L = lot size. Credited/debited daily to margin account.</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-label">Delta (Δ)</div>
+      <div class="formula-expr">Δ = ∂C/∂S ≈ N(d₁)</div>
+      <div class="formula-desc">Rate of change of option price with respect to underlying price. Between 0 and 1 for calls.</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-label">Binomial Up/Down</div>
+      <div class="formula-expr">u = e^(σ√Δt), d = 1/u</div>
+      <div class="formula-desc">Up and down factors in binomial tree. σ = volatility, Δt = time step.</div>
+    </div>
+  </div>
+
+  <!-- ── INSTRUCTOR & ASSESSMENT ── -->
+  <div class="section-heading">Course Information</div>
+
+  <div class="instructor-section">
+    <div class="instructor-card">
+      <div class="instr-header">
+        <div class="instr-avatar">CC</div>
+        <div>
+          <div class="instr-name">Dr. Chakrapani Chaturvedula</div>
+          <div class="instr-role">Course Instructor · FIA 401</div>
+        </div>
+      </div>
+      <div class="instr-detail">
+        <div class="di-label">Email</div>
+        <div class="di-value"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="87e4e4efe6ecf5e6f7e6e9eec7eeeaf3effee3e2f5e6e5e6e3a9e2e3f2a9eee9">[email&#160;protected]</a></div>
+      </div>
+      <div class="instr-detail">
+        <div class="di-label">Consultation</div>
+        <div class="di-value">Friday, 4:30 PM – 5:30 PM (Online)</div>
+      </div>
+      <div class="instr-detail">
+        <div class="di-label">Sessions</div>
+        <div class="di-value">20 sessions · 90 minutes each</div>
+      </div>
+      <div class="instr-detail">
+        <div class="di-label">Pedagogy</div>
+        <div class="di-value">Lectures, Cases, Projects & Simulations</div>
+      </div>
+      <div class="instr-detail">
+        <div class="di-label">Programme</div>
+        <div class="di-value">PGDM, PGDM (Finance), PGDM (Marketing)</div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Assessment Scheme</h3>
+      <div class="assessment-row">
+        <div class="ar-name">Class Participation (Round I + II)</div>
+        <div class="ar-pct">20%</div>
+      </div>
+      <div class="assessment-row">
+        <div class="ar-name">Group Project (Interim + Final)</div>
+        <div class="ar-pct">20%</div>
+      </div>
+      <div class="assessment-row">
+        <div class="ar-name">Mid-Term Written Exam</div>
+        <div class="ar-pct">20%</div>
+      </div>
+      <div class="assessment-row">
+        <div class="ar-name">Comprehensive End-Term Exam</div>
+        <div class="ar-pct">40%</div>
+      </div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border2)">
+        <h3 style="margin-bottom:12px">Course Outcomes</h3>
+        <div class="assessment-row">
+          <div class="ar-name">CO1 · Core concepts of futures & options</div>
+        </div>
+        <div class="assessment-row">
+          <div class="ar-name">CO2 · Risk management & trading strategies</div>
+        </div>
+        <div class="assessment-row">
+          <div class="ar-name">CO3 · Apply pricing models to value derivatives</div>
+        </div>
+        <div class="assessment-row">
+          <div class="ar-name">CO4 · Design instruments to manage risk</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-logo">Derivatives<span>Lab</span></div>
+    <div class="footer-note">FIA 401 · IMT Hyderabad · AY 2025–26 · Simulated data for educational purposes</div>
+    <div class="footer-links">
+      <a href="module1.html">Module 1</a>
+      <a href="module2.html">Module 2</a>
+    </div>
+  </div>
+</footer>
+
+
+
+<script>
+// ── SESSION CHECK — redirect to login if not authenticated ──
+(function(){
+  try {
+    const s = JSON.parse(localStorage.getItem('dlabSession') || 'null');
+    if (!s || s.expires < Date.now()) {
+      localStorage.removeItem('dlabSession');
+      window.location.href = 'index.html';
+      return;
+    }
+    // Show student name in header if element exists
+    const nameEl = document.getElementById('studentName');
+    if (nameEl) nameEl.textContent = s.name || s.enrollId;
+  } catch(e) {
+    localStorage.removeItem('dlabSession');
+    window.location.href = 'index.html';
+  }
+})();
+</script>
+</body>
+</html>
