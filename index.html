@@ -54,6 +54,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .ffooter{margin-top:28px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:#7a8fa8;text-align:center;line-height:1.85;}
 @media(max-width:820px){.wrap{grid-template-columns:1fr;}.left{display:none;}.right{padding:44px 28px;min-height:100vh;}}
 </style>
+
+<script>
+
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -98,12 +102,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div class="ffooter">
       DerivativesLab · FIA 401 · IMT Hyderabad<br>
       Instructor: Dr. Chakrapani Chaturvedula<br>
-      <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5d3e3e353c362f3c2d3c33341d343029352439382f3c3f3c3973383928733433">[email&#160;protected]</a>
+      cchakrapani@imthyderabad.edu.in
     </div>
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
 const CLASS_KEY      = 'IMTFD26';  // plain comparison — safe, file is on HTTPS
 const VALID_IDS      = ['24A1HP013','24A1HP085','24A1HP153','24A3HP640','24A1HP215'];
@@ -184,4 +188,11 @@ function showOk(msg){const e=document.getElementById('okMsg');e.textContent=msg;
 
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// Auto-r
+// Auto-redirect if already logged in
+try{
+  const s=JSON.parse(localStorage.getItem('dlabSession')||'null');
+  if(s&&s.expires>Date.now())window.location.href='course.html';
+}catch(e){localStorage.removeItem('dlabSession');}
+</script>
+</body>
+</html>
