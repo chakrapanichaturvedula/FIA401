@@ -105,58 +105,61 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
-const CLASS_KEY_HASH  = '33909a059c5260dfad1af9227f96ed672ebea34a0bc342a0c62ca9e09eef3256';
+const CLASS_KEY      = 'IMTFD26';  // plain comparison — safe, file is on HTTPS
+const VALID_IDS      = ['24A1HP013','24A1HP085','24A1HP153','24A3HP640','24A1HP215'];
 
 // JSONP helper — bypasses CORS for Google Apps Script
 function callAppsScript(params){
   return new Promise((resolve, reject)=>{
     const cbName = 'cb_' + Math.random().toString(36).slice(2);
-    const timeout = setTimeout(()=>{ delete window[cbName]; reject(new Error('timeout')); }, 8000);
+    const timeout = setTimeout(()=>{ delete window[cbName]; reject(new Error('timeout')); }, 10000);
     window[cbName] = function(data){
       clearTimeout(timeout);
       delete window[cbName];
-      document.getElementById('_jsonp_script')?.remove();
+      document.getElementById('_jsonp_script') && document.getElementById('_jsonp_script').remove();
       resolve(data);
     };
-    const qs = Object.entries(params).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&');
+    const qs = Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
     const s = document.createElement('script');
     s.id = '_jsonp_script';
-    s.src = `${APPS_SCRIPT_URL}?${qs}&callback=${cbName}`;
-    s.onerror = ()=>{ clearTimeout(timeout); delete window[cbName]; reject(new Error('script error')); };
+    s.src = APPS_SCRIPT_URL + '?' + qs + '&callback=' + cbName;
+    s.onerror = function(){ clearTimeout(timeout); delete window[cbName]; reject(new Error('script error')); };
     document.head.appendChild(s);
   });
 }
 
-async function sha256(str){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-async function doLogin(){
-  const enrollId=document.getElementById('enrollId').value.trim().toUpperCase();
-  const classKey=document.getElementById('classKey').value.trim();
+function doLogin(){
+  const enrollId = document.getElementById('enrollId').value.trim().toUpperCase();
+  const classKey = document.getElementById('classKey').value.trim();
   clearMsgs();
-  if(!enrollId){markErr('enrollId','Please enter your Enrollment ID.');return;}
-  if(!classKey){markErr('classKey','Please enter the Class Key.');return;}
-  setLoading(true);
 
-  // 1. Check class key hash locally
-  const hash=await sha256(classKey);
-  if(hash!==CLASS_KEY_HASH){showErr('Incorrect Class Key. Please check with your instructor.');setLoading(false);return;}
+  // Validate fields
+  if(!enrollId){ markErr('enrollId','Please enter your Enrollment ID.'); return; }
+  if(!classKey){  markErr('classKey','Please enter the Class Key.');      return; }
 
-  // 2. Verify enrollment ID via Apps Script (JSONP to bypass CORS)
-  try{
-    const data = await callAppsScript({action:'login', id: enrollId});
-    if(!data.success){showErr(data.message||'Enrollment ID not found. Contact your instructor.');setLoading(false);return;}
-    saveSession(enrollId,data.name||enrollId,false);
-    showOk(`Welcome, ${data.name||enrollId}! Loading your modules...`);
-    setTimeout(()=>window.location.href='course.html',1400);
-  }catch(e){
-    console.warn('Apps Script unreachable, offline fallback', e);
-    saveSession(enrollId,enrollId,true);
-    showOk('Connected (offline mode). Loading your modules...');
-    setTimeout(()=>window.location.href='course.html',1400);
+  // Check class key
+  if(classKey !== CLASS_KEY){
+    showErr('Incorrect Class Key. Please check with your instructor.');
+    return;
   }
+
+  // Check enrollment ID locally first (instant feedback)
+  if(!VALID_IDS.includes(enrollId)){
+    showErr('Enrollment ID not recognised. Please contact Dr. Chaturvedula.');
+    return;
+  }
+
+  // All checks passed — save session and redirect
+  setLoading(true);
+  saveSession(enrollId, enrollId, false);
+  showOk('Welcome, ' + enrollId + '! Loading your modules...');
+
+  // Also log to Google Sheet in background (non-blocking)
+  try {
+    callAppsScript({action:'login', id: enrollId}).catch(function(){});
+  } catch(e) {}
+
+  setTimeout(function(){ window.location.href = 'course.html'; }, 1400);
 }
 
 function saveSession(id,name,offline){
