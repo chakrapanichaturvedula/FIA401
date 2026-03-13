@@ -668,5 +668,69 @@ function sw(tab,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.
 // Init
 document.addEventListener('DOMContentLoaded',()=>{buildMini();renderFlash();calcMoney();calcPrem();renderQ();renderQDots();buildSpec();});
 </script>
+
+<script>
+// ── DerivativesLab Tracking — Module 3 ──
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
+const MODULE_NUM = '3';
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem('dlabSession') || 'null'); } catch(e) { return null; }
+}
+
+function track(params) {
+  try {
+    const s = getSession();
+    if (!s || !s.enrollId) return;
+    params.id = s.enrollId;
+    const cbName = 'tcb_' + Math.random().toString(36).slice(2);
+    const qs = Object.entries(params).map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
+    const sc = document.createElement('script');
+    sc.src = APPS_SCRIPT_URL + '?' + qs + '&callback=' + cbName;
+    window[cbName] = function() { delete window[cbName]; sc.remove(); };
+    sc.onerror = function() { delete window[cbName]; sc.remove(); };
+    document.head.appendChild(sc);
+  } catch(e) {}
+}
+
+let totalMins = 0;
+let isVisible = true;
+let activeStart = Date.now();
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    if (isVisible) totalMins += (Date.now() - activeStart) / 60000;
+    isVisible = false;
+  } else {
+    isVisible = true;
+    activeStart = Date.now();
+  }
+});
+
+setInterval(function() {
+  if (!document.hidden) {
+    totalMins += (Date.now() - activeStart) / 60000;
+    activeStart = Date.now();
+    if (totalMins >= 1) {
+      track({ action: 'time', module: MODULE_NUM, mins: totalMins.toFixed(1) });
+      totalMins = 0;
+    }
+  }
+}, 5 * 60 * 1000);
+
+window.addEventListener('beforeunload', function() {
+  if (!document.hidden) totalMins += (Date.now() - activeStart) / 60000;
+  if (totalMins > 0.1) {
+    track({ action: 'time', module: MODULE_NUM, mins: totalMins.toFixed(1) });
+  }
+  track({ action: 'log', event: 'MODULE_EXIT', module: MODULE_NUM, detail: '', mins: totalMins.toFixed(1) });
+});
+
+window.addEventListener('load', function() {
+  const s = getSession();
+  if (!s || !s.enrollId) return;
+  track({ action: 'log', event: 'MODULE_OPEN', module: MODULE_NUM, detail: '', mins: 0 });
+});
+</script>
 </body>
 </html>
