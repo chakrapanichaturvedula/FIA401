@@ -3,1265 +3,164 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DerivativesLab — FIA 401 Financial Derivatives</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<title>DerivativesLab — Sign In · FIA 401</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #05080f;
-    --surface: #0a0f1a;
-    --surface2: #111827;
-    --surface3: #1a2438;
-    --accent: #e8c547;
-    --accent2: #4ecdc4;
-    --accent3: #ff6b6b;
-    --text: #eef2f7;
-    --text2: #7f8fa6;
-    --text3: #3d4f6b;
-    --border: rgba(232,197,71,0.12);
-    --border2: rgba(255,255,255,0.06);
-    --green: #00e676;
-    --glow-gold: 0 0 40px rgba(232,197,71,0.15);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Playfair Display', Georgia, serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE TEXTURE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
-
-  /* ── DIAGONAL GRID ── */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: linear-gradient(rgba(232,197,71,0.025) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(232,197,71,0.025) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 32px;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ── HEADER ── */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(5,8,15,0.92);
-    backdrop-filter: blur(24px);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 0;
-  }
-
-  .header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo-wrap {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.35rem;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-
-  .logo span { color: var(--accent); }
-
-  .logo-sub {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text3);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-top: 3px;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .inst-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--accent);
-    border: 1px solid var(--border);
-    padding: 5px 12px;
-    border-radius: 2px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .term-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text2);
-    letter-spacing: 0.06em;
-  }
-
-  /* ── HERO ── */
-  .hero {
-    padding: 80px 0 70px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-bg-number {
-    position: absolute;
-    right: -40px;
-    top: -20px;
-    font-family: 'Syne', sans-serif;
-    font-size: 28rem;
-    font-weight: 800;
-    color: rgba(232,197,71,0.03);
-    line-height: 1;
-    pointer-events: none;
-    letter-spacing: -0.05em;
-    user-select: none;
-  }
-
-  .hero-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--accent);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .hero-eyebrow::before {
-    content: '';
-    display: block;
-    width: 32px;
-    height: 1px;
-    background: var(--accent);
-  }
-
-  .hero h1 {
-    font-size: clamp(2.8rem, 6vw, 5rem);
-    font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    margin-bottom: 12px;
-  }
-
-  .hero h1 em {
-    font-style: italic;
-    color: var(--accent);
-  }
-
-  .hero-course-code {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(1rem, 2vw, 1.3rem);
-    font-weight: 600;
-    color: var(--text2);
-    margin-bottom: 28px;
-    letter-spacing: 0.04em;
-  }
-
-  .hero-desc {
-    font-size: 1.1rem;
-    color: var(--text2);
-    max-width: 580px;
-    line-height: 1.75;
-    font-weight: 400;
-    margin-bottom: 40px;
-  }
-
-  .hero-meta {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-    flex-wrap: wrap;
-  }
-
-  .meta-item {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .meta-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text3);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .meta-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .meta-divider {
-    width: 1px;
-    height: 32px;
-    background: var(--border2);
-  }
-
-  /* ── PROGRESS STRIP ── */
-  .progress-strip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px 24px;
-    margin-bottom: 56px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .progress-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text3);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .progress-modules {
-    display: flex;
-    gap: 6px;
-    flex: 1;
-  }
-
-  .progress-pip {
-    flex: 1;
-    height: 4px;
-    background: var(--surface3);
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .progress-pip-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1s ease;
-  }
-
-  .progress-pip-fill.done { background: var(--accent); }
-  .progress-pip-fill.active { background: var(--accent2); width: 40% !important; animation: shimmer 2s infinite; }
-  .progress-pip-fill.locked { background: var(--surface3); width: 0%; }
-
-  @keyframes shimmer {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-
-  .progress-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--accent);
-    white-space: nowrap;
-  }
-
-  /* ── SECTION HEADINGS ── */
-  .section-heading {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--text3);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .section-heading::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border2);
-  }
-
-  /* ── MODULE GRID ── */
-  .module-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 64px;
-  }
-
-  .module-card {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 28px;
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-    cursor: pointer;
-  }
-
-  .module-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-  }
-
-  .module-card.available:hover {
-    border-color: var(--accent);
-    box-shadow: var(--glow-gold);
-  }
-
-  .module-card.active-module {
-    border-color: rgba(78,205,196,0.4);
-  }
-
-  .module-card.active-module:hover {
-    border-color: var(--accent2);
-    box-shadow: 0 12px 40px rgba(78,205,196,0.15);
-  }
-
-  .module-card.locked {
-    opacity: 0.45;
-    cursor: default;
-  }
-
-  .module-card.locked:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--border2);
-  }
-
-  /* Accent bar top */
-  .module-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-
-  .module-card.available::before { background: linear-gradient(90deg, var(--accent), transparent); }
-  .module-card.active-module::before { background: linear-gradient(90deg, var(--accent2), transparent); opacity: 1; }
-  .module-card.available:hover::before { opacity: 1; }
-
-  .card-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .module-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text3);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .module-status {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    padding: 3px 8px;
-    border-radius: 2px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .status-live {
-    background: rgba(232,197,71,0.12);
-    color: var(--accent);
-    border: 1px solid rgba(232,197,71,0.25);
-  }
-
-  .status-building {
-    background: rgba(78,205,196,0.1);
-    color: var(--accent2);
-    border: 1px solid rgba(78,205,196,0.2);
-  }
-
-  .status-soon {
-    background: rgba(255,255,255,0.04);
-    color: var(--text3);
-    border: 1px solid var(--border2);
-  }
-
-  .module-icon {
-    font-size: 2.2rem;
-    margin-bottom: 12px;
-    display: block;
-    line-height: 1;
-  }
-
-  .module-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 8px;
-    letter-spacing: -0.01em;
-  }
-
-  .module-subtitle {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--accent);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-
-  .module-subtitle.teal { color: var(--accent2); }
-  .module-subtitle.muted { color: var(--text3); }
-
-  .module-desc {
-    font-size: 0.9rem;
-    color: var(--text2);
-    line-height: 1.65;
-    margin-bottom: 18px;
-  }
-
-  .module-topics {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 20px;
-  }
-
-  .topic-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    padding: 3px 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 2px;
-    color: var(--text3);
-    letter-spacing: 0.04em;
-  }
-
-  .module-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 16px;
-    border-top: 1px solid var(--border2);
-  }
-
-  .session-info {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text3);
-  }
-
-  .module-cta {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: gap 0.2s;
-  }
-
-  .module-card.available .module-cta { color: var(--accent); }
-  .module-card.active-module .module-cta { color: var(--accent2); }
-  .module-card.locked .module-cta { color: var(--text3); }
-
-  .module-card:hover .module-cta { gap: 10px; }
-
-  /* ── FEATURED MODULE (FULL WIDTH) ── */
-  .module-card.featured {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 32px;
-    align-items: center;
-    padding: 36px 40px;
-    background: linear-gradient(135deg, var(--surface) 0%, rgba(78,205,196,0.05) 100%);
-    border-color: rgba(78,205,196,0.25);
-  }
-
-  .featured-content {}
-  .featured-visual {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-  }
-
-  .featured-visual .fv-title {
-    color: var(--accent2);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-
-  .fv-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    color: var(--text2);
-    font-size: 0.68rem;
-  }
-
-  .fv-row:last-child { border-bottom: none; }
-  .fv-row span:last-child { color: var(--text); }
-  .fv-row .up { color: var(--green); }
-  .fv-row .accent { color: var(--accent2); }
-
-  /* ── CURRICULUM TABLE ── */
-  .curriculum {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 64px;
-  }
-
-  .curriculum-header {
-    padding: 20px 28px;
-    border-bottom: 1px solid var(--border2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .curriculum-header h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-  }
-
-  .hull-ref {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text3);
-  }
-
-  .curr-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .curr-table th {
-    padding: 10px 20px;
-    text-align: left;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text3);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border2);
-    background: var(--surface2);
-  }
-
-  .curr-table td {
-    padding: 12px 20px;
-    font-size: 0.88rem;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    color: var(--text2);
-  }
-
-  .curr-table tr:last-child td { border-bottom: none; }
-  .curr-table tr:hover td { background: rgba(255,255,255,0.015); }
-
-  .curr-table td:first-child {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--text3);
-    width: 60px;
-  }
-
-  .curr-table td.topic-name { color: var(--text); font-weight: 400; }
-
-  .curr-status-dot {
-    display: inline-block;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
-
-  .dot-live { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-  .dot-next { background: var(--accent2); }
-  .dot-soon { background: var(--text3); }
-
-  /* ── FORMULA STRIP ── */
-  .formula-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 64px;
-  }
-
-  .formula-card {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 18px 20px;
-    transition: border-color 0.2s;
-  }
-
-  .formula-card:hover { border-color: rgba(232,197,71,0.3); }
-
-  .formula-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    color: var(--text3);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .formula-expr {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    color: var(--accent);
-    line-height: 1.6;
-    margin-bottom: 8px;
-  }
-
-  .formula-desc {
-    font-size: 0.78rem;
-    color: var(--text2);
-    line-height: 1.5;
-  }
-
-  /* ── INSTRUCTOR CARD ── */
-  .instructor-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 64px;
-  }
-
-  .instructor-card {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 28px;
-  }
-
-  .instr-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-
-  .instr-avatar {
-    width: 52px; height: 52px;
-    background: linear-gradient(135deg, rgba(232,197,71,0.2), rgba(232,197,71,0.05));
-    border: 1px solid rgba(232,197,71,0.3);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-
-  .instr-name {
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 3px;
-  }
-
-  .instr-role {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text3);
-    letter-spacing: 0.06em;
-  }
-
-  .instr-detail {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border2);
-    font-size: 0.86rem;
-  }
-
-  .instr-detail:last-child { border-bottom: none; }
-  .instr-detail .di-label { color: var(--text3); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; width: 90px; flex-shrink: 0; }
-  .instr-detail .di-value { color: var(--text2); }
-
-  .info-card {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 28px;
-  }
-
-  .info-card h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: var(--text2);
-    letter-spacing: 0.04em;
-  }
-
-  .assessment-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border2);
-    font-size: 0.86rem;
-  }
-
-  .assessment-row:last-child { border-bottom: none; }
-  .assessment-row .ar-name { color: var(--text2); }
-  .assessment-row .ar-pct {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--accent);
-    font-weight: 500;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border2);
-    padding: 32px 0;
-    margin-top: 32px;
-  }
-
-  .footer-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .footer-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1rem;
-    letter-spacing: -0.02em;
-  }
-
-  .footer-logo span { color: var(--accent); }
-
-  .footer-note {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text3);
-    text-align: center;
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 20px;
-  }
-
-  .footer-links a {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text3);
-    text-decoration: none;
-    letter-spacing: 0.06em;
-    transition: color 0.2s;
-  }
-
-  .footer-links a:hover { color: var(--accent); }
-
-  /* ── ANIMATIONS ── */
-  .fade-up {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeUp 0.6s ease forwards;
-  }
-
-  @keyframes fadeUp {
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .fade-up:nth-child(1) { animation-delay: 0.1s; }
-  .fade-up:nth-child(2) { animation-delay: 0.2s; }
-  .fade-up:nth-child(3) { animation-delay: 0.3s; }
-  .fade-up:nth-child(4) { animation-delay: 0.4s; }
-  .fade-up:nth-child(5) { animation-delay: 0.5s; }
-  .fade-up:nth-child(6) { animation-delay: 0.6s; }
-  .fade-up:nth-child(7) { animation-delay: 0.7s; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 900px) {
-    .module-grid { grid-template-columns: 1fr; }
-    .module-card.featured { grid-template-columns: 1fr; }
-    .featured-visual { display: none; }
-    .formula-strip { grid-template-columns: 1fr 1fr; }
-    .instructor-section { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 600px) {
-    .container { padding: 0 16px; }
-    .hero h1 { font-size: 2.2rem; }
-    .formula-strip { grid-template-columns: 1fr; }
-    .hero-meta { gap: 16px; }
-  }
+:root{--bg:#05080f;--surf:#0a0f1a;--surf2:#111827;--accent:#e8c547;--accent2:#4ecdc4;--text:#eef2f7;--text2:#7f8fa6;--text3:#3d4f6b;--border:rgba(232,197,71,0.15);--border2:rgba(255,255,255,0.06);--red:#ff6b6b;--green:#00e676;}
+*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(232,197,71,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(232,197,71,0.025) 1px,transparent 1px);background-size:52px 52px;animation:gs 18s linear infinite;pointer-events:none;}
+@keyframes gs{to{background-position:52px 52px;}}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 55% 50% at 15% 50%,rgba(232,197,71,0.07) 0%,transparent 60%),radial-gradient(ellipse 45% 55% at 85% 30%,rgba(78,205,196,0.04) 0%,transparent 60%);}
+.wrap{position:relative;z-index:1;display:grid;grid-template-columns:1fr 400px;min-height:100vh;width:100%;}
+.left{display:flex;flex-direction:column;justify-content:center;padding:60px 72px;border-right:1px solid var(--border2);position:relative;overflow:hidden;}
+.left::before{content:'FIA\A401';white-space:pre;position:absolute;font-size:18vw;font-weight:800;color:rgba(232,197,71,0.022);right:-4vw;bottom:-6vw;line-height:0.9;pointer-events:none;letter-spacing:-0.04em;}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:12px;}
+.eyebrow::before{content:'';width:28px;height:1px;background:var(--accent);}
+.left h1{font-size:clamp(3rem,5.5vw,5rem);font-weight:800;line-height:0.95;letter-spacing:-0.03em;margin-bottom:12px;}
+.left h1 em{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;color:var(--accent);}
+.ccode{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:44px;}
+.feats{display:flex;flex-direction:column;gap:14px;margin-bottom:44px;}
+.feat{display:flex;align-items:flex-start;gap:12px;}
+.fd{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:8px;box-shadow:0 0 7px var(--accent);}
+.ft{font-size:0.87rem;color:var(--text2);line-height:1.55;}
+.ft strong{color:var(--text);}
+.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(232,197,71,0.07);border:1px solid var(--border);border-radius:100px;padding:7px 15px;font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.07em;width:fit-content;}
+.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:pl 2s infinite;}
+@keyframes pl{0%,100%{opacity:1}50%{opacity:0.25}}
+.right{display:flex;flex-direction:column;justify-content:center;padding:56px 44px;background:rgba(10,15,26,0.55);backdrop-filter:blur(24px);}
+.ftitle{font-size:1.45rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:5px;}
+.fsub{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--accent2);letter-spacing:0.1em;margin-bottom:32px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text);letter-spacing:0.13em;text-transform:uppercase;margin-bottom:7px;font-weight:600;}
+.field input{width:100%;background:var(--surf2);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:12px 15px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.85rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;letter-spacing:0.04em;}
+.field input:focus{border-color:rgba(232,197,71,0.4);box-shadow:0 0 0 3px rgba(232,197,71,0.07);}
+.field input::placeholder{color:#5a6a80;}
+.field input.err{border-color:rgba(255,107,107,0.5);}
+.hint{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:#8a9bb5;margin-top:5px;}
+.btn-login{width:100%;padding:13px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-login:hover{background:#f0d060;transform:translateY(-1px);box-shadow:0 6px 22px rgba(232,197,71,0.22);}
+.btn-login:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.spinner{width:15px;height:15px;border:2px solid rgba(0,0,0,0.25);border-top-color:#000;border-radius:50%;animation:sp 0.6s linear infinite;display:none;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.errmsg{display:none;background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.22);border-radius:5px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--red);margin-top:12px;line-height:1.55;}
+.errmsg.show{display:block;}
+.okmsg{display:none;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.22);border-radius:5px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--green);margin-top:12px;}
+.okmsg.show{display:block;}
+.divider{display:flex;align-items:center;gap:10px;margin:24px 0;color:#8a9bb5;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
+.infobox{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:rgba(78,205,196,0.08);border:1px solid rgba(78,205,196,0.25);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:#b0c4d8;line-height:1.65;}
+.infobox::before{content:'ℹ';color:var(--accent2);flex-shrink:0;margin-top:1px;font-size:0.8rem;}
+.ffooter{margin-top:28px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:#7a8fa8;text-align:center;line-height:1.85;}
+@media(max-width:820px){.wrap{grid-template-columns:1fr;}.left{display:none;}.right{padding:44px 28px;min-height:100vh;}}
 </style>
 </head>
 <body>
-
-<header>
-  <div class="container header-inner">
-    <div class="logo-wrap">
-      <div class="logo">Derivatives<span>Lab</span></div>
-      <div class="logo-sub">FIA 401 · IMT Hyderabad</div>
+<div class="wrap">
+  <div class="left">
+    <div class="eyebrow">FIA 401 · IMT Hyderabad · AY 2025–26</div>
+    <h1>Derivatives<br><em>Lab</em></h1>
+    <div class="ccode">FINANCIAL DERIVATIVES · PGDM / PGDM(FIN) / PGDM(MKT)</div>
+    <div class="feats">
+      <div class="feat"><div class="fd"></div><div class="ft"><strong>7 interactive modules</strong> — futures, options, pricing models, Greeks &amp; Monte Carlo</div></div>
+      <div class="feat"><div class="fd"></div><div class="ft"><strong>Live NSE data</strong> — Reliance Industries as the running example throughout</div></div>
+      <div class="feat"><div class="fd"></div><div class="ft"><strong>AI-graded quizzes</strong> with instant feedback mapped to CO1, CO3, CO4</div></div>
+      <div class="feat"><div class="fd"></div><div class="ft"><strong>Your progress is tracked</strong> — module time, quiz scores and completions sent to your instructor</div></div>
     </div>
-    <div class="header-right">
-      <div class="term-badge">Term IV · AY 2025–26</div>
-      <div class="inst-badge">PGDM · PGDM(Fin) · PGDM(Mkt)</div>
-    </div>
-  </div>
-</header>
-
-<div class="container">
-
-  <!-- ── HERO ── -->
-  <div class="hero">
-    <div class="hero-bg-number">F</div>
-    <div class="hero-eyebrow fade-up">Interactive Learning Platform</div>
-    <h1 class="fade-up">Financial<br><em>Derivatives</em></h1>
-    <div class="hero-course-code fade-up">FIA 401 · 20 Sessions · 90 Min Each</div>
-    <p class="hero-desc fade-up">
-      An interactive course platform built around real NSE market data, live simulations, and AI-graded exercises. Learn by doing — not just reading.
-    </p>
-    <div class="hero-meta fade-up">
-      <div class="meta-item">
-        <div class="meta-label">Instructor</div>
-        <div class="meta-value">Dr. Chakrapani Chaturvedula</div>
-      </div>
-      <div class="meta-divider"></div>
-      <div class="meta-item">
-        <div class="meta-label">Textbook</div>
-        <div class="meta-value">Hull — 9th Edition</div>
-      </div>
-      <div class="meta-divider"></div>
-      <div class="meta-item">
-        <div class="meta-label">Underlying</div>
-        <div class="meta-value">Reliance Industries (NSE)</div>
-      </div>
-      <div class="meta-divider"></div>
-      <div class="meta-item">
-        <div class="meta-label">Near Month Expiry</div>
-        <div class="meta-value">30-MAR-2026</div>
-      </div>
-    </div>
+    <div class="pill">7 / 7 Modules Live · Hull 9th Ed.</div>
   </div>
 
-  <!-- ── PROGRESS STRIP ── -->
-  <div class="progress-strip">
-    <div class="progress-label">Your Progress</div>
-    <div class="progress-modules" id="progressPips"></div>
-    <div class="progress-count" id="progressCount">1 / 7 Modules</div>
-  </div>
+  <div class="right">
+    <div class="ftitle">Student Sign In</div>
+    <div class="fsub">FIA 401 · DerivativesLab · IMT Hyderabad</div>
 
-  <!-- ── MODULES ── -->
-  <div class="section-heading">Course Modules</div>
+    <div class="field">
+      <label>Enrollment ID</label>
+      <input type="text" id="enrollId" placeholder="e.g. 24A1HP013" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
+      <div class="hint">Your IMT enrollment / roll number</div>
+    </div>
+    <div class="field">
+      <label>Class Key</label>
+      <input type="password" id="classKey" placeholder="Provided by Dr. Chaturvedula">
+      <div class="hint">Shared by your instructor in class</div>
+    </div>
 
-  <div class="module-grid" id="moduleGrid"></div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">
+      <span id="btnText">Enter DerivativesLab →</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+    <div class="errmsg" id="errMsg"></div>
+    <div class="okmsg"  id="okMsg"></div>
 
-  <!-- ── CURRICULUM ── -->
-  <div class="section-heading">Session Plan</div>
+    <div class="divider">ABOUT YOUR ACCESS</div>
+    <div class="infobox">Your enrollment ID and class key verify your identity. Quiz scores, module visits and time spent are automatically recorded in your instructor's gradebook.</div>
 
-  <div class="curriculum">
-    <div class="curriculum-header">
-      <h3>20-Session Curriculum</h3>
-      <div class="hull-ref">Reference: Hull, Fundamentals of Futures & Options Markets, 9th Ed.</div>
-    </div>
-    <table class="curr-table">
-      <thead>
-        <tr>
-          <th>Session</th>
-          <th>Topic</th>
-          <th>Hull Chapter</th>
-          <th>Module</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="curriculumBody"></tbody>
-    </table>
-  </div>
-
-  <!-- ── KEY FORMULAS ── -->
-  <div class="section-heading">Key Formulas — Quick Reference</div>
-
-  <div class="formula-strip">
-    <div class="formula-card">
-      <div class="formula-label">Cost of Carry</div>
-      <div class="formula-expr">F = S · e^(r−d)·T</div>
-      <div class="formula-desc">Theoretical futures price. r = risk-free rate, d = dividend yield, T = time in years.</div>
-    </div>
-    <div class="formula-card">
-      <div class="formula-label">Basis</div>
-      <div class="formula-expr">Basis = F − S</div>
-      <div class="formula-desc">Converges to zero at expiry. Positive in contango, negative in backwardation.</div>
-    </div>
-    <div class="formula-card">
-      <div class="formula-label">Black-Scholes (Call)</div>
-      <div class="formula-expr">C = S·N(d₁) − K·e^(−rT)·N(d₂)</div>
-      <div class="formula-desc">European call option price. d₁ and d₂ are functions of S, K, r, σ, T.</div>
-    </div>
-    <div class="formula-card">
-      <div class="formula-label">Hedge Ratio</div>
-      <div class="formula-expr">N* = (P/F) · β</div>
-      <div class="formula-desc">Number of futures contracts to hedge a portfolio of value P with beta β.</div>
-    </div>
-    <div class="formula-card">
-      <div class="formula-label">Put-Call Parity</div>
-      <div class="formula-expr">C + K·e^(−rT) = P + S</div>
-      <div class="formula-desc">No-arbitrage relationship between European calls and puts with same K, T.</div>
-    </div>
-    <div class="formula-card">
-      <div class="formula-label">MTM P&L</div>
-      <div class="formula-expr">ΔP = (F_t − F_{t−1}) · L</div>
-      <div class="formula-desc">Daily mark-to-market. L = lot size. Credited/debited daily to margin account.</div>
-    </div>
-    <div class="formula-card">
-      <div class="formula-label">Delta (Δ)</div>
-      <div class="formula-expr">Δ = ∂C/∂S ≈ N(d₁)</div>
-      <div class="formula-desc">Rate of change of option price with respect to underlying price. Between 0 and 1 for calls.</div>
-    </div>
-    <div class="formula-card">
-      <div class="formula-label">Binomial Up/Down</div>
-      <div class="formula-expr">u = e^(σ√Δt), d = 1/u</div>
-      <div class="formula-desc">Up and down factors in binomial tree. σ = volatility, Δt = time step.</div>
+    <div class="ffooter">
+      DerivativesLab · FIA 401 · IMT Hyderabad<br>
+      Instructor: Dr. Chakrapani Chaturvedula<br>
+      <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5d3e3e353c362f3c2d3c33341d343029352439382f3c3f3c3973383928733433">[email&#160;protected]</a>
     </div>
   </div>
-
-  <!-- ── INSTRUCTOR & ASSESSMENT ── -->
-  <div class="section-heading">Course Information</div>
-
-  <div class="instructor-section">
-    <div class="instructor-card">
-      <div class="instr-header">
-        <div class="instr-avatar">CC</div>
-        <div>
-          <div class="instr-name">Dr. Chakrapani Chaturvedula</div>
-          <div class="instr-role">Course Instructor · FIA 401</div>
-        </div>
-      </div>
-      <div class="instr-detail">
-        <div class="di-label">Email</div>
-        <div class="di-value">cchakrapani@imthyderabad.edu.in</div>
-      </div>
-      <div class="instr-detail">
-        <div class="di-label">Consultation</div>
-        <div class="di-value">Friday, 4:30 PM – 5:30 PM (Online)</div>
-      </div>
-      <div class="instr-detail">
-        <div class="di-label">Sessions</div>
-        <div class="di-value">20 sessions · 90 minutes each</div>
-      </div>
-      <div class="instr-detail">
-        <div class="di-label">Pedagogy</div>
-        <div class="di-value">Lectures, Cases, Projects & Simulations</div>
-      </div>
-      <div class="instr-detail">
-        <div class="di-label">Programme</div>
-        <div class="di-value">PGDM, PGDM (Finance), PGDM (Marketing)</div>
-      </div>
-    </div>
-
-    <div class="info-card">
-      <h3>Assessment Scheme</h3>
-      <div class="assessment-row">
-        <div class="ar-name">Class Participation (Round I + II)</div>
-        <div class="ar-pct">20%</div>
-      </div>
-      <div class="assessment-row">
-        <div class="ar-name">Group Project (Interim + Final)</div>
-        <div class="ar-pct">20%</div>
-      </div>
-      <div class="assessment-row">
-        <div class="ar-name">Mid-Term Written Exam</div>
-        <div class="ar-pct">20%</div>
-      </div>
-      <div class="assessment-row">
-        <div class="ar-name">Comprehensive End-Term Exam</div>
-        <div class="ar-pct">40%</div>
-      </div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border2)">
-        <h3 style="margin-bottom:12px">Course Outcomes</h3>
-        <div class="assessment-row">
-          <div class="ar-name">CO1 · Core concepts of futures & options</div>
-        </div>
-        <div class="assessment-row">
-          <div class="ar-name">CO2 · Risk management & trading strategies</div>
-        </div>
-        <div class="assessment-row">
-          <div class="ar-name">CO3 · Apply pricing models to value derivatives</div>
-        </div>
-        <div class="assessment-row">
-          <div class="ar-name">CO4 · Design instruments to manage risk</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<footer>
-  <div class="container footer-inner">
-    <div class="footer-logo">Derivatives<span>Lab</span></div>
-    <div class="footer-note">FIA 401 · IMT Hyderabad · AY 2025–26 · Simulated data for educational purposes</div>
-    <div class="footer-links">
-      <a href="module1.html">Module 1</a>
-      <a href="module2.html">Module 2</a>
-    </div>
-  </div>
-</footer>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxgpQSW_9Ui0N8tdYcmROATenlo_ceVGpXpOkv7S8ruoJp-4B6RNwuDJA7AEMW4siAiQ/exec';
+const CLASS_KEY_HASH  = '33909a059c5260dfad1af9227f96ed672ebea34a0bc342a0c62ca9e09eef3256';
 
-<script>
-const modules = [
-  {
-    num: "01",
-    icon: "🌐",
-    title: "Markets & Instruments",
-    subtitle: "Sessions 1–3",
-    subtitleClass: "",
-    desc: "Explore live NSE data, dissect a Reliance futures contract field by field, understand who trades derivatives and why, and test yourself on core terminology.",
-    topics: ["Derivatives Intro", "Futures vs Forwards", "Market Participants", "Basis", "Open Interest", "Terminology"],
-    sessions: "Sessions 1–3",
-    hull: "Hull Ch. 1–2",
-    status: "live",
-    statusLabel: "Live",
-    cardClass: "available",
-    href: "module1.html",
-    cta: "Open Module →"
-  },
-  {
-    num: "02",
-    icon: "📈",
-    title: "Futures Contracts",
-    subtitle: "Sessions 2–5",
-    subtitleClass: "teal",
-    desc: "Deep dive into how futures contracts work — daily MTM, margin mechanics, cost-of-carry pricing, convergence, and hedging with futures using Reliance as the live example.",
-    topics: ["MTM Simulation", "Margin Mechanics", "Cost of Carry", "Basis Decay", "Long/Short Payoffs", "Hedge Ratio"],
-    sessions: "Sessions 2–5",
-    hull: "Hull Ch. 2, 3, 5",
-    status: "building",
-    statusLabel: "Building",
-    cardClass: "active-module",
-    href: "module2.html",
-    cta: "Coming Soon →"
-  },
-  {
-    num: "03",
-    icon: "⚙️",
-    title: "Options Markets",
-    subtitle: "Sessions 6–7",
-    subtitleClass: "muted",
-    desc: "Introduction to call and put options — payoff diagrams, moneyness (ITM/ATM/OTM), option premium components, and the live Reliance options chain.",
-    topics: ["Calls & Puts", "Payoff Diagrams", "Moneyness", "Intrinsic vs Time Value", "Options Chain"],
-    sessions: "Sessions 6–7",
-    hull: "Hull Ch. 9–10",
-    status: "soon",
-    statusLabel: "Soon",
-    cardClass: "locked",
-    href: "#",
-    cta: "Locked 🔒"
-  },
-  {
-    num: "04",
-    icon: "🛡️",
-    title: "Hedging with Derivatives",
-    subtitle: "Sessions 8, 15",
-    subtitleClass: "muted",
-    desc: "Real-world hedging case studies — Lufthansa currency hedge and American Barrick gold hedge. Build and evaluate complete hedging strategies.",
-    topics: ["Hedge Ratio", "Minimum Variance Hedge", "Lufthansa Case", "Barrick Case", "Basis Risk"],
-    sessions: "Sessions 8, 15",
-    hull: "Hull Ch. 3",
-    status: "soon",
-    statusLabel: "Soon",
-    cardClass: "locked",
-    href: "#",
-    cta: "Locked 🔒"
-  },
-  {
-    num: "05",
-    icon: "🎯",
-    title: "Options Strategies",
-    subtitle: "Sessions 9–10",
-    subtitleClass: "muted",
-    desc: "Build and visualise option strategies — spreads, straddles, strangles, and collars. Live payoff diagrams update as you add legs.",
-    topics: ["Bull/Bear Spreads", "Straddle", "Strangle", "Collar", "Butterfly", "Payoff Builder"],
-    sessions: "Sessions 9–10",
-    hull: "Hull Ch. 11",
-    status: "soon",
-    statusLabel: "Soon",
-    cardClass: "locked",
-    href: "#",
-    cta: "Locked 🔒"
-  },
-  {
-    num: "06",
-    icon: "🧮",
-    title: "Pricing Models",
-    subtitle: "Sessions 11–14",
-    subtitleClass: "muted",
-    desc: "Interactive binomial tree builder, Black-Scholes calculator with live Greeks, and sensitivity analysis — all computed in real time as you adjust inputs.",
-    topics: ["Binomial Tree", "Black-Scholes", "Risk-Neutral Pricing", "Greeks Dashboard", "Volatility Surface"],
-    sessions: "Sessions 11–14",
-    hull: "Hull Ch. 12–13, 17",
-    status: "soon",
-    statusLabel: "Soon",
-    cardClass: "locked",
-    href: "#",
-    cta: "Locked 🔒"
-  },
-  {
-    num: "07",
-    icon: "🎲",
-    title: "Greeks & Monte Carlo",
-    subtitle: "Sessions 16–20",
-    subtitleClass: "muted",
-    desc: "Options Greeks animated dashboard, exotic options explorer, and a Monte Carlo simulation engine where you set the number of paths and watch prices emerge.",
-    topics: ["Delta/Gamma/Vega", "Theta Decay", "Exotic Options", "Monte Carlo Paths", "Simulation Engine"],
-    sessions: "Sessions 16–20",
-    hull: "Hull Ch. 17, 22",
-    status: "soon",
-    statusLabel: "Soon",
-    cardClass: "locked",
-    href: "#",
-    cta: "Locked 🔒"
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doLogin(){
+  const enrollId=document.getElementById('enrollId').value.trim().toUpperCase();
+  const classKey=document.getElementById('classKey').value.trim();
+  clearMsgs();
+  if(!enrollId){markErr('enrollId','Please enter your Enrollment ID.');return;}
+  if(!classKey){markErr('classKey','Please enter the Class Key.');return;}
+  setLoading(true);
+
+  // 1. Check class key hash locally
+  const hash=await sha256(classKey);
+  if(hash!==CLASS_KEY_HASH){showErr('Incorrect Class Key. Please check with your instructor.');setLoading(false);return;}
+
+  // 2. Verify enrollment ID via Apps Script
+  try{
+    const res=await fetch(`${APPS_SCRIPT_URL}?action=login&id=${encodeURIComponent(enrollId)}`);
+    const data=await res.json();
+    if(!data.success){showErr(data.message||'Enrollment ID not found. Contact your instructor.');setLoading(false);return;}
+    saveSession(enrollId,data.name||enrollId,false);
+    showOk(`Welcome, ${data.name||enrollId}! Loading your modules...`);
+    setTimeout(()=>window.location.href='course.html',1400);
+  }catch(e){
+    // Offline fallback — class key already verified
+    console.warn('Apps Script unreachable, offline fallback');
+    saveSession(enrollId,enrollId,true);
+    showOk('Connected (offline mode). Loading your modules...');
+    setTimeout(()=>window.location.href='course.html',1400);
   }
-];
-
-const curriculum = [
-  { s: "1", topic: "Derivatives: An Introduction", hull: "Ch. 1", module: "Module 1", status: "live" },
-  { s: "2", topic: "Futures and Forwards Markets", hull: "Ch. 2", module: "Module 1 & 2", status: "live" },
-  { s: "3", topic: "Futures and Forwards Markets (contd.)", hull: "Ch. 2, 3", module: "Module 1 & 2", status: "live" },
-  { s: "4", topic: "Pricing of Forward and Futures", hull: "Ch. 5", module: "Module 2", status: "next" },
-  { s: "5", topic: "Pricing of Forward and Futures (contd.)", hull: "Ch. 5", module: "Module 2", status: "next" },
-  { s: "6", topic: "Introduction to Options Markets", hull: "Ch. 9", module: "Module 3", status: "soon" },
-  { s: "7", topic: "Introduction to Options Markets (contd.)", hull: "Ch. 10", module: "Module 3", status: "soon" },
-  { s: "8", topic: "Hedging using Derivatives", hull: "Lufthansa Case", module: "Module 4", status: "soon" },
-  { s: "9", topic: "Trading Strategies using Options", hull: "Ch. 11", module: "Module 5", status: "soon" },
-  { s: "10", topic: "Trading Strategies using Options (contd.)", hull: "Ch. 11", module: "Module 5", status: "soon" },
-  { s: "11", topic: "Introduction to Binomial Trees", hull: "Ch. 12", module: "Module 6", status: "soon" },
-  { s: "12", topic: "Binomial Trees Option Pricing", hull: "Ch. 12", module: "Module 6", status: "soon" },
-  { s: "13", topic: "Black-Scholes Option Pricing Model", hull: "Ch. 13", module: "Module 6", status: "soon" },
-  { s: "14", topic: "Black-Scholes Option Pricing (contd.)", hull: "Ch. 13", module: "Module 6", status: "soon" },
-  { s: "15", topic: "Hedging using Options and Futures", hull: "Barrick Case", module: "Module 4", status: "soon" },
-  { s: "16", topic: "Option Greeks", hull: "Ch. 17", module: "Module 7", status: "soon" },
-  { s: "17", topic: "Option Greeks (contd.)", hull: "Ch. 17", module: "Module 7", status: "soon" },
-  { s: "18", topic: "Exotic Options", hull: "Ch. 22", module: "Module 7", status: "soon" },
-  { s: "19", topic: "Exotic Options (contd.)", hull: "Ch. 22", module: "Module 7", status: "soon" },
-  { s: "20", topic: "Pricing using Monte Carlo Simulations", hull: "Simulations", module: "Module 7", status: "soon" },
-];
-
-// ── RENDER MODULES ──
-function renderModules() {
-  const grid = document.getElementById('moduleGrid');
-  grid.innerHTML = modules.map((m, i) => `
-    <a href="${m.href}" class="module-card ${m.cardClass} ${i === 0 ? 'fade-up' : 'fade-up'}"
-       style="animation-delay:${0.1 + i * 0.08}s"
-       ${m.cardClass === 'locked' ? 'onclick="return false;"' : ''}>
-      <div class="card-top">
-        <div class="module-num">Module ${m.num}</div>
-        <div class="module-status status-${m.status}">${m.statusLabel}</div>
-      </div>
-      <span class="module-icon">${m.icon}</span>
-      <div class="module-title">${m.title}</div>
-      <div class="module-subtitle ${m.subtitleClass}">${m.subtitle} · ${m.hull}</div>
-      <div class="module-desc">${m.desc}</div>
-      <div class="module-topics">
-        ${m.topics.map(t => `<span class="topic-tag">${t}</span>`).join('')}
-      </div>
-      <div class="module-footer">
-        <div class="session-info">${m.sessions}</div>
-        <div class="module-cta">${m.cta}</div>
-      </div>
-    </a>
-  `).join('');
 }
 
-// ── RENDER CURRICULUM ──
-function renderCurriculum() {
-  const tbody = document.getElementById('curriculumBody');
-  tbody.innerHTML = curriculum.map(r => `
-    <tr>
-      <td>${r.s}</td>
-      <td class="topic-name">${r.topic}</td>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3)">${r.hull}</td>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2)">${r.module}</td>
-      <td>
-        <span class="curr-status-dot dot-${r.status === 'live' ? 'live' : r.status === 'next' ? 'next' : 'soon'}"></span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text3)">
-          ${r.status === 'live' ? 'Live' : r.status === 'next' ? 'Building' : 'Upcoming'}
-        </span>
-      </td>
-    </tr>
-  `).join('');
+function saveSession(id,name,offline){
+  localStorage.setItem('dlabSession',JSON.stringify({
+    enrollId:id,name,loginTime:new Date().toISOString(),
+    expires:Date.now()+24*60*60*1000,offline
+  }));
 }
-
-// ── RENDER PROGRESS ──
-function renderProgress() {
-  const pips = document.getElementById('progressPips');
-  const liveCount = modules.filter(m => m.status === 'live').length;
-  pips.innerHTML = modules.map(m => `
-    <div class="progress-pip">
-      <div class="progress-pip-fill ${m.status === 'live' ? 'done' : m.status === 'building' ? 'active' : 'locked'}"
-           style="width:${m.status === 'live' ? '100%' : '0%'}"></div>
-    </div>
-  `).join('');
-  document.getElementById('progressCount').textContent = `${liveCount} / ${modules.length} Modules Live`;
+function setLoading(on){
+  document.getElementById('btnText').style.display=on?'none':'inline';
+  document.getElementById('spinner').style.display=on?'block':'none';
+  document.getElementById('loginBtn').disabled=on;
 }
+function clearMsgs(){
+  document.getElementById('errMsg').classList.remove('show');
+  document.getElementById('okMsg').classList.remove('show');
+  ['enrollId','classKey'].forEach(id=>document.getElementById(id).classList.remove('err'));
+}
+function markErr(fid,msg){document.getElementById(fid).classList.add('err');showErr(msg);}
+function showErr(msg){const e=document.getElementById('errMsg');e.textContent=msg;e.classList.add('show');}
+function showOk(msg){const e=document.getElementById('okMsg');e.textContent=msg;e.classList.add('show');}
 
-// ── INIT ──
-renderModules();
-renderCurriculum();
-renderProgress();
-</script>
-</body>
-</html>
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// Auto-r
