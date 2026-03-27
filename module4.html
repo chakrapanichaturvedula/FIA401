@@ -253,6 +253,7 @@ canvas{display:block;width:100%;}
   <button class="tab" onclick="sw('stockhedge',this)">📊 Stock Portfolio Hedge</button>
   <button class="tab" onclick="sw('scenarios',this)">🧩 Scenarios</button>
   <button class="tab" onclick="sw('quiz',this)">✏️ AI Quiz</button>
+  <button class="tab" onclick="sw('simulation',this)">🚀 Trading Simulation</button>
 </div>
 
 <!-- ═══════════════════════════════════════════════
@@ -668,7 +669,41 @@ canvas{display:block;width:100%;}
     </div>
   </div>
 </div>
+<div class="panel" id="tab-simulation">
+  <div class="stag">Tab 8 — Live Trading Simulation</div>
+  <div class="sh">Futures Lab</div>
+  <div class="sp">Apply everything from this module in a full 22-day trading simulation. Hedge an inventory position or lock in an anticipated purchase price using futures — with real basis risk, optimal hedge ratio calculations, and gradebook submission.</div>
 
+  <div style="background:var(--surf);border:1px solid var(--bdr2);border-radius:10px;overflow:hidden;margin-bottom:24px;">
+    <div style="background:linear-gradient(90deg,rgba(217,119,6,0.12),transparent);padding:20px 24px;border-bottom:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;flex-wrap:gap;">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--cu);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:6px;">Phase 1 · Hull Ch. 3–6</div>
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:4px;">Futures Lab — 22-Day Simulation</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--text2);">Basis · Convergence · Optimal Hedge Ratio · Basis Risk · Variance Reduction</div>
+      </div>
+      <a href="simulation.html" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--cu);color:#000;font-family:'IBM Plex Sans',sans-serif;font-size:0.85rem;font-weight:700;padding:12px 24px;border-radius:6px;text-decoration:none;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.background='#f0a500'" onmouseout="this.style.background='var(--cu)'">
+        Launch Simulation →
+      </a>
+    </div>
+    <div style="padding:20px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div style="background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:6px;">SCENARIO 1</div>
+        <div style="font-size:0.88rem;font-weight:700;margin-bottom:4px;">📦 Inventory Hedge</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--text2);line-height:1.6;">Hold ₹10L of stock. Short futures to protect against price decline.</div>
+      </div>
+      <div style="background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:6px;">SCENARIO 2</div>
+        <div style="font-size:0.88rem;font-weight:700;margin-bottom:4px;">🎯 Anticipated Purchase</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--text2);line-height:1.6;">Must buy stock in 22 days. Go long futures to lock in today's price.</div>
+      </div>
+      <div style="background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:14px 16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:6px;">GRADEBOOK</div>
+        <div style="font-size:0.88rem;font-weight:700;margin-bottom:4px;">📊 Auto-scored</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--text2);line-height:1.6;">Hedge effectiveness, variance reduction & decisions sent to instructor.</div>
+      </div>
+    </div>
+  </div>
+</div>
 </div><!-- /w -->
 <script>
 // ── CO TRACKER ──────────────────────────────────────────────
