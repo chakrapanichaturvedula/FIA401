@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivativesLab — Trading Simulation · FIA 401</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────────────────────── */
+:root {
+  --bg:#05080f; --surf:#0a0f1a; --surf2:#111827; --surf3:#1a2438;
+  --accent:#e8c547; --accent2:#4ecdc4; --accent3:#ff6b6b;
+  --blue:#60a5fa; --violet:#a78bfa; --green:#00e676; --red:#ff4444;
+  --text:#eef2f7; --text2:#7f8fa6; --text3:#3d4f6b;
+  --border:rgba(232,197,71,0.12); --border2:rgba(255,255,255,0.06);
+  --contango:#60a5fa; --backwardation:#00e676;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(232,197,71,0.02) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(232,197,71,0.02) 1px,transparent 1px);
+  background-size:60px 60px;pointer-events:none;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 50% 40% at 5% 20%,rgba(232,197,71,0.05) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 35% at 95% 80%,rgba(78,205,196,0.04) 0%,transparent 60%);}
+
+.w{max-width:1480px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
+
+/* ─── HEADER ─────────────────────────────────────────────────────────────── */
+header{background:rgba(5,8,15,0.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:200;}
+.hd{display:flex;align-items:center;justify-content:space-between;}
+.hlogo{font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;text-decoration:none;color:var(--text);}
+.hlogo span{color:var(--accent);}
+.hcenter{display:flex;align-items:center;gap:8px;}
+.phase-pill{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;padding:4px 12px;border-radius:20px;border:1px solid;cursor:pointer;transition:all 0.2s;}
+.phase-pill.active{background:rgba(232,197,71,0.12);border-color:var(--accent);color:var(--accent);}
+.phase-pill.locked{background:transparent;border-color:var(--border2);color:var(--text3);cursor:not-allowed;}
+.phase-pill.locked::after{content:' 🔒';}
+.hright{display:flex;align-items:center;gap:10px;}
+.btn{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;padding:7px 14px;border-radius:5px;cursor:pointer;border:none;transition:all 0.2s;}
+.btn-ghost{background:var(--surf2);color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-acc{background:var(--accent);color:#000;}
+.btn-acc:hover{background:#f0d060;}
+.btn-danger{background:rgba(255,68,68,0.12);color:var(--red);border:1px solid rgba(255,68,68,0.25);}
+.btn-danger:hover{background:rgba(255,68,68,0.2);}
+
+/* ─── GATE / SCENARIO SELECT ─────────────────────────────────────────────── */
+#gateScreen{display:flex;align-items:center;justify-content:center;min-height:88vh;padding:40px 0;}
+.gate-inner{max-width:860px;width:100%;}
+.gate-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.gate-eyebrow::before{content:'';width:24px;height:1px;background:var(--accent);}
+.gate-title{font-size:clamp(2.2rem,4vw,3.5rem);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:8px;}
+.gate-title em{font-family:'Playfair Display',serif;font-style:italic;color:var(--accent);font-weight:400;}
+.gate-sub{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3);letter-spacing:0.06em;margin-bottom:40px;}
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+.sc-card{background:var(--surf);border:1px solid var(--border2);border-radius:10px;padding:24px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;}
+.sc-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,197,71,0.04),transparent);opacity:0;transition:opacity 0.25s;}
+.sc-card:hover{border-color:rgba(232,197,71,0.3);transform:translateY(-2px);box-shadow:0 8px 30px rgba(232,197,71,0.08);}
+.sc-card:hover::before{opacity:1;}
+.sc-card.selected{border-color:var(--accent);background:rgba(232,197,71,0.05);}
+.sc-card.selected::before{opacity:1;}
+.sc-icon{font-size:1.6rem;margin-bottom:12px;}
+.sc-name{font-size:1rem;font-weight:700;letter-spacing:-0.01em;margin-bottom:6px;}
+.sc-desc{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text2);line-height:1.65;}
+.sc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.sc-tag{font-family:'JetBrains Mono',monospace;font-size:0.55rem;padding:3px 8px;border-radius:3px;background:rgba(232,197,71,0.07);border:1px solid var(--border);color:var(--accent);}
+.hedge-mode-row{display:flex;gap:10px;margin-bottom:28px;}
+.hm-card{flex:1;background:var(--surf);border:1px solid var(--border2);border-radius:8px;padding:16px 18px;cursor:pointer;transition:all 0.2s;}
+.hm-card:hover{border-color:rgba(232,197,71,0.3);}
+.hm-card.selected{border-color:var(--accent2);background:rgba(78,205,196,0.05);}
+.hm-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px;}
+.hm-name{font-size:0.9rem;font-weight:700;margin-bottom:3px;}
+.hm-desc{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text2);}
+.gate-start{width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:4px;}
+.gate-start:hover{background:#f0d060;transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,197,71,0.2);}
+.gate-start:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+/* ─── MAIN SIM LAYOUT ─────────────────────────────────────────────────────── */
+#simScreen{display:none;padding:24px 0 60px;}
+
+/* Day progress bar */
+.day-bar{background:var(--surf);border:1px solid var(--border2);border-radius:8px;padding:14px 20px;display:flex;align-items:center;gap:20px;margin-bottom:20px;}
+.day-num{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:500;color:var(--accent);min-width:90px;}
+.day-label{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--text3);letter-spacing:0.1em;display:block;margin-bottom:2px;}
+.day-track{flex:1;height:6px;background:var(--surf3);border-radius:3px;overflow:hidden;}
+.day-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width 0.6s ease;}
+.day-info{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text2);min-width:80px;text-align:right;}
+.scenario-badge{font-family:'JetBrains Mono',monospace;font-size:0.6rem;padding:4px 12px;border-radius:20px;background:rgba(232,197,71,0.08);border:1px solid var(--border);color:var(--accent);}
+.structure-badge{font-family:'JetBrains Mono',monospace;font-size:0.65rem;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid;transition:all 0.4s;}
+.structure-badge.contango{background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.35);color:var(--contango);}
+.structure-badge.backwardation{background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.35);color:var(--backwardation);}
+
+/* ─── STATS ROW ───────────────────────────────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;}
+.stat{background:var(--surf);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:0.52rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px;}
+.stat-val{font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;line-height:1;}
+.stat-sub{font-family:'JetBrains Mono',monospace;font-size:0.58rem;margin-top:3px;}
+.pos{color:var(--green);} .neg{color:var(--red);} .neu{color:var(--text2);}
+.gold{color:var(--accent);}
+
+/* ─── MAIN GRID ───────────────────────────────────────────────────────────── */
+.main-grid{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-bottom:16px;}
+
+/* Chart panel */
+.panel{background:var(--surf);border:1px solid var(--border2);border-radius:10px;overflow:hidden;}
+.panel-hd{padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:0.85rem;font-weight:700;letter-spacing:-0.01em;}
+.panel-sub{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--text3);}
+.panel-body{padding:18px;}
+canvas{width:100% !important;}
+
+/* Ticker tape */
+.ticker-row{display:flex;gap:8px;padding:10px 18px;background:rgba(0,0,0,0.2);border-bottom:1px solid var(--border2);font-family:'JetBrains Mono',monospace;font-size:0.65rem;flex-wrap:wrap;}
+.tick{display:flex;gap:6px;align-items:center;}
+.tl{color:var(--text3);}
+.tv{color:var(--text);}
+.tv.up{color:var(--green);}
+.tv.dn{color:var(--red);}
+
+/* ─── HEDGE PANEL ─────────────────────────────────────────────────────────── */
+.hedge-panel{display:flex;flex-direction:column;gap:12px;}
+.hp-section{background:var(--surf);border:1px solid var(--border2);border-radius:10px;}
+.hp-hd{padding:12px 16px;border-bottom:1px solid var(--border2);font-size:0.8rem;font-weight:700;}
+.hp-body{padding:14px 16px;}
+
+.formula-box{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--accent);line-height:1.8;margin-bottom:12px;}
+.formula-box .dim{color:var(--text3);}
+
+.input-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.inp-lbl{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;}
+.inp-ctrl{display:flex;gap:6px;align-items:center;}
+.inp-ctrl input[type=range]{flex:1;accent-color:var(--accent);}
+.inp-val{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--accent);min-width:44px;text-align:right;}
+.inp-ctrl input[type=number]{width:80px;background:var(--surf2);border:1px solid var(--border2);border-radius:4px;padding:6px 8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.75rem;outline:none;}
+.inp-ctrl input[type=number]:focus{border-color:rgba(232,197,71,0.4);}
+
+.hedge-result{background:var(--surf2);border-radius:6px;padding:12px 14px;}
+.hr-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.hr-row:last-child{border-bottom:none;}
+.hr-lbl{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text3);}
+.hr-val{font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;}
+
+.btn-hedge{width:100%;padding:11px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:8px;}
+.btn-hedge:hover{background:#f0d060;}
+.btn-next{width:100%;padding:11px;background:rgba(78,205,196,0.1);color:var(--accent2);border:1px solid rgba(78,205,196,0.3);border-radius:6px;font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:6px;}
+.btn-next:hover{background:rgba(78,205,196,0.18);}
+
+/* ─── BOTTOM ROW ──────────────────────────────────────────────────────────── */
+.bottom-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* Decision log */
+.log-list{max-height:200px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:0.65rem;}
+.log-list::-webkit-scrollbar{width:4px;}
+.log-list::-webkit-scrollbar-track{background:transparent;}
+.log-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.log-entry{padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:start;}
+.le-day{color:var(--text3);}
+.le-msg{color:var(--text2);line-height:1.4;}
+.le-val{color:var(--accent);white-space:nowrap;}
+.le-val.good{color:var(--green);}
+.le-val.bad{color:var(--red);}
+
+/* Variance table */
+.var-table{width:100%;font-family:'JetBrains Mono',monospace;font-size:0.68rem;border-collapse:collapse;}
+.var-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.var-table td:first-child{color:var(--text3);}
+.var-table td:last-child{text-align:right;color:var(--text);}
+.var-bar-wrap{padding:4px 0;}
+.var-bar-track{height:5px;background:var(--surf3);border-radius:3px;overflow:hidden;margin-top:3px;}
+.var-bar-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+
+/* Hull concept box */
+.concept-box{background:rgba(232,197,71,0.04);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.concept-title{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;}
+.concept-text{font-size:0.82rem;color:var(--text2);line-height:1.7;}
+.concept-text strong{color:var(--text);}
+.concept-formula{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--accent2);margin-top:8px;padding:6px 10px;background:rgba(78,205,196,0.05);border-radius:4px;border-left:2px solid var(--accent2);}
+
+/* ─── RESULTS SCREEN ──────────────────────────────────────────────────────── */
+#resultsScreen{display:none;padding:40px 0 80px;}
+.results-header{text-align:center;margin-bottom:48px;}
+.results-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.2em;margin-bottom:14px;}
+.results-title{font-size:clamp(2.5rem,5vw,4rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:8px;}
+.results-title em{font-family:'Playfair Display',serif;font-style:italic;color:var(--accent);}
+.score-ring{display:flex;justify-content:center;margin:32px 0;}
+.score-circle{width:160px;height:160px;border-radius:50%;border:3px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:var(--surf);}
+.score-circle::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(var(--accent) var(--pct,0%), var(--surf3) 0%);z-index:-1;}
+.score-big{font-size:2.8rem;font-weight:800;color:var(--accent);line-height:1;}
+.score-lbl{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--text3);margin-top:2px;}
+.results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;}
+.rstat{background:var(--surf);border:1px solid var(--border2);border-radius:8px;padding:18px 20px;text-align:center;}
+.rstat-val{font-size:1.6rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;}
+.rstat-lbl{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--text3);letter-spacing:0.08em;}
+.feedback-box{background:var(--surf);border:1px solid var(--border2);border-radius:10px;padding:24px;margin-bottom:24px;}
+.fb-title{font-size:1rem;font-weight:700;margin-bottom:12px;color:var(--accent);}
+.fb-items{display:flex;flex-direction:column;gap:10px;}
+.fb-item{display:flex;gap:12px;align-items:flex-start;font-size:0.85rem;color:var(--text2);line-height:1.6;}
+.fb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:7px;}
+.fb-dot.good{background:var(--green);}
+.fb-dot.warn{background:var(--accent);}
+.fb-dot.bad{background:var(--red);}
+.results-actions{display:flex;gap:12px;justify-content:center;}
+.btn-lg{padding:13px 32px;font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;border-radius:7px;cursor:pointer;border:none;transition:all 0.2s;}
+
+/* ─── TOAST ───────────────────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text);max-width:320px;transform:translateY(20px);opacity:0;transition:all 0.3s;pointer-events:none;line-height:1.5;}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.good{border-color:rgba(0,230,118,0.4);color:var(--green);}
+#toast.bad{border-color:rgba(255,68,68,0.4);color:var(--red);}
+#toast.warn{border-color:var(--border);color:var(--accent);}
+
+/* ─── LOCKED PHASE OVERLAY ────────────────────────────────────────────────── */
+.locked-overlay{text-align:center;padding:48px 24px;color:var(--text3);}
+.locked-overlay .lock-icon{font-size:2.5rem;margin-bottom:12px;}
+.locked-overlay p{font-family:'JetBrains Mono',monospace;font-size:0.68rem;line-height:1.7;}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media(max-width:1100px){.main-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:720px){.scenario-grid{grid-template-columns:1fr;}.bottom-row{grid-template-columns:1fr;}.results-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="w">
+    <div class="hd">
+      <a href="course.html" class="hlogo">Derivatives<span>Lab</span></a>
+      <div class="hcenter" id="phaseTabs">
+        <!-- populated by CONFIG -->
+      </div>
+      <div class="hright">
+        <span id="enrollDisplay" style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text3);"></span>
+        <button class="btn btn-ghost" onclick="resetSim()">↺ Reset</button>
+        <a href="course.html" class="btn btn-ghost" style="text-decoration:none;">← Course</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ─── GATE SCREEN ─────────────────────────────────────────────────────────── -->
+<div id="gateScreen">
+  <div class="w">
+    <div class="gate-inner">
+      <div class="gate-eyebrow">FIA 401 · FuturesLab · Hull Chapter 3–6</div>
+      <div class="gate-title">Futures <em>Simulation</em></div>
+      <div class="gate-sub">PHASE 1 · HEDGING WITH FUTURES · 22-DAY TRADING WINDOW</div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;">Choose Your Scenario</div>
+        <div class="scenario-grid" id="scenarioGrid">
+          <div class="sc-card" data-scenario="inventory" onclick="selectScenario('inventory',this)">
+            <div class="sc-icon">📦</div>
+            <div class="sc-name">Inventory Hedge</div>
+            <div class="sc-desc">You hold ₹10,00,000 of Reliance Industries stock. Protect your position against a price decline by shorting futures.</div>
+            <div class="sc-tags"><span class="sc-tag">SHORT FUTURES</span><span class="sc-tag">DOWNSIDE PROTECTION</span></div>
+          </div>
+          <div class="sc-card" data-scenario="anticipated" onclick="selectScenario('anticipated',this)">
+            <div class="sc-icon">🎯</div>
+            <div class="sc-name">Anticipated Purchase</div>
+            <div class="sc-desc">You must buy ₹10,00,000 of Reliance stock in 22 days. Lock in today's price by going long futures.</div>
+            <div class="sc-tags"><span class="sc-tag">LONG FUTURES</span><span class="sc-tag">PRICE LOCK-IN</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;">Hedge Mode</div>
+        <div class="hedge-mode-row" id="hedgeModeRow">
+          <div class="hm-card selected" data-mode="naive" onclick="selectHedgeMode('naive',this)">
+            <div class="hm-label">Mode 1</div>
+            <div class="hm-name">Naïve Hedge</div>
+            <div class="hm-desc">h = 1 · One unit of exposure hedged with one futures contract</div>
+          </div>
+          <div class="hm-card" data-mode="optimal" onclick="selectHedgeMode('optimal',this)">
+            <div class="hm-label">Mode 2</div>
+            <div class="hm-name">Optimal Hedge Ratio</div>
+            <div class="hm-desc">h* = ρ·σ<sub>S</sub>/σ<sub>F</sub> · Hull's variance-minimizing formula</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="gate-start" id="startBtn" onclick="startSim()" disabled>Select a Scenario to Begin →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SIMULATION SCREEN ───────────────────────────────────────────────────── -->
+<div id="simScreen">
+  <div class="w">
+
+    <!-- Day progress -->
+    <div class="day-bar">
+      <div>
+        <div class="day-label">TRADING DAY</div>
+        <div class="day-num" id="dayNum">1 / 22</div>
+      </div>
+      <div style="flex:1;">
+        <div class="day-track"><div class="day-fill" id="dayFill" style="width:4.5%"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:0.55rem;color:var(--text3);">
+          <span>Day 1</span><span>Expiry Day 22</span>
+        </div>
+      </div>
+      <div id="structureBadge" class="structure-badge contango">● Contango</div>
+      <div id="scenarioBadge" class="scenario-badge">—</div>
+      <div class="day-info" id="dteLabel">DTE: 21 days</div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-lbl">Spot Price</div>
+        <div class="stat-val gold" id="statSpot">—</div>
+        <div class="stat-sub" id="statSpotChg">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Futures Price</div>
+        <div class="stat-val" id="statFut">—</div>
+        <div class="stat-sub" id="statFutChg">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Basis (S−F)</div>
+        <div class="stat-val" id="statBasis">—</div>
+        <div class="stat-sub" id="statBasisLbl">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Portfolio Value</div>
+        <div class="stat-val" id="statPortfolio">—</div>
+        <div class="stat-sub" id="statPnl">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Hedge Ratio Used</div>
+        <div class="stat-val" id="statHR">—</div>
+        <div class="stat-sub" id="statHROptimal">Optimal: —</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Hedge Effectiveness</div>
+        <div class="stat-val" id="statHE">—</div>
+        <div class="stat-sub" id="statHEBar">—</div>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="main-grid">
+
+      <!-- Left: chart -->
+      <div>
+        <div class="panel" style="margin-bottom:14px;">
+          <div class="ticker-row">
+            <div class="tick"><span class="tl">RELIANCE SPOT</span><span class="tv" id="tickSpot">—</span></div>
+            <div class="tick"><span class="tl">|</span></div>
+            <div class="tick"><span class="tl">FUTURES</span><span class="tv" id="tickFut">—</span></div>
+            <div class="tick"><span class="tl">|</span></div>
+            <div class="tick"><span class="tl">BASIS</span><span class="tv" id="tickBasis">—</span></div>
+            <div class="tick"><span class="tl">|</span></div>
+            <div class="tick"><span class="tl">r</span><span class="tv">8.5%</span></div>
+            <div class="tick"><span class="tl">|</span></div>
+            <div class="tick"><span class="tl">σ<sub>S</sub></span><span class="tv" id="tickSigS">—</span></div>
+            <div class="tick"><span class="tl">σ<sub>F</sub></span><span class="tv" id="tickSigF">—</span></div>
+            <div class="tick"><span class="tl">ρ</span><span class="tv" id="tickRho">—</span></div>
+          </div>
+          <div class="panel-hd">
+            <div>
+              <div class="panel-title">Price Convergence & Basis</div>
+              <div class="panel-sub">Spot · Futures · Basis — Hull Ch.3 Convergence Property</div>
+            </div>
+            <div style="display:flex;gap:12px;font-family:'JetBrains Mono',monospace;font-size:0.6rem;">
+              <span style="color:var(--accent);">── Spot</span>
+              <span style="color:var(--accent2);">── Futures</span>
+              <span style="color:var(--red);">── Basis</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <canvas id="priceChart" height="220"></canvas>
+          </div>
+        </div>
+
+        <!-- Bottom: variance + log + concept -->
+        <div class="bottom-row">
+
+          <!-- Variance reduction -->
+          <div class="panel">
+            <div class="panel-hd">
+              <div class="panel-title">Variance Analysis</div>
+              <div class="panel-sub">Hedged vs Unhedged</div>
+            </div>
+            <div class="panel-body">
+              <table class="var-table">
+                <tr><td>Unhedged Variance</td><td id="varUnhedged">—</td></tr>
+                <tr><td>Hedged Variance</td><td id="varHedged">—</td></tr>
+                <tr><td colspan="2">
+                  <div class="var-bar-wrap">
+                    <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3);margin-bottom:3px;">
+                      <span>Variance Reduction</span><span id="varReduction">—</span>
+                    </div>
+                    <div class="var-bar-track"><div class="var-bar-fill" id="varBar" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));"></div></div>
+                  </div>
+                </td></tr>
+                <tr><td>Basis Risk Shocks</td><td id="basisShocks">0</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Decision log -->
+          <div class="panel">
+            <div class="panel-hd">
+              <div class="panel-title">Decision Log</div>
+              <div class="panel-sub">Your daily hedging actions</div>
+            </div>
+            <div class="panel-body" style="padding:10px 14px;">
+              <div class="log-list" id="logList">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text3);padding:8px 0;">Awaiting first decision…</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hull concept -->
+          <div class="panel">
+            <div class="panel-hd">
+              <div class="panel-title">Hull Concept</div>
+              <div class="panel-sub" id="conceptChapter">Chapter 3</div>
+            </div>
+            <div class="panel-body">
+              <div class="concept-box" id="conceptBox">
+                <div class="concept-title" id="conceptTitle">Basis</div>
+                <div class="concept-text" id="conceptText">Loading…</div>
+                <div class="concept-formula" id="conceptFormula"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right: hedge controls -->
+      <div class="hedge-panel">
+
+        <!-- Position info -->
+        <div class="hp-section">
+          <div class="hp-hd">📋 Your Position</div>
+          <div class="hp-body">
+            <div class="formula-box" id="positionBox">Loading…</div>
+            <div class="hedge-result" id="positionStats">
+              <div class="hr-row"><span class="hr-lbl">Position Value</span><span class="hr-val gold" id="posValue">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Contract Size</span><span class="hr-val" id="contractSize">500 shares</span></div>
+              <div class="hr-row"><span class="hr-lbl">Optimal Contracts</span><span class="hr-val" id="optContracts">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Contracts Hedged</span><span class="hr-val" id="hedgedContracts">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Hedge Status</span><span class="hr-val" id="hedgeStatus">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hedge controls -->
+        <div class="hp-section">
+          <div class="hp-hd">⚙️ Hedge Controls</div>
+          <div class="hp-body">
+            <div class="input-row">
+              <div class="inp-lbl">Number of Contracts to Hedge</div>
+              <div class="inp-ctrl">
+                <input type="range" id="contractsSlider" min="0" max="20" value="0" oninput="updateHedgeCalc()">
+                <span class="inp-val" id="contractsVal">0</span>
+              </div>
+            </div>
+            <div id="optimalPanel" style="display:none;">
+              <div class="input-row">
+                <div class="inp-lbl">Adjust Correlation ρ</div>
+                <div class="inp-ctrl">
+                  <input type="range" id="rhoSlider" min="0.5" max="1.0" step="0.01" value="0.92" oninput="updateHedgeCalc()">
+                  <span class="inp-val" id="rhoVal">0.92</span>
+                </div>
+              </div>
+            </div>
+            <div class="hedge-result">
+              <div class="hr-row"><span class="hr-lbl">Hedge Ratio h</span><span class="hr-val" id="calcHR">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Optimal h*</span><span class="hr-val" id="calcOptHR">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Hedge Quality</span><span class="hr-val" id="calcQuality">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Expected Effectiveness</span><span class="hr-val" id="calcEff">—</span></div>
+            </div>
+            <button class="btn-hedge" id="hedgeBtn" onclick="executeHedge()">Execute Hedge →</button>
+            <button class="btn-next" onclick="advanceDay()">Advance to Next Day ↓</button>
+          </div>
+        </div>
+
+        <!-- Basis risk indicator -->
+        <div class="hp-section">
+          <div class="hp-hd">⚡ Basis Risk Monitor</div>
+          <div class="hp-body">
+            <div class="hedge-result">
+              <div class="hr-row"><span class="hr-lbl">Today's Basis Shock</span><span class="hr-val" id="basisShockVal">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Cumulative Shock</span><span class="hr-val" id="cumShock">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Basis Trend</span><span class="hr-val" id="basisTrend">—</span></div>
+              <div class="hr-row"><span class="hr-lbl">Expected at Expiry</span><span class="hr-val" id="basisExpiry">→ 0 (convergence)</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── RESULTS SCREEN ──────────────────────────────────────────────────────── -->
+<div id="resultsScreen">
+  <div class="w">
+    <div class="results-header">
+      <div class="results-eyebrow">SIMULATION COMPLETE · FIA 401 · PHASE 1</div>
+      <div class="results-title">Futures Lab <em>Results</em></div>
+      <div id="resultsSubtitle" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text3);margin-top:8px;"></div>
+    </div>
+
+    <div class="score-ring">
+      <div class="score-circle" id="scoreCircle" style="--pct:0deg;">
+        <div class="score-big" id="scoreBig">—</div>
+        <div class="score-lbl">EFFECTIVENESS</div>
+      </div>
+    </div>
+
+    <div class="results-grid">
+      <div class="rstat"><div class="rstat-val gold" id="r1val">—</div><div class="rstat-lbl">FINAL P&L</div></div>
+      <div class="rstat"><div class="rstat-val" id="r2val">—</div><div class="rstat-lbl">VARIANCE REDUCTION</div></div>
+      <div class="rstat"><div class="rstat-val" id="r3val">—</div><div class="rstat-lbl">BASIS RISK EVENTS</div></div>
+      <div class="rstat"><div class="rstat-val" id="r4val">—</div><div class="rstat-lbl">HEDGE DECISIONS</div></div>
+    </div>
+
+    <div class="feedback-box">
+      <div class="fb-title">Instructor Feedback</div>
+      <div class="fb-items" id="feedbackItems"></div>
+    </div>
+
+    <div style="background:var(--surf);border:1px solid var(--border2);border-radius:10px;padding:24px;margin-bottom:24px;">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:16px;color:var(--accent);">Hull Key Concepts Encountered</div>
+      <div id="conceptsSeen" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+
+    <div style="background:var(--surf);border:1px solid var(--border2);border-radius:10px;padding:24px;margin-bottom:32px;" id="transitionBox">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:12px;">Phase 1 → Phase 2 Preview</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;">
+        <div style="padding:12px;border:1px solid var(--border2);border-radius:6px;">
+          <div style="color:var(--text3);margin-bottom:4px;">FEATURE</div>
+          <div style="color:var(--text2);">Cost</div>
+          <div style="color:var(--text2);">Downside</div>
+          <div style="color:var(--text2);">Upside</div>
+          <div style="color:var(--text2);">Convexity</div>
+        </div>
+        <div style="padding:12px;border:1px solid rgba(232,197,71,0.25);border-radius:6px;background:rgba(232,197,71,0.03);">
+          <div style="color:var(--accent);margin-bottom:4px;">FUTURES</div>
+          <div style="color:var(--green);">No upfront</div>
+          <div style="color:var(--red);">Locked</div>
+          <div style="color:var(--red);">Locked</div>
+          <div style="color:var(--red);">No</div>
+        </div>
+        <div style="padding:12px;border:1px solid rgba(78,205,196,0.2);border-radius:6px;background:rgba(78,205,196,0.03);opacity:0.6;">
+          <div style="color:var(--accent2);margin-bottom:4px;">PROTECTIVE PUT 🔒</div>
+          <div style="color:var(--text3);">Premium paid</div>
+          <div style="color:var(--text3);">Limited</div>
+          <div style="color:var(--text3);">Preserved</div>
+          <div style="color:var(--text3);">Yes</div>
+        </div>
+        <div style="padding:12px;border:1px solid rgba(167,139,250,0.2);border-radius:6px;background:rgba(167,139,250,0.03);opacity:0.6;">
+          <div style="color:var(--violet);margin-bottom:4px;">OPTIONS + GREEKS 🔒</div>
+          <div style="color:var(--text3);">Premium</div>
+          <div style="color:var(--text3);">Limited</div>
+          <div style="color:var(--text3);">Full</div>
+          <div style="color:var(--text3);">Yes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-lg btn-ghost" onclick="resetSim()" style="background:var(--surf2);color:var(--text2);border:1px solid var(--border2);">↺ Try Again</button>
+      <button class="btn-lg btn-acc" onclick="window.location.href='course.html'" style="background:var(--accent);color:#000;">← Back to Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ─── SCRIPT ──────────────────────────────────────────────────────────────── -->
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURE CONFIG  ← Instructor toggles these on/off
+   ════════════════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  phases: {
+    phase1: { label: 'Phase 1 · Futures Lab',  enabled: true  },
+    phase2: { label: 'Phase 2 · Options',       enabled: false },
+    phase3: { label: 'Phase 3 · Greeks',        enabled: false },
+  },
+  features: {
+    basisRisk:        true,   // random basis shocks each day
+    optimalHedge:     true,   // optimal hedge ratio mode
+    crossHedge:       false,  // cross-hedging (rho < 1 exercise)
+    convergenceGraph: true,   // price convergence chart
+    varianceAnalysis: true,   // hedged vs unhedged variance
+    gradebook:        true,   // submit results to Google Sheet
+  },
+  sim: {
+    totalDays:      22,
+    spotStart:      2450,    // ₹ Reliance Industries-like price
+    riskFreeRate:   0.085,   // 8.5% p.a.
+    spotVol:        0.22,    // annualised
+    futuresVol:     0.20,
+    baseCorr:       0.92,    // ρ spot-futures
+    contractSize:   500,     // shares per futures contract
+    positionValue:  1000000, // ₹10 lakh
+    basisShockSD:   0.15,    // std dev of daily basis shock
+  }
+};
+
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
+
+/* ════════════════════════════════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════════════════════════════════ */
+let state = {
+  scenario: null,   // 'inventory' | 'anticipated'
+  hedgeMode: 'naive',
+  day: 1,
+  spot: CONFIG.sim.spotStart,
+  futures: 0,
+  basis: 0,
+  portfolio: CONFIG.sim.positionValue,
+  hedgedContracts: 0,
+  optimalHR: 0,
+  usedHR: 0,
+  hedgeEffectiveness: 0,
+  cumulativeBasisShock: 0,
+  basisShockCount: 0,
+  spotHistory: [],
+  futuresHistory: [],
+  basisHistory: [],
+  portfolioHistory: [],
+  dailyPnL: [],
+  unhedgedVariance: 0,
+  hedgedVariance: 0,
+  decisionLog: [],
+  contractsThisDay: 0,
+  hedgeExecuted: false,
+  enrollId: '',
+};
+
+const HULL_CONCEPTS = [
+  { title:'Basis', chapter:'Chapter 3', formula:'Basis = S_t − F_t',
+    text:'The <strong>basis</strong> is the difference between the spot price and the futures price. In normal markets (contango), basis is negative. Hull shows basis changes unpredictably — this is <strong>basis risk</strong>.' },
+  { title:'Contango', chapter:'Chapter 3', formula:'F > S → Basis < 0',
+    text:'When futures price exceeds spot, the market is in <strong>contango</strong>. This is normal when carrying costs (r, storage) are positive. Long hedgers face roll costs in contango.' },
+  { title:'Convergence', chapter:'Chapter 3', formula:'F_t → S_T as T → 0',
+    text:'Hull\'s convergence property: as the futures contract approaches expiry, its price must converge to the spot. Arbitrage enforces this. Watch your basis shrink toward zero!' },
+  { title:'Optimal Hedge Ratio', chapter:'Chapter 3', formula:"h* = ρ · σ_S / σ_F",
+    text:'Hull derives the <strong>variance-minimising</strong> hedge ratio. A naïve h=1 overhedges when σ_F > σ_S. The optimal h* weighs correlation and relative volatilities.' },
+  { title:'Hedge Effectiveness', chapter:'Chapter 3', formula:'HE = 1 − Var(hedged)/Var(unhedged)',
+    text:'The proportion of variance eliminated by the hedge. A perfect hedge (HE=100%) is theoretical. Real hedges have HE of 60–90% due to basis risk.' },
+  { title:'Backwardation', chapter:'Chapter 3', formula:'F < S → Basis > 0',
+    text:'When spot exceeds futures, the market is in <strong>backwardation</strong>. Common in commodity markets with convenience yield. Short hedgers face roll costs here.' },
+  { title:'Number of Contracts', chapter:'Chapter 3', formula:'N* = h* × (V_A / V_F)',
+    text:'Hull\'s formula for how many contracts to use. Scale your hedge ratio by the ratio of position value to futures contract value. Rounding creates residual unhedged exposure.' },
+];
+
+let chart = null;
+let conceptIdx = 0;
+
+/* ════════════════════════════════════════════════════════════════════════════
+   INIT
+   ════════════════════════════════════════════════════════════════════════════ */
+function init() {
+  // Session check
+  try {
+    const s = JSON.parse(localStorage.getItem('dlabSession') || 'null');
+    if (!s || s.expires < Date.now()) { window.location.href = 'index.html'; return; }
+    state.enrollId = s.enrollId;
+    document.getElementById('enrollDisplay').textContent = s.enrollId;
+  } catch(e) {}
+
+  buildPhaseTabs();
+  initChart();
+  updateHedgeCalc();
+}
+
+function buildPhaseTabs() {
+  const el = document.getElementById('phaseTabs');
+  el.innerHTML = Object.entries(CONFIG.phases).map(([k,v]) =>
+    `<div class="phase-pill ${v.enabled ? 'active' : 'locked'}" title="${v.enabled ? '' : 'Coming in a future session'}">${v.label}</div>`
+  ).join('');
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GATE
+   ════════════════════════════════════════════════════════════════════════════ */
+function selectScenario(s, el) {
+  document.querySelectorAll('.sc-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.scenario = s;
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('startBtn').textContent = s === 'inventory'
+    ? 'Start Inventory Hedge Simulation →'
+    : 'Start Anticipated Purchase Simulation →';
+}
+
+function selectHedgeMode(m, el) {
+  if (!CONFIG.features.optimalHedge && m === 'optimal') return;
+  document.querySelectorAll('.hm-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.hedgeMode = m;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SIMULATION ENGINE
+   ════════════════════════════════════════════════════════════════════════════ */
+function computeFutures(spot, day) {
+  const T = (CONFIG.sim.totalDays - day) / 252;
+  const base = spot * Math.exp(CONFIG.sim.riskFreeRate * T);
+  // Basis shock
+  const shock = CONFIG.features.basisRisk
+    ? (Math.random() - 0.5) * 2 * CONFIG.sim.basisShockSD * (T > 0 ? 1 : 0)
+    : 0;
+  return { price: base + shock, shock };
+}
+
+function computeOptimalHR(rho) {
+  return rho * (CONFIG.sim.spotVol / CONFIG.sim.futuresVol);
+}
+
+function computeContractsNeeded(hr) {
+  const futVal = state.futures * CONFIG.sim.contractSize;
+  return Math.round(hr * (CONFIG.sim.positionValue / futVal));
+}
+
+function gaussianRandom(mean, std) {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return mean + std * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function advanceSpot() {
+  const dailyVol = CONFIG.sim.spotVol / Math.sqrt(252);
+  const drift = (CONFIG.sim.riskFreeRate - 0.5 * CONFIG.sim.spotVol ** 2) / 252;
+  return state.spot * Math.exp(drift + dailyVol * gaussianRandom(0, 1));
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   START SIM
+   ════════════════════════════════════════════════════════════════════════════ */
+function startSim() {
+  if (!state.scenario) return;
+
+  const fut = computeFutures(state.spot, 1);
+  state.futures = fut.price;
+  state.basis = state.spot - state.futures;
+  const rho = CONFIG.features.optimalHedge ? parseFloat(document.getElementById('rhoSlider')?.value || 0.92) : 0.92;
+  state.optimalHR = computeOptimalHR(rho);
+
+  state.spotHistory = [state.spot];
+  state.futuresHistory = [state.futures];
+  state.basisHistory = [state.basis];
+  state.portfolioHistory = [state.portfolio];
+
+  document.getElementById('gateScreen').style.display = 'none';
+  document.getElementById('simScreen').style.display = 'block';
+
+  if (state.hedgeMode === 'optimal') {
+    document.getElementById('optimalPanel').style.display = 'block';
+  }
+
+  updateUI();
+  updateChart();
+  showConcept(0);
+  toast('Simulation started. Day 1 of 22. Execute your hedge or advance to the next day.', 'warn');
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   UI UPDATE
+   ════════════════════════════════════════════════════════════════════════════ */
+function updateUI() {
+  const day = state.day;
+  const spot = state.spot;
+  const fut = state.futures;
+  const basis = spot - fut;
+  state.basis = basis;
+
+  // Day bar
+  document.getElementById('dayNum').textContent = `${day} / ${CONFIG.sim.totalDays}`;
+  document.getElementById('dayFill').style.width = `${(day / CONFIG.sim.totalDays) * 100}%`;
+  document.getElementById('dteLabel').textContent = `DTE: ${CONFIG.sim.totalDays - day} days`;
+
+  // Structure badge
+  const struct = basis < 0 ? 'Contango' : 'Backwardation';
+  const sb = document.getElementById('structureBadge');
+  sb.textContent = `● ${struct}`;
+  sb.className = `structure-badge ${struct.toLowerCase()}`;
+
+  // Scenario badge
+  document.getElementById('scenarioBadge').textContent =
+    state.scenario === 'inventory' ? '📦 Inventory Hedge' : '🎯 Anticipated Purchase';
+
+  // Stats
+  const prevSpot = state.spotHistory.length > 1 ? state.spotHistory[state.spotHistory.length - 2] : spot;
+  const prevFut = state.futuresHistory.length > 1 ? state.futuresHistory[state.futuresHistory.length - 2] : fut;
+  const spDelta = spot - prevSpot;
+  const fuDelta = fut - prevFut;
+
+  setVal('statSpot', `₹${fmt(spot)}`);
+  setVal('statFut', `₹${fmt(fut)}`);
+  setVal('statBasis', `₹${fmt(basis, 2)}`);
+  setVal('statPortfolio', `₹${fmtINR(state.portfolio)}`);
+  setVal('statHR', state.hedgeExecuted ? state.usedHR.toFixed(2) : '—');
+  setVal('statHROptimal', `Optimal: ${state.optimalHR.toFixed(2)}`);
+
+  const he = computeHedgeEffectiveness();
+  state.hedgeEffectiveness = he;
+  setVal('statHE', he >= 0 ? `${he.toFixed(1)}%` : '—');
+
+  // Colour helpers
+  document.getElementById('statSpotChg').textContent = spDelta >= 0 ? `▲ ${fmt(Math.abs(spDelta))}` : `▼ ${fmt(Math.abs(spDelta))}`;
+  document.getElementById('statSpotChg').className = `stat-sub ${spDelta >= 0 ? 'pos' : 'neg'}`;
+  document.getElementById('statFutChg').textContent = fuDelta >= 0 ? `▲ ${fmt(Math.abs(fuDelta))}` : `▼ ${fmt(Math.abs(fuDelta))}`;
+  document.getElementById('statFutChg').className = `stat-sub ${fuDelta >= 0 ? 'pos' : 'neg'}`;
+  document.getElementById('statBasisLbl').textContent = basis < 0 ? 'Contango' : 'Backwardation';
+  document.getElementById('statBasisLbl').className = `stat-sub ${basis < 0 ? 'neu' : 'pos'}`;
+
+  // Ticker
+  document.getElementById('tickSpot').textContent = `₹${fmt(spot)}`;
+  document.getElementById('tickSpot').className = `tv ${spDelta >= 0 ? 'up' : 'dn'}`;
+  document.getElementById('tickFut').textContent = `₹${fmt(fut)}`;
+  document.getElementById('tickFut').className = `tv ${fuDelta >= 0 ? 'up' : 'dn'}`;
+  document.getElementById('tickBasis').textContent = fmt(basis, 2);
+  document.getElementById('tickBasis').className = `tv ${basis >= 0 ? 'up' : 'dn'}`;
+  document.getElementById('tickSigS').textContent = `${(CONFIG.sim.spotVol * 100).toFixed(0)}%`;
+  document.getElementById('tickSigF').textContent = `${(CONFIG.sim.futuresVol * 100).toFixed(0)}%`;
+  document.getElementById('tickRho').textContent = state.hedgeMode === 'optimal'
+    ? parseFloat(document.getElementById('rhoSlider')?.value || 0.92).toFixed(2) : '—';
+
+  // Position box
+  const posDir = state.scenario === 'inventory' ? 'SHORT' : 'LONG';
+  document.getElementById('positionBox').innerHTML =
+    `Scenario: <strong>${state.scenario === 'inventory' ? 'Inventory Hedge' : 'Anticipated Purchase'}</strong><br>` +
+    `Direction: <span style="color:${state.scenario==='inventory'?'var(--red)':'var(--green)'}">${posDir} FUTURES</span><br>` +
+    `Mode: <strong>${state.hedgeMode === 'naive' ? 'Naïve (h = 1)' : 'Optimal (h* = ρσ_S/σ_F)'}</strong>`;
+
+  // Position stats
+  setVal('posValue', `₹${fmtINR(state.portfolio)}`);
+  const optC = computeContractsNeeded(state.optimalHR);
+  setVal('optContracts', optC.toString());
+  setVal('hedgedContracts', state.hedgedContracts.toString());
+  const status = getHedgeStatusLabel();
+  document.getElementById('hedgeStatus').textContent = status.label;
+  document.getElementById('hedgeStatus').style.color = status.color;
+
+  // Basis risk
+  document.getElementById('basisShockVal').textContent = fmt(state.lastBasisShock || 0, 3);
+  document.getElementById('basisShockVal').style.color = Math.abs(state.lastBasisShock || 0) > 0.05 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('cumShock').textContent = fmt(state.cumulativeBasisShock, 3);
+  document.getElementById('basisShocks').textContent = state.basisShockCount;
+  document.getElementById('basisTrend').textContent = basis < 0 ? '↘ Converging (Contango)' : '↗ Diverging (Backwardation)';
+
+  // Variance
+  if (CONFIG.features.varianceAnalysis && state.dailyPnL.length > 2) {
+    const uv = variance(state.portfolioHistory.map((v,i,a) => i===0?0:(v-a[i-1])));
+    const hv = variance(state.dailyPnL);
+    state.unhedgedVariance = uv;
+    state.hedgedVariance = hv;
+    const red = uv > 0 ? Math.max(0, Math.min(100, (1 - hv / uv) * 100)) : 0;
+    document.getElementById('varUnhedged').textContent = fmt(uv, 1);
+    document.getElementById('varHedged').textContent = fmt(hv, 1);
+    document.getElementById('varReduction').textContent = `${red.toFixed(1)}%`;
+    document.getElementById('varBar').style.width = `${red}%`;
+  }
+
+  updateHedgeCalc();
+}
+
+function getHedgeStatusLabel() {
+  if (!state.hedgeExecuted) return { label: 'Not Hedged', color: 'var(--red)' };
+  const optC = computeContractsNeeded(state.optimalHR);
+  const used = state.hedgedContracts;
+  const diff = used - optC;
+  if (Math.abs(diff) <= 1) return { label: '✓ Well Hedged', color: 'var(--green)' };
+  if (diff > 1) return { label: `Over-hedged (+${diff})`, color: 'var(--accent)' };
+  return { label: `Under-hedged (${diff})`, color: 'var(--accent3)' };
+}
+
+function updateHedgeCalc() {
+  const contracts = parseInt(document.getElementById('contractsSlider')?.value || 0);
+  document.getElementById('contractsVal').textContent = contracts;
+
+  const rho = state.hedgeMode === 'optimal'
+    ? parseFloat(document.getElementById('rhoSlider')?.value || 0.92)
+    : CONFIG.sim.baseCorr;
+  if (document.getElementById('rhoVal')) document.getElementById('rhoVal').textContent = rho.toFixed(2);
+
+  const optHR = computeOptimalHR(rho);
+  state.optimalHR = optHR;
+
+  const futVal = (state.futures || CONFIG.sim.spotStart) * CONFIG.sim.contractSize;
+  const usedHR = contracts > 0 ? contracts * futVal / CONFIG.sim.positionValue : 0;
+
+  const quality = getHedgeQuality(usedHR, optHR);
+  const eff = Math.min(100, 100 * (1 - Math.abs(usedHR - optHR) / optHR));
+
+  setVal('calcHR', usedHR.toFixed(2));
+  setVal('calcOptHR', optHR.toFixed(2));
+  document.getElementById('calcQuality').textContent = quality.label;
+  document.getElementById('calcQuality').style.color = quality.color;
+  setVal('calcEff', `${Math.max(0, eff).toFixed(1)}%`);
+}
+
+function getHedgeQuality(used, opt) {
+  if (used === 0) return { label: 'Unhedged', color: 'var(--red)' };
+  const ratio = used / opt;
+  if (ratio > 1.15) return { label: 'Over-hedged', color: 'var(--accent)' };
+  if (ratio < 0.85) return { label: 'Under-hedged', color: 'var(--accent3)' };
+  return { label: 'Near-optimal', color: 'var(--green)' };
+}
+
+function computeHedgeEffectiveness() {
+  if (!state.hedgeExecuted || state.dailyPnL.length < 2) return -1;
+  const uv = variance(state.portfolioHistory.map((v,i,a) => i===0?0:(v-a[i-1])));
+  const hv = variance(state.dailyPnL);
+  if (uv === 0) return 100;
+  return Math.max(0, Math.min(100, (1 - hv / uv) * 100));
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   EXECUTE HEDGE
+   ════════════════════════════════════════════════════════════════════════════ */
+function executeHedge() {
+  const contracts = parseInt(document.getElementById('contractsSlider').value);
+  const rho = state.hedgeMode === 'optimal'
+    ? parseFloat(document.getElementById('rhoSlider')?.value || 0.92)
+    : CONFIG.sim.baseCorr;
+
+  state.hedgedContracts = contracts;
+  state.usedHR = contracts * (state.futures * CONFIG.sim.contractSize) / CONFIG.sim.positionValue;
+  state.hedgeExecuted = true;
+  state.optimalHR = computeOptimalHR(rho);
+
+  const status = getHedgeStatusLabel();
+  const optC = computeContractsNeeded(state.optimalHR);
+  const dir = state.scenario === 'inventory' ? 'SHORT' : 'LONG';
+
+  addLog(state.day,
+    `${dir} ${contracts} contracts (optimal: ${optC}) · ${dir === 'SHORT' ? 'hedging downside' : 'locking purchase price'}`,
+    status.label, contracts >= optC * 0.85 && contracts <= optC * 1.15 ? 'good' : 'bad'
+  );
+
+  updateUI();
+  toast(`Hedge executed: ${contracts} contracts (h=${state.usedHR.toFixed(2)}). Optimal was ${state.optimalHR.toFixed(2)}.`,
+    Math.abs(state.usedHR - state.optimalHR) < 0.1 ? 'good' : 'warn');
+
+  // Rotate Hull concept
+  const idx = state.day % HULL_CONCEPTS.length;
+  showConcept(idx);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ADVANCE DAY
+   ════════════════════════════════════════════════════════════════════════════ */
+function advanceDay() {
+  if (state.day >= CONFIG.sim.totalDays) { endSim(); return; }
+
+  // Compute new prices
+  const newSpot = advanceSpot();
+  const futData = computeFutures(newSpot, state.day + 1);
+  const newFut = futData.price;
+  const basisShock = futData.shock;
+
+  if (Math.abs(basisShock) > CONFIG.sim.basisShockSD * 0.8) state.basisShockCount++;
+  state.lastBasisShock = basisShock;
+  state.cumulativeBasisShock += basisShock;
+
+  // P&L calculation
+  const spotReturn = (newSpot - state.spot) / state.spot;
+  let hedgedPnL = state.portfolio * spotReturn;
+
+  if (state.hedgeExecuted) {
+    const futPnL = state.scenario === 'inventory'
+      ? -(newFut - state.futures) * CONFIG.sim.contractSize * state.hedgedContracts
+      :  (newFut - state.futures) * CONFIG.sim.contractSize * state.hedgedContracts;
+    hedgedPnL += futPnL;
+  }
+
+  state.portfolio += hedgedPnL;
+  state.dailyPnL.push(hedgedPnL);
+
+  // Advance state
+  state.spot = newSpot;
+  state.futures = newFut;
+  state.day++;
+  state.hedgeExecuted = false; // reset daily hedge flag
+
+  // History
+  state.spotHistory.push(newSpot);
+  state.futuresHistory.push(newFut);
+  state.basisHistory.push(newSpot - newFut);
+  state.portfolioHistory.push(state.portfolio);
+
+  // Reset slider for next day
+  document.getElementById('contractsSlider').value = state.hedgedContracts;
+
+  updateUI();
+  updateChart();
+
+  // Rotate concepts based on market conditions
+  const basis = newSpot - newFut;
+  if (basis < 0) showConcept(1); // contango
+  else showConcept(5); // backwardation
+  if (state.day === 10) showConcept(2); // convergence halfway
+  if (state.day === 15) showConcept(3); // optimal HR
+  if (state.day === 20) showConcept(4); // hedge effectiveness
+
+  if (state.day >= CONFIG.sim.totalDays) { setTimeout(endSim, 600); }
+  else {
+    const pnlSign = hedgedPnL >= 0 ? '+' : '';
+    toast(`Day ${state.day}: Spot ₹${fmt(newSpot)} | Futures ₹${fmt(newFut)} | Basis ${fmt(newSpot-newFut,2)} | P&L ${pnlSign}₹${fmtINR(Math.abs(hedgedPnL))}`,
+      hedgedPnL >= 0 ? 'good' : 'bad');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   CHART
+   ════════════════════════════════════════════════════════════════════════════ */
+function initChart() {
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  chart = {
+    ctx,
+    draw() {
+      const W = ctx.canvas.width = ctx.canvas.offsetWidth * devicePixelRatio;
+      const H = ctx.canvas.height = 220 * devicePixelRatio;
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      const w = W / devicePixelRatio, h = 220;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const data = {
+        spot: state.spotHistory,
+        fut: state.futuresHistory,
+        basis: state.basisHistory,
+      };
+
+      if (data.spot.length < 2) return;
+
+      const allPrices = [...data.spot, ...data.fut];
+      const minP = Math.min(...allPrices) * 0.998;
+      const maxP = Math.max(...allPrices) * 1.002;
+
+      const allBasis = data.basis;
+      const minB = Math.min(...allBasis) - 1;
+      const maxB = Math.max(...allBasis) + 1;
+
+      const padL = 52, padR = 12, padT = 10, padB = 28;
+      const chartW = w - padL - padR;
+      const chartH = h - padT - padB;
+
+      const xOf = i => padL + (i / (CONFIG.sim.totalDays - 1)) * chartW;
+      const yOf = v => padT + chartH - ((v - minP) / (maxP - minP)) * chartH;
+      const yBas = v => padT + chartH - ((v - minB) / (maxB - minB)) * chartH * 0.3 + chartH * 0.72;
+
+      // Grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + (chartH / 4) * i;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+      }
+      // Day markers
+      for (let d = 0; d <= CONFIG.sim.totalDays; d += 5) {
+        const x = xOf(d);
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h - padB); ctx.stroke();
+        ctx.fillStyle = 'rgba(127,143,166,0.7)';
+        ctx.font = `${9 * devicePixelRatio / devicePixelRatio}px JetBrains Mono`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`D${d}`, x, h - padB + 14);
+      }
+
+      const drawLine = (arr, color, width, dash) => {
+        if (arr.length < 2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        if (dash) ctx.setLineDash(dash); else ctx.setLineDash([]);
+        arr.forEach((v, i) => {
+          const x = xOf(i), y = yOf(v);
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      };
+
+      // Futures (dashed teal)
+      drawLine(data.fut, 'rgba(78,205,196,0.7)', 1.5, [4, 3]);
+      // Spot (gold solid)
+      drawLine(data.spot, 'rgba(232,197,71,0.9)', 2, null);
+      // Basis (red thin)
+      if (data.basis.length >= 2) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255,68,68,0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([]);
+        data.basis.forEach((v, i) => {
+          const x = xOf(i), y = yBas(v);
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      }
+
+      // Current day dot
+      const last = data.spot.length - 1;
+      ctx.beginPath();
+      ctx.arc(xOf(last), yOf(data.spot[last]), 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'var(--accent)'; ctx.fill();
+
+      // Y axis labels
+      ctx.fillStyle = 'rgba(127,143,166,0.8)';
+      ctx.font = `9px JetBrains Mono`; ctx.textAlign = 'right';
+      [minP, (minP+maxP)/2, maxP].forEach(v => {
+        ctx.fillText(`₹${Math.round(v)}`, padL - 4, yOf(v) + 3);
+      });
+    }
+  };
+}
+
+function updateChart() { if (chart) chart.draw(); }
+window.addEventListener('resize', updateChart);
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LOG & CONCEPTS
+   ════════════════════════════════════════════════════════════════════════════ */
+function addLog(day, msg, val, cls='') {
+  state.decisionLog.push({ day, msg, val, cls });
+  const el = document.getElementById('logList');
+  if (state.decisionLog.length === 1) el.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="le-day">D${day}</span><span class="le-msg">${msg}</span><span class="le-val ${cls}">${val}</span>`;
+  el.prepend(div);
+}
+
+function showConcept(idx) {
+  const c = HULL_CONCEPTS[idx % HULL_CONCEPTS.length];
+  document.getElementById('conceptTitle').textContent = c.title;
+  document.getElementById('conceptChapter').textContent = c.chapter;
+  document.getElementById('conceptText').innerHTML = c.text;
+  document.getElementById('conceptFormula').textContent = c.formula;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   END SIM
+   ════════════════════════════════════════════════════════════════════════════ */
+function endSim() {
+  const finalPnL = state.portfolio - CONFIG.sim.positionValue;
+  const he = computeHedgeEffectiveness();
+  const uv = state.unhedgedVariance;
+  const hv = state.hedgedVariance;
+  const red = uv > 0 ? Math.max(0, Math.min(100, (1 - hv / uv) * 100)) : 0;
+
+  document.getElementById('simScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'block';
+
+  document.getElementById('resultsSubtitle').textContent =
+    `${state.scenario === 'inventory' ? 'Inventory Hedge' : 'Anticipated Purchase'} · ${state.hedgeMode === 'optimal' ? 'Optimal HR' : 'Naïve HR'} · ${CONFIG.sim.totalDays} Trading Days`;
+
+  // Score ring
+  const eff = he >= 0 ? he : 0;
+  const pct = Math.round(eff * 3.6);
+  document.getElementById('scoreCircle').style.setProperty('--pct', `${pct}deg`);
+  document.getElementById('scoreBig').textContent = `${eff.toFixed(0)}%`;
+
+  // Result stats
+  const pnlSign = finalPnL >= 0 ? '+' : '';
+  document.getElementById('r1val').textContent = `${pnlSign}₹${fmtINR(Math.abs(finalPnL))}`;
+  document.getElementById('r1val').style.color = finalPnL >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('r2val').textContent = `${red.toFixed(1)}%`;
+  document.getElementById('r3val').textContent = state.basisShockCount;
+  document.getElementById('r4val').textContent = state.decisionLog.length;
+
+  // Feedback
+  const feedbacks = [];
+  if (eff >= 75) feedbacks.push({ cls:'good', text:`Strong hedge effectiveness of ${eff.toFixed(1)}%. Your choice of contracts closely matched Hull's optimal hedge ratio.` });
+  else if (eff >= 50) feedbacks.push({ cls:'warn', text:`Moderate effectiveness (${eff.toFixed(1)}%). Review Hull's optimal hedge ratio formula: h* = ρ·σ_S/σ_F.` });
+  else feedbacks.push({ cls:'bad', text:`Low effectiveness (${eff.toFixed(1)}%). You were significantly over- or under-hedged. Revisit contract sizing.` });
+
+  if (state.basisShockCount > 3) feedbacks.push({ cls:'warn', text:`${state.basisShockCount} basis risk events observed. This demonstrates why basis risk prevents a perfect hedge (Hull Ch.3).` });
+  else feedbacks.push({ cls:'good', text:`Relatively stable basis — only ${state.basisShockCount} significant shocks. Basis risk was manageable this session.` });
+
+  if (state.hedgeMode === 'naive') feedbacks.push({ cls:'warn', text:'You used naïve hedge ratio (h=1). Try optimal mode next run — Hull shows h* < 1 when σ_F > σ_S.' });
+  else feedbacks.push({ cls:'good', text:`Optimal hedge mode used. You actively adjusted ρ to compute h* = ${state.optimalHR.toFixed(2)}, consistent with Hull's variance-minimisation.` });
+
+  const fbEl = document.getElementById('feedbackItems');
+  fbEl.innerHTML = feedbacks.map(f =>
+    `<div class="fb-item"><div class="fb-dot ${f.cls}"></div><span>${f.text}</span></div>`
+  ).join('');
+
+  // Concepts pill
+  const concepts = ['Basis', 'Convergence', 'Optimal Hedge Ratio', 'Basis Risk', 'Hedge Effectiveness'];
+  if (state.basis < 0) concepts.push('Contango'); else concepts.push('Backwardation');
+  document.getElementById('conceptsSeen').innerHTML = concepts.map(c =>
+    `<span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;padding:5px 12px;border-radius:4px;background:rgba(232,197,71,0.07);border:1px solid var(--border);color:var(--accent);">${c}</span>`
+  ).join('');
+
+  // Submit to gradebook
+  if (CONFIG.features.gradebook) submitResults(eff, finalPnL, red, state.basisShockCount);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GRADEBOOK SUBMISSION
+   ════════════════════════════════════════════════════════════════════════════ */
+function submitResults(eff, pnl, varRed, shocks) {
+  const params = {
+    action: 'simulation',
+    id: state.enrollId,
+    phase: 'futures_lab',
+    scenario: state.scenario,
+    hedgeMode: state.hedgeMode,
+    effectiveness: eff.toFixed(1),
+    pnl: Math.round(pnl),
+    varianceReduction: varRed.toFixed(1),
+    basisShocks: shocks,
+    optimalHR: state.optimalHR.toFixed(2),
+    usedHR: state.usedHR.toFixed(2),
+    decisions: state.decisionLog.length,
+    days: state.day,
+  };
+
+  const qs = Object.entries(params).map(([k,v]) =>
+    `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  const cbName = 'cb_' + Math.random().toString(36).slice(2);
+  const timeout = setTimeout(() => { delete window[cbName]; }, 10000);
+  window[cbName] = () => { clearTimeout(timeout); delete window[cbName]; };
+  const s = document.createElement('script');
+  s.src = `${APPS_SCRIPT_URL}?${qs}&callback=${cbName}`;
+  s.onerror = () => { clearTimeout(timeout); };
+  document.head.appendChild(s);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESET
+   ════════════════════════════════════════════════════════════════════════════ */
+function resetSim() {
+  state = {
+    scenario: null, hedgeMode: 'naive', day: 1,
+    spot: CONFIG.sim.spotStart, futures: 0, basis: 0,
+    portfolio: CONFIG.sim.positionValue,
+    hedgedContracts: 0, optimalHR: 0, usedHR: 0, hedgeEffectiveness: 0,
+    cumulativeBasisShock: 0, basisShockCount: 0,
+    spotHistory: [], futuresHistory: [], basisHistory: [],
+    portfolioHistory: [], dailyPnL: [], decisionLog: [],
+    contractsThisDay: 0, hedgeExecuted: false,
+    enrollId: state.enrollId,
+  };
+  document.querySelectorAll('.sc-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.hm-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('[data-mode="naive"]').classList.add('selected');
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('startBtn').textContent = 'Select a Scenario to Begin →';
+  document.getElementById('contractsSlider').value = 0;
+  document.getElementById('gateScreen').style.display = 'flex';
+  document.getElementById('simScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('logList').innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.62rem;color:var(--text3);padding:8px 0;">Awaiting first decision…</div>';
+  window.scrollTo({ top: 0 });
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════════════════════════════════════════════ */
+function fmt(n, d=2) { return Number(n).toFixed(d); }
+function fmtINR(n) {
+  const abs = Math.abs(n);
+  if (abs >= 100000) return (n/100000).toFixed(2) + 'L';
+  return n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+function setVal(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
+function variance(arr) {
+  if (arr.length < 2) return 0;
+  const mean = arr.reduce((a,b) => a+b, 0) / arr.length;
+  return arr.reduce((a,b) => a + (b-mean)**2, 0) / arr.length;
+}
+
+let toastTimer;
+function toast(msg, type='warn') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 4000);
+}
+
+/* ─── BOOT ─── */
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
