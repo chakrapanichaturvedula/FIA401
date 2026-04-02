@@ -131,6 +131,93 @@
     letter-spacing: 0.06em;
   }
 
+  .sim-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #000;
+    background: var(--accent);
+    border: none;
+    border-radius: 5px;
+    padding: 6px 14px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .sim-nav-btn:hover { background: #f0d060; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(232,197,71,0.25); }
+
+  /* ── SIMULATION CARD ── */
+  .sim-hub-card {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(78,205,196,0.05) 100%);
+    border: 1px solid rgba(78,205,196,0.3);
+    border-radius: 12px;
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .sim-hub-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(78,205,196,0.04), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .sim-hub-card:hover { border-color: rgba(78,205,196,0.5); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(78,205,196,0.08); }
+  .sim-hub-card:hover::before { opacity: 1; }
+  .sim-hub-labs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .sim-lab-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(78,205,196,0.3);
+    color: var(--accent2);
+    background: rgba(78,205,196,0.06);
+    letter-spacing: 0.06em;
+  }
+  .sim-cta-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    min-width: 180px;
+  }
+  .sim-cta-icon { font-size: 2.5rem; }
+  .sim-cta-btn {
+    padding: 10px 24px;
+    background: var(--accent2);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+  }
+  .sim-cta-btn:hover { background: #5ee5d5; }
+
   /* ── HERO ── */
   .hero {
     padding: 80px 0 70px;
@@ -858,6 +945,7 @@
       <div class="logo-sub">FIA 401 · IMT Hyderabad</div>
     </div>
     <div class="header-right">
+      <a href="simulation.html" class="sim-nav-btn">⚗️ Simulation Labs →</a>
       <div class="term-badge">Term IV · AY 2025–26</div>
       <div class="inst-badge">PGDM · PGDM(Fin) · PGDM(Mkt)</div>
       <div id="studentInfo" style="display:none;align-items:center;gap:10px;">
@@ -983,6 +1071,26 @@
       <div class="module-desc">Options Greeks explorer and calculator, exotic derivatives deep-dive, and a live Monte Carlo simulation engine — price any option type with N paths of GBM.</div>
       <div class="module-topics"><span class="topic-tag">Delta/Gamma/Vega</span><span class="topic-tag">Theta Decay</span><span class="topic-tag">Exotic Options</span><span class="topic-tag">Monte Carlo</span><span class="topic-tag">GBM Simulation</span></div>
       <div class="module-footer"><div class="session-info">Sessions 16–20</div><div class="module-cta">Open Module →</div></div>
+    </a>
+
+    <!-- ── SIMULATION HUB CARD ── -->
+    <a href="simulation.html" class="sim-hub-card">
+      <div style="position:relative;z-index:1;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--accent2);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:10px;">Interactive Practice Environment</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px;">Simulation <span style="color:var(--accent2);">Hub</span></div>
+        <div style="font-size:0.88rem;color:var(--text2);line-height:1.6;max-width:560px;margin-bottom:16px;">Apply everything you've learned — hedge with futures, price options with Black-Scholes, explore the NSE term structure, and paper-trade live prices in a risk-free environment.</div>
+        <div class="sim-hub-labs">
+          <span class="sim-lab-tag">📈 Futures Lab · Hull Ch.3–6</span>
+          <span class="sim-lab-tag">📐 Options Lab · BSM &amp; Greeks</span>
+          <span class="sim-lab-tag">📊 Markets Lab · NSE Term Structure</span>
+          <span class="sim-lab-tag">💹 Trading Lab · Paper Trading</span>
+        </div>
+      </div>
+      <div class="sim-cta-panel" style="position:relative;z-index:1;">
+        <div class="sim-cta-icon">⚗️</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--text3);letter-spacing:0.1em;">4 INTERACTIVE LABS</div>
+        <span class="sim-cta-btn">Open Simulation Hub →</span>
+      </div>
     </a>
 
   </div>
