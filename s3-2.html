@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option Strategies — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .strategy-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .strategy-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .strategy-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .strategy-tag {
+      font-size: .72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      border: 1.5px solid;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .tag-bull { color: var(--c4); border-color: var(--c4); background: var(--c4-bg); }
+    .tag-bear { color: var(--c2); border-color: var(--c2); background: var(--c2-bg); }
+    .tag-vol  { color: var(--c3); border-color: var(--c3); background: var(--c3-bg); }
+    .tag-neutral { color: var(--c5); border-color: var(--c5); background: var(--c5-bg); }
+    .tag-income   { color: var(--c1); border-color: var(--c1); background: var(--c1-bg); }
+
+    .payoff-mini {
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--text-2);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c3">Options</span>
+      <h1 class="page-title">Option Strategies</h1>
+      <p class="page-subtitle">Combining calls, puts, and the underlying to express any market view: bullish, bearish, or volatility-based.</p>
+    </div>
+
+    <!-- Introduction -->
+    <section class="content-section">
+      <h2 class="cs-title">Building Blocks of Option Strategies</h2>
+      <p>Options are like LEGO bricks — four basic pieces (long call, short call, long put, short put) can be combined in endless ways to create strategies with precise payoff profiles. Every strategy makes a trade-off between cost, maximum profit, and maximum loss.</p>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>Strategy taxonomy:</strong> Directional strategies profit from price movement (up or down). Volatility strategies profit from large moves regardless of direction (long volatility) or from calm markets (short volatility). Income strategies generate premium by selling options.
+      </div>
+    </section>
+
+    <!-- Protective Strategies -->
+    <section class="content-section">
+      <h2 class="cs-title">Protection Strategies</h2>
+
+      <div class="strategy-card">
+        <div class="strategy-title">Protective Put (Married Put)</div>
+        <div class="strategy-meta">
+          <span class="strategy-tag tag-bull">Bullish underlying</span>
+          <span class="strategy-tag tag-neutral">Downside protection</span>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2)"><strong>Structure:</strong> Long underlying + Long put at strike K</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-top:8px"><strong>When to use:</strong> You own shares and want to protect against a crash while keeping upside. Like buying insurance on your portfolio.</p>
+        <div class="payoff-mini">
+          Max profit = Unlimited (as S_T rises)<br/>
+          Max loss   = K − S_0 − P &nbsp;&nbsp; (limited)<br/>
+          Breakeven  = S_0 + P
+        </div>
+        <p style="font-size:.8125rem;color:var(--text-2);margin-top:10px"><strong>Example:</strong> Hold Infosys at ₹1,520. Buy 1500-put at ₹28. If Infosys crashes to ₹1,350, put gains ₹150, limiting loss to ₹20+₹28 = ₹48/share.</p>
+      </div>
+
+      <div class="strategy-card">
+        <div class="strategy-title">Covered Call</div>
+        <div class="strategy-meta">
+          <span class="strategy-tag tag-income">Income generation</span>
+          <span class="strategy-tag tag-neutral">Mild bullish</span>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2)"><strong>Structure:</strong> Long underlying + Short call at strike K</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-top:8px"><strong>When to use:</strong> You own shares and don't expect a big rally. Sell the upside potential for immediate premium income.</p>
+        <div class="payoff-mini">
+          Max profit = K − S_0 + C &nbsp;&nbsp; (capped at strike)<br/>
+          Max loss   = S_0 − C &nbsp;&nbsp; (stock can go to zero)<br/>
+          Breakeven  = S_0 − C
+        </div>
+        <p style="font-size:.8125rem;color:var(--text-2);margin-top:10px"><strong>Example:</strong> Hold Reliance at ₹2,460. Sell 2500-call at ₹31. If Reliance stays below ₹2,500 at expiry, you keep the ₹31. If it surges to ₹2,600, your upside is capped at ₹2,531.</p>
+      </div>
+    </section>
+
+    <!-- Spreads -->
+    <section class="content-section">
+      <h2 class="cs-title">Spread Strategies</h2>
+
+      <div class="strategy-card">
+        <div class="strategy-title">Bull Call Spread</div>
+        <div class="strategy-meta">
+          <span class="strategy-tag tag-bull">Moderately bullish</span>
+          <span class="strategy-tag tag-income">Lower cost</span>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2)"><strong>Structure:</strong> Buy call at K₁ + Sell call at K₂ (K₂ &gt; K₁). Net debit = C₁ − C₂</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-top:8px"><strong>When to use:</strong> Bullish, but want to reduce the cost of buying a call by selling a higher-strike call. Profits are capped at K₂.</p>
+        <div class="payoff-mini">
+          Max profit = K₂ − K₁ − (C₁ − C₂)<br/>
+          Max loss   = Net debit paid = C₁ − C₂<br/>
+          Breakeven  = K₁ + (C₁ − C₂)
+        </div>
+      </div>
+
+      <div class="strategy-card">
+        <div class="strategy-title">Bear Put Spread</div>
+        <div class="strategy-meta">
+          <span class="strategy-tag tag-bear">Moderately bearish</span>
+          <span class="strategy-tag tag-income">Lower cost</span>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2)"><strong>Structure:</strong> Buy put at K₂ + Sell put at K₁ (K₂ &gt; K₁). Net debit = P₂ − P₁</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-top:8px"><strong>When to use:</strong> Bearish, but want to reduce the cost of buying a put by selling a lower-strike put. Profits are capped.</p>
+        <div class="payoff-mini">
+          Max profit = K₂ − K₁ − (P₂ − P₁)<br/>
+          Max loss   = Net debit paid = P₂ − P₁<br/>
+          Breakeven  = K₂ − (P₂ − P₁)
+        </div>
+      </div>
+    </section>
+
+    <!-- Volatility Strategies -->
+    <section class="content-section">
+      <h2 class="cs-title">Volatility Strategies</h2>
+
+      <div class="strategy-card">
+        <div class="strategy-title">Long Straddle</div>
+        <div class="strategy-meta">
+          <span class="strategy-tag tag-vol">Long volatility</span>
+          <span class="strategy-tag tag-neutral">Direction-neutral</span>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2)"><strong>Structure:</strong> Buy ATM call + Buy ATM put at same strike K and same expiry</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-top:8px"><strong>When to use:</strong> Expect a big move but uncertain of direction. Budget season, election results, RBI policy, earnings announcements.</p>
+        <div class="payoff-mini">
+          Max profit = Unlimited (large move either direction)<br/>
+          Max loss   = C + P &nbsp;&nbsp; (both premiums, if market stays flat)<br/>
+          Breakevens = K + (C+P) &nbsp; and &nbsp; K − (C+P)
+        </div>
+        <p style="font-size:.8125rem;color:var(--text-2);margin-top:10px"><strong>Example:</strong> Nifty at 22,000 before RBI meeting. Buy 22000-call at ₹200 + Buy 22000-put at ₹185. Total premium = ₹385. Breakevens: 22,385 (up) and 21,615 (down). If Nifty moves more than 385 points either way, you profit.</p>
+      </div>
+
+      <div class="strategy-card">
+        <div class="strategy-title">Short Straddle (Sell Straddle)</div>
+        <div class="strategy-meta">
+          <span class="strategy-tag tag-income">Premium income</span>
+          <span class="strategy-tag tag-neutral">Low volatility view</span>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2)"><strong>Structure:</strong> Sell ATM call + Sell ATM put at same strike K</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-top:8px"><strong>When to use:</strong> Expect market to remain range-bound. Premium income if market stays near K. Maximum risk: unlimited.</p>
+        <div class="payoff-mini">
+          Max profit = C + P &nbsp;&nbsp; (if S_T = K at expiry)<br/>
+          Max loss   = Unlimited (large move either way)<br/>
+          Breakevens = K ± (C + P)
+        </div>
+      </div>
+
+      <div class="strategy-card">
+        <div class="strategy-title">Long Strangle</div>
+        <div class="strategy-meta">
+          <span class="strategy-tag tag-vol">Long volatility</span>
+          <span class="strategy-tag tag-income">Cheaper than straddle</span>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2)"><strong>Structure:</strong> Buy OTM call at K₂ + Buy OTM put at K₁ (K₁ &lt; K₂)</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-top:8px"><strong>When to use:</strong> Expect very large move but want to reduce premium vs straddle. Needs a bigger move to profit. Both legs start OTM.</p>
+        <div class="payoff-mini">
+          Max profit = Unlimited<br/>
+          Max loss   = C (OTM) + P (OTM)<br/>
+          Breakevens = K₂ + (C+P) &nbsp; and &nbsp; K₁ − (C+P)
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary Table -->
+    <section class="content-section">
+      <h2 class="cs-title">Strategy Selection Guide</h2>
+      <table class="example-table">
+        <thead>
+          <tr><th>Market View</th><th>Strategy</th><th>Max Profit</th><th>Max Loss</th><th>Premium</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Strongly bullish</td><td>Long Call</td><td>Unlimited</td><td>Premium</td><td>Net debit</td></tr>
+          <tr><td>Mildly bullish</td><td>Bull Call Spread</td><td>Limited</td><td>Premium</td><td>Net debit (lower)</td></tr>
+          <tr><td>Bullish + own stock</td><td>Covered Call</td><td>Capped</td><td>Stock price</td><td>Net credit</td></tr>
+          <tr><td>Bullish + own stock</td><td>Protective Put</td><td>Unlimited</td><td>Limited</td><td>Net debit</td></tr>
+          <tr><td>Strongly bearish</td><td>Long Put</td><td>K − P</td><td>Premium</td><td>Net debit</td></tr>
+          <tr><td>Mildly bearish</td><td>Bear Put Spread</td><td>Limited</td><td>Premium</td><td>Net debit (lower)</td></tr>
+          <tr><td>Big move expected</td><td>Long Straddle</td><td>Unlimited</td><td>Both premiums</td><td>Net debit</td></tr>
+          <tr><td>Big move expected</td><td>Long Strangle</td><td>Unlimited</td><td>Both premiums</td><td>Net debit (lower)</td></tr>
+          <tr><td>Range-bound</td><td>Short Straddle</td><td>Both premiums</td><td>Unlimited</td><td>Net credit</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 3.2:</strong> A trader buys a Nifty straddle: buys 22,000-call at ₹<strong>210</strong> and buys 22,000-put at ₹<strong>195</strong>. What is the upper breakeven point (in ₹)?</p>
+      <div class="practice-block" data-answer="22405" data-tol="2" data-section="3.2" data-problem-id="p3-2">
+        <div class="input-row">
+          <span class="input-label">Upper breakeven (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 22405" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Total premium = C + P = 210 + 195 = ₹405<br/>
+          Upper breakeven = Strike + Total premium = 22,000 + 405 = <strong>₹22,405</strong><br/>
+          Lower breakeven = Strike − Total premium = 22,000 − 405 = ₹21,595<br/><br/>
+          Both legs expire worthless if Nifty stays between 21,595 and 22,405. Max loss = ₹405 per unit.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q8-1"
+           data-feedback-correct="Correct! A protective put = long underlying + long put. The put provides downside insurance while maintaining full upside exposure."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. An investor holds Reliance shares and buys a put option on Reliance to protect against a crash. This is called:</p>
+        <ul class="quiz-opts">
+          <li>A covered call</li>
+          <li>A bull spread</li>
+          <li data-correct="true">A protective put</li>
+          <li>A straddle</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q8-2"
+           data-feedback-correct="Correct! A long straddle profits from large price moves in either direction — ideal for high-uncertainty events like election results."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. Which strategy would be most appropriate before a high-impact event (RBI announcement) where you expect a big move but are unsure of direction?</p>
+        <ul class="quiz-opts">
+          <li>Covered call</li>
+          <li>Bull call spread</li>
+          <li data-correct="true">Long straddle</li>
+          <li>Short put</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q8-3"
+           data-feedback-correct="Correct! A covered call caps the upside (you must sell at the strike if exercised) but generates immediate income from the premium received."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. A covered call strategy generates income but:</p>
+        <ul class="quiz-opts">
+          <li>Eliminates downside risk completely</li>
+          <li>Doubles the potential loss on the shares</li>
+          <li data-correct="true">Caps the upside profit potential on the underlying</li>
+          <li>Requires no margin</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Strategy Quick Ref</div>
+      <p style="font-size:.78rem;color:var(--text-2);line-height:1.8">
+        📈 Bullish: Long Call, Bull Spread<br/>
+        📉 Bearish: Long Put, Bear Spread<br/>
+        🔄 Big move: Straddle, Strangle<br/>
+        🎯 Income: Covered Call, Short Straddle<br/>
+        🛡️ Hedge: Protective Put
+      </p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 11: <em>Trading Strategies Involving Options</em> — All strategies covered here.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#payoff-builder" class="sr-link">Option Payoff Builder →</a>
+      <a href="tools.html#black-scholes"  class="sr-link">Black-Scholes →</a>
+    </div>
+
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('3.2');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Options', href: 'course.html' },
+    { label: 'Option Strategies' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '3.2' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '3.2' });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delta & Gamma — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c4">Greeks</span>
+      <h1 class="page-title">Delta &amp; Gamma</h1>
+      <p class="page-subtitle">First and second-order price sensitivities — how option value changes as the underlying moves.</p>
+    </div>
+
+    <!-- Delta -->
+    <section class="content-section">
+      <h2 class="cs-title">Delta (Δ): First-Order Price Sensitivity</h2>
+      <p><strong>Delta</strong> measures how much an option's price changes for a ₹1 change in the underlying asset price. It is simultaneously the option's <em>hedge ratio</em> and an approximation of the <em>probability</em> the option expires ITM.</p>
+
+      <div class="formula-box">
+        Δ = ∂C / ∂S &nbsp;&nbsp; (for a call)<br/>
+        Δ = ∂P / ∂S &nbsp;&nbsp; (for a put)<br/><br/>
+        BSM: Δ<sub>call</sub> = e<sup>−qT</sup> · N(d₁) &nbsp;&nbsp; ∈ (0, 1)<br/>
+        BSM: Δ<sub>put</sub>  = −e<sup>−qT</sup> · N(−d₁) = Δ<sub>call</sub> − 1 &nbsp;&nbsp; ∈ (−1, 0)
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 10px;color:var(--navy)">Delta by Moneyness</h3>
+      <table class="example-table">
+        <thead>
+          <tr><th>Moneyness</th><th>Call Delta</th><th>Put Delta</th><th>Interpretation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Deep ITM</td><td>≈ +1.0</td><td>≈ −1.0</td><td>Moves like the underlying itself</td></tr>
+          <tr><td>ATM</td><td>≈ +0.50</td><td>≈ −0.50</td><td>50% chance of expiring ITM</td></tr>
+          <tr><td>Deep OTM</td><td>≈ 0</td><td>≈ 0</td><td>Very small sensitivity; low probability ITM</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue" style="margin-top:16px">
+        <strong>Delta as hedge ratio:</strong> If you are short one Nifty call with Δ = 0.4, buying 0.4 shares (or 0.4 of one Nifty futures contract) makes you delta-neutral. This is the core of <em>delta hedging</em> used by market makers.
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 8px;color:var(--navy)">Delta Behaviour Across Scenarios</h3>
+      <table class="example-table">
+        <thead><tr><th>When…</th><th>Δ<sub>call</sub> moves…</th><th>Δ<sub>put</sub> moves…</th></tr></thead>
+        <tbody>
+          <tr><td>Spot rises</td><td>Toward +1</td><td>Toward 0</td></tr>
+          <tr><td>Spot falls</td><td>Toward 0</td><td>Toward −1</td></tr>
+          <tr><td>Time passes (expiry approaches)</td><td>ITM → 1, OTM → 0 (faster)</td><td>ITM → −1, OTM → 0</td></tr>
+          <tr><td>Volatility rises</td><td>OTM delta rises (toward 0.5)</td><td>OTM delta moves toward −0.5</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Gamma -->
+    <section class="content-section">
+      <h2 class="cs-title">Gamma (Γ): Second-Order Price Sensitivity</h2>
+      <p><strong>Gamma</strong> measures the <em>rate of change of delta</em> — how quickly the hedge ratio itself changes as the underlying moves. It is the second derivative of option price with respect to the underlying.</p>
+
+      <div class="formula-box">
+        Γ = ∂Δ / ∂S = ∂²C / ∂S²<br/><br/>
+        BSM: Γ = e<sup>−qT</sup> · N'(d₁) / (S · σ · √T)<br/><br/>
+        where N'(d₁) = (1/√2π) · e<sup>−d₁²/2</sup> is the standard normal PDF<br/><br/>
+        Γ is identical for calls and puts (same strike, expiry)
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0">
+        <div class="concept-card">
+          <div class="cc-title">Long Gamma (Option Buyers)</div>
+          <div class="cc-body">
+            Γ &gt; 0 for all long option positions (long call or long put).<br/><br/>
+            Benefits from large moves in either direction — the delta shifts in your favour as the market moves.<br/><br/>
+            Long gamma = long convexity of the payoff.
+          </div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Short Gamma (Option Sellers)</div>
+          <div class="cc-body">
+            Γ &lt; 0 for all short option positions (short call or short put).<br/><br/>
+            Hurt by large moves — delta shifts against you, making delta hedging expensive.<br/><br/>
+            Short gamma = collect theta, but bleed on big moves.
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:16px 0 8px;color:var(--navy)">Gamma by Moneyness and Time</h3>
+      <table class="example-table">
+        <thead><tr><th>Scenario</th><th>Gamma</th><th>Implication</th></tr></thead>
+        <tbody>
+          <tr><td>ATM option</td><td>Maximum</td><td>Delta changes fastest here — hedging most active</td></tr>
+          <tr><td>Deep ITM or OTM</td><td>Near zero</td><td>Delta stable — low hedging need</td></tr>
+          <tr><td>Near expiry (ATM)</td><td>Very high</td><td>Gamma risk spikes — "pin risk" near strike</td></tr>
+          <tr><td>Long time to expiry</td><td>Low</td><td>Delta changes slowly — easier to manage</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-gold" style="margin-top:14px">
+        <strong>Gamma-Theta trade-off:</strong> Long gamma (buying options) gives convexity — you benefit from large moves. But you pay for this with theta decay (time value erodes daily). Short gamma gives you theta income but bleeds on big moves. The market price of options reflects this exact trade-off.
+      </div>
+    </section>
+
+    <!-- Taylor Approximation -->
+    <section class="content-section">
+      <h2 class="cs-title">Taylor Approximation: Δ and Γ Together</h2>
+      <p>Using a second-order Taylor expansion, the change in option price for a change in spot can be approximated as:</p>
+
+      <div class="formula-box">
+        ΔC ≈ Δ · ΔS + ½ · Γ · (ΔS)²<br/><br/>
+        The <strong>Δ · ΔS</strong> term = first-order (linear) approximation<br/>
+        The <strong>½ · Γ · (ΔS)²</strong> term = convexity correction (always positive for long options)
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:16px 0 10px;color:var(--navy)">Worked Example</h3>
+      <p><strong>Given:</strong> Long call with Δ = 0.45, Γ = 0.008. Underlying moves from ₹2,460 to ₹2,510 (ΔS = +₹50).</p>
+      <table class="example-table" style="margin-top:12px">
+        <thead><tr><th>Component</th><th>Calculation</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Delta component</td><td>0.45 × 50</td><td>₹22.50</td></tr>
+          <tr><td>Gamma component</td><td>½ × 0.008 × 50²</td><td>₹10.00</td></tr>
+          <tr><td>Total estimated ΔC</td><td>22.50 + 10.00</td><td><strong>₹32.50</strong></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.875rem;color:var(--text-2);margin-top:10px">The gamma adds ₹10 of extra gain compared to the linear delta estimate. This is the benefit of long convexity — as the option moves ITM, delta increases, amplifying further gains.</p>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 4.1:</strong> A call option has Δ = <strong>0.60</strong> and Γ = <strong>0.012</strong>. The underlying drops by ₹<strong>30</strong>. Using the Taylor approximation, estimate the change in call price (in ₹). Positive = gain, negative = loss.</p>
+      <div class="practice-block" data-answer="-12.6" data-tol="0.5" data-section="4.1" data-problem-id="p4-1">
+        <div class="input-row">
+          <span class="input-label">ΔC (₹)</span>
+          <input class="answer-input" type="number" step="0.1" placeholder="e.g. -12.6" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          ΔS = −30 (price fell)<br/>
+          Delta component: 0.60 × (−30) = −18.00<br/>
+          Gamma component: ½ × 0.012 × (−30)² = 0.006 × 900 = +5.40<br/>
+          Total ΔC ≈ −18.00 + 5.40 = <strong>−₹12.60</strong><br/><br/>
+          Note: gamma always adds a positive convexity correction (½·Γ·ΔS² is positive regardless of direction). The call lost ₹12.60 in value, not the ₹18 a naive delta estimate would suggest.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q11-1"
+           data-feedback-correct="Correct! An ATM call has delta ≈ 0.50, meaning it moves ~50 paise for every ₹1 move in the underlying."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. An ATM Nifty call option has a delta of approximately:</p>
+        <ul class="quiz-opts">
+          <li>0 — it has no intrinsic value</li>
+          <li data-correct="true">+0.50</li>
+          <li>+1.0 — it moves in lockstep with Nifty</li>
+          <li>−0.50</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q11-2"
+           data-feedback-correct="Correct! Gamma is highest for ATM options and increases further as expiry approaches — creating 'pin risk' near the strike."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. Where is Gamma highest for a given option series (same underlying, expiry)?</p>
+        <ul class="quiz-opts">
+          <li>Deep ITM options</li>
+          <li>Deep OTM options</li>
+          <li data-correct="true">ATM (at-the-money) options</li>
+          <li>Gamma is constant across all strikes</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q11-3"
+           data-feedback-correct="Correct! The gamma term (½·Γ·ΔS²) is always positive for long option positions — this is the benefit of convexity, regardless of direction."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. In the Taylor approximation ΔC ≈ Δ·ΔS + ½·Γ·(ΔS)², the gamma term:</p>
+        <ul class="quiz-opts">
+          <li>Is negative when the stock falls</li>
+          <li>Cancels out the delta term exactly</li>
+          <li data-correct="true">Is always positive for a long option position, regardless of direction</li>
+          <li>Only matters for very large price moves</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formulas</div>
+      <div class="formula-box" style="font-size:.76rem">
+        Δ<sub>call</sub> = N(d₁)<br/>
+        Δ<sub>put</sub>  = N(d₁) − 1<br/><br/>
+        Γ = N'(d₁)/(S·σ·√T)<br/><br/>
+        ΔC ≈ Δ·ΔS + ½·Γ·(ΔS)²
+      </div>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 19: The Greek Letters — Delta, Gamma, and their role in dynamic hedging.</p>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#greeks-dashboard" class="sr-link">Greeks Dashboard →</a>
+      <a href="tools.html#black-scholes"    class="sr-link">Black-Scholes →</a>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('4.1');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Greeks', href: 'course.html' },
+    { label: 'Delta & Gamma' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '4.1' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '4.1' });
+});
+</script>
+</body>
+</html>

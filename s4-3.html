@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delta Neutrality — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c4">Greeks</span>
+      <h1 class="page-title">Delta Neutrality</h1>
+      <p class="page-subtitle">Constructing and maintaining a delta-neutral portfolio, dynamic rebalancing, and what market makers do every day.</p>
+    </div>
+
+    <!-- What is delta neutral -->
+    <section class="content-section">
+      <h2 class="cs-title">What is Delta Neutrality?</h2>
+      <p>A <strong>delta-neutral portfolio</strong> has a total delta of zero — meaning small changes in the underlying price have (almost) no effect on the portfolio's value. The portfolio is insensitive to the <em>direction</em> of the market, but still exposed to gamma, theta, and vega.</p>
+
+      <div class="callout callout-blue">
+        <strong>Who uses delta neutrality?</strong> Option market makers delta-hedge constantly — they take whatever position is needed to fill client orders, then immediately offset the directional risk with futures or shares. Their profit comes from the bid-ask spread, not from predicting market direction.
+      </div>
+
+      <div class="formula-box" style="margin-top:16px">
+        Portfolio Δ = Σ (position_i × Δ_i)<br/><br/>
+        For delta neutral: Portfolio Δ = 0<br/><br/>
+        Hedge shares = −(option delta × number of option contracts × lot size)
+      </div>
+    </section>
+
+    <!-- Building a Delta Neutral Portfolio -->
+    <section class="content-section">
+      <h2 class="cs-title">Building a Delta-Neutral Hedge</h2>
+
+      <h3 style="font-size:.9375rem;margin:0 0 12px;color:var(--navy)">Step-by-Step Example: Market Maker Hedging a Call Sale</h3>
+      <p><strong>Scenario:</strong> A market maker sells 10 Reliance call contracts (lot size = 250, Δ = 0.55) to a client. She must hedge immediately.</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead><tr><th>Step</th><th>Calculation</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1. Compute net delta of options position</td>
+            <td>Short 10 calls × 250 lots × Δ 0.55 = Short 1,375 delta</td>
+            <td>Option position has −1,375 delta</td>
+          </tr>
+          <tr>
+            <td>2. Offset with underlying</td>
+            <td>Buy 1,375 shares of Reliance (or 5.5 futures contracts)</td>
+            <td>Long 1,375 delta from shares</td>
+          </tr>
+          <tr>
+            <td>3. Net portfolio delta</td>
+            <td>−1,375 + 1,375 = 0</td>
+            <td>Delta neutral ✓</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-gold" style="margin-top:14px">
+        <strong>But Reliance moves!</strong> An hour later, Reliance rises ₹20. The call delta shifts from 0.55 to 0.62 (gamma effect). The portfolio is no longer delta neutral. The market maker must buy more shares — and this continuous rebalancing is called <strong>dynamic delta hedging</strong>.
+      </div>
+    </section>
+
+    <!-- Dynamic Hedging -->
+    <section class="content-section">
+      <h2 class="cs-title">Dynamic Delta Hedging</h2>
+      <p>Because delta changes as the underlying moves (due to gamma), a one-time hedge is not enough. A delta-neutral portfolio requires <em>continuous rebalancing</em> — buying more when the stock rises and selling when it falls.</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead>
+          <tr><th>Time</th><th>Reliance Price</th><th>Call Delta</th><th>Shares Required</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>T=0</td><td>₹2,460</td><td>0.55</td><td>1,375</td><td>Buy 1,375 shares (initial hedge)</td></tr>
+          <tr><td>T=1</td><td>₹2,480</td><td>0.59</td><td>1,475</td><td>Buy 100 more shares</td></tr>
+          <tr><td>T=2</td><td>₹2,450</td><td>0.52</td><td>1,300</td><td>Sell 175 shares</td></tr>
+          <tr><td>T=3</td><td>₹2,500</td><td>0.64</td><td>1,600</td><td>Buy 300 shares</td></tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:12px">The hedger is <em>buying high and selling low</em> to maintain delta neutrality. These rebalancing trades cost money — this cost is the "gamma cost." It's exactly what the short option seller loses to the long option buyer's convexity advantage.</p>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>The Black-Scholes insight:</strong> If you delta-hedge continuously and the realised volatility equals the implied volatility embedded in the option price, the total hedging costs will exactly equal the option premium collected. This is how BSM pricing is derived via the replication argument.
+      </div>
+    </section>
+
+    <!-- Greeks of a portfolio -->
+    <section class="content-section">
+      <h2 class="cs-title">Portfolio Greeks: Making a Portfolio Delta AND Gamma Neutral</h2>
+      <p>Delta neutrality only protects against small moves. For large moves, you also need to neutralise <strong>gamma</strong>. However, you cannot make a portfolio both delta and gamma neutral using only the underlying — you need <em>another option</em>.</p>
+
+      <div class="formula-box">
+        To make a portfolio gamma neutral:<br/>
+        Add options: w* = −Γ<sub>portfolio</sub> / Γ<sub>option</sub> contracts<br/><br/>
+        Then rebalance delta to zero using the underlying.<br/><br/>
+        Order of operations: 1) Gamma neutral with options → 2) Delta neutral with futures/shares
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 10px;color:var(--navy)">Worked Example: Gamma-Delta Neutral Portfolio</h3>
+      <p><strong>Given:</strong> Portfolio Δ = +600, Γ = −800. A traded call option has Δ = 0.7, Γ = 0.015 per contract (each contract = 100 shares).</p>
+      <table class="example-table" style="margin-top:12px">
+        <thead><tr><th>Step</th><th>Calculation</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1. Gamma neutralise</td>
+            <td>w* = −(−800)/0.015/100 = 800/1.5</td>
+            <td>Buy 533 contracts of the call</td>
+          </tr>
+          <tr>
+            <td>2. New portfolio delta</td>
+            <td>600 + 533×100×0.7 = 600 + 37,310</td>
+            <td>Δ = +37,910</td>
+          </tr>
+          <tr>
+            <td>3. Delta neutralise</td>
+            <td>Short 37,910 shares (or equivalent futures)</td>
+            <td>Portfolio Δ = 0, Γ = 0</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 4.3:</strong> You are short 5 Nifty call contracts (lot size = 50). The call delta is <strong>0.45</strong>. How many Nifty futures contracts (lot = 50) must you buy to achieve delta neutrality?</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0"><em>Hint: Short calls give you negative delta. Buying futures gives positive delta.</em></p>
+      <div class="practice-block" data-answer="2.25" data-tol="0.1" data-section="4.3" data-problem-id="p4-3">
+        <div class="input-row">
+          <span class="input-label">Futures contracts to buy</span>
+          <input class="answer-input" type="number" step="0.01" placeholder="e.g. 2.25" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Short 5 call contracts × lot 50 × Δ 0.45 = −112.5 delta<br/>
+          Need +112.5 delta from futures<br/>
+          Each futures contract = 1 × 50 = 50 delta<br/>
+          Contracts needed = 112.5 / 50 = <strong>2.25 contracts</strong><br/><br/>
+          In practice, you'd round to 2 contracts, accepting a small residual delta.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q13-1"
+           data-feedback-correct="Correct! Delta neutrality only zeroes out the first-order price sensitivity. The portfolio is still exposed to gamma, theta, vega, and rho."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. A delta-neutral portfolio is protected against:</p>
+        <ul class="quiz-opts">
+          <li>All market risk (delta, gamma, vega)</li>
+          <li>Volatility risk (vega) only</li>
+          <li data-correct="true">Small changes in the underlying price (but not large moves)</li>
+          <li>Time decay (theta) only</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q13-2"
+           data-feedback-correct="Correct! The rebalancing trades (buying high, selling low) accumulate costs that equal the gamma benefit the option buyer receives — this is the BSM replication argument."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. In dynamic delta hedging, the market maker who sold an option and delta-hedges continuously:</p>
+        <ul class="quiz-opts">
+          <li>Always profits from the hedge</li>
+          <li>Makes zero profit (pure service)</li>
+          <li data-correct="true">Incurs hedging costs from gamma — buying high and selling low as they rebalance</li>
+          <li>Earns free theta without any gamma risk</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q13-3"
+           data-feedback-correct="Correct! To neutralise gamma you need another option — the underlying has zero gamma. Then rebalance delta using the underlying/futures."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. To make a portfolio both delta-neutral AND gamma-neutral, you must:</p>
+        <ul class="quiz-opts">
+          <li>Only trade the underlying asset</li>
+          <li>Sell options to reduce gamma, then sell futures to reduce delta</li>
+          <li data-correct="true">First add options to neutralise gamma, then use the underlying to neutralise delta</li>
+          <li>Buy equal numbers of calls and puts at the same strike</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">Hedge Formulas</div>
+      <div class="formula-box" style="font-size:.76rem">
+        Δ<sub>port</sub> = Σ pos<sub>i</sub>·Δ<sub>i</sub><br/><br/>
+        Shares to hedge = −Δ<sub>options</sub><br/><br/>
+        Gamma hedge:<br/>
+        w* = −Γ<sub>port</sub>/Γ<sub>opt</sub>
+      </div>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 19: <em>Delta-neutral strategies, dynamic hedging, and gamma management.</em></p>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#greeks-dashboard" class="sr-link">Greeks Dashboard →</a>
+      <a href="tools.html#black-scholes"    class="sr-link">Black-Scholes →</a>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('4.3');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Greeks', href: 'course.html' },
+    { label: 'Delta Neutrality' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '4.3' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '4.3' });
+});
+</script>
+</body>
+</html>

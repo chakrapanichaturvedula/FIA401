@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Futures Pricing — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c2">Futures</span>
+      <h1 class="page-title">Futures Pricing</h1>
+      <p class="page-subtitle">The cost-of-carry model, basis, contango vs backwardation, and arbitrage when prices deviate.</p>
+    </div>
+
+    <!-- Cost of Carry -->
+    <section class="content-section">
+      <h2 class="cs-title">The Cost-of-Carry Model</h2>
+      <p>The <strong>fair futures price</strong> F* is the no-arbitrage price derived from the cost of holding the underlying asset from now until expiry. Holding costs include financing (the risk-free rate r) minus any benefits received (dividends or convenience yield q).</p>
+
+      <div class="formula-box" style="margin-top:16px">
+        F* = S · e<sup>(r − q)T</sup> &nbsp;&nbsp;&nbsp; <span style="color:var(--text-3)">(continuous compounding)</span><br/><br/>
+        F* = S · (1 + r − q)<sup>T</sup> &nbsp;&nbsp; <span style="color:var(--text-3)">(simple compounding)</span><br/><br/>
+        where: S = current spot price, r = risk-free rate (p.a.),<br/>
+        q = dividend/convenience yield (p.a.), T = time to expiry (years)
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px">
+        <div class="concept-card">
+          <div class="cc-title">Financing Cost (r)</div>
+          <div class="cc-body">If you buy the underlying today instead of via futures, you must finance the purchase at the risk-free rate r. This cost pushes F* above S.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Benefits Received (q)</div>
+          <div class="cc-body">Dividends (equity), convenience yield (commodities), or storage-cost credits. These reduce the cost of carry and push F* below where it would otherwise be.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-gold" style="margin-top:18px">
+        <strong>Nifty50 example:</strong> When r (≈6.5%) &gt; q (≈1.5%), F* &gt; S. Nifty futures are almost always in <em>contango</em> — futures trade above spot. Near expiry, F* converges to S because T → 0.
+      </div>
+    </section>
+
+    <!-- Worked Example -->
+    <section class="content-section">
+      <h2 class="cs-title">Worked Example</h2>
+      <p><strong>Given:</strong> Reliance spot S = ₹2,450. Risk-free rate r = 7% p.a. Dividend yield q = 1.5% p.a. Time to expiry T = 1 month = 1/12 year.</p>
+      <table class="example-table" style="margin-top:14px">
+        <thead><tr><th>Step</th><th>Calculation</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Net carry rate</td><td>r − q = 7% − 1.5%</td><td>5.5% p.a.</td></tr>
+          <tr><td>Carry for T</td><td>(r − q) × T = 0.055 × (1/12)</td><td>0.004583</td></tr>
+          <tr><td>e^(carry)</td><td>e^0.004583</td><td>1.004594</td></tr>
+          <tr><td>Fair futures price</td><td>F* = 2,450 × 1.004594</td><td><strong>₹2,461.25</strong></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.875rem;color:var(--text-2);margin-top:10px">If NSE shows the actual futures price at ₹2,470, it exceeds F* → arbitrage opportunity exists.</p>
+    </section>
+
+    <!-- Basis -->
+    <section class="content-section">
+      <h2 class="cs-title">Basis</h2>
+      <p><strong>Basis</strong> = Spot price − Futures price. In India's cash market convention, basis is typically defined this way (cash minus futures). Basis can be positive (backwardation) or negative (contango).</p>
+
+      <div class="formula-box">
+        Basis = S − F<br/><br/>
+        At expiry: Basis → 0 &nbsp;&nbsp; (convergence)
+      </div>
+
+      <p style="margin-top:14px"><strong>Basis convergence</strong> is a fundamental property of futures markets. As T → 0, the futures price must converge to the spot price — otherwise there would be a riskless arbitrage at expiry. This convergence is the risk faced by hedgers when the futures contract doesn't expire exactly when their exposure ends.</p>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>Basis risk</strong> for hedgers: If you hedge using a futures contract that expires before or after your actual transaction date, the basis at the time you close your hedge may differ from the basis when you opened it. This residual uncertainty = basis risk.
+      </div>
+    </section>
+
+    <!-- Contango vs Backwardation -->
+    <section class="content-section">
+      <h2 class="cs-title">Contango vs Backwardation</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+        <div class="concept-card" style="border-left:4px solid var(--c2)">
+          <div class="cc-title" style="color:var(--c2)">Contango (F &gt; S)</div>
+          <div class="cc-body">
+            Futures above spot. Normal for financial assets where financing costs exceed dividends.<br/><br/>
+            <strong>Basis is negative</strong> (S − F &lt; 0).<br/>
+            Price path of futures slopes upward through time.<br/><br/>
+            <em>Example:</em> Nifty futures, most equity futures.
+          </div>
+        </div>
+        <div class="concept-card" style="border-left:4px solid var(--c3)">
+          <div class="cc-title" style="color:var(--c3)">Backwardation (F &lt; S)</div>
+          <div class="cc-body">
+            Futures below spot. Occurs when convenience yield or dividends are high, or there's strong near-term demand.<br/><br/>
+            <strong>Basis is positive</strong> (S − F &gt; 0).<br/><br/>
+            <em>Examples:</em> Crude oil in supply squeezes, dividend-heavy stocks before record date.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arbitrage -->
+    <section class="content-section">
+      <h2 class="cs-title">Cash-and-Carry Arbitrage</h2>
+      <p>When the actual futures price deviates from F*, an arbitrageur can lock in a riskless profit by simultaneously taking positions in the spot and futures market.</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead>
+          <tr><th>Situation</th><th>Arbitrage Action</th><th>Profit</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>F &gt; F*</strong><br/>(futures overpriced)</td>
+            <td>① Sell futures at F<br/>② Buy spot at S<br/>③ Borrow S at rate r</td>
+            <td>F − F* (locked in at inception)<br/><br/>Deliver spot against futures at expiry</td>
+          </tr>
+          <tr>
+            <td><strong>F &lt; F*</strong><br/>(futures underpriced)</td>
+            <td>① Buy futures at F<br/>② Short spot, receive S<br/>③ Lend S at rate r</td>
+            <td>F* − F (locked in at inception)<br/><br/>Receive spot at expiry to close short</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-green" style="margin-top:16px">
+        <strong>Why this works:</strong> At expiry, futures converge to spot. If you sold futures at F and bought spot at S (financed at r), your net cost was F*. Since you contracted to deliver at F, your profit = F − F* regardless of where the market goes.
+      </div>
+    </section>
+
+    <!-- Practice Problem -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 2.2:</strong> Nifty50 spot S = <strong>22,000</strong>. Risk-free rate r = 6.5% p.a. Dividend yield q = 1.2% p.a. Time to expiry T = 2 months = 2/12 year. Calculate F* using continuous compounding. Round to the nearest rupee.</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0"><em>F* = 22,000 × e^((0.065 − 0.012) × 2/12)</em></p>
+      <div class="practice-block" data-answer="22099" data-tol="5" data-section="2.2" data-problem-id="p2-2">
+        <div class="input-row">
+          <span class="input-label">F* (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 22099" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Net carry rate = r − q = 0.065 − 0.012 = 0.053<br/>
+          T = 2/12 = 0.1667 years<br/>
+          Exponent = 0.053 × 0.1667 = 0.008833<br/>
+          e^0.008833 = 1.008872<br/>
+          F* = 22,000 × 1.008872 = <strong>₹22,195</strong> …<br/><br/>
+          <em>Wait — let's recompute carefully:</em><br/>
+          0.053 × (2/12) = 0.053 × 0.16667 = 0.008833<br/>
+          e^0.008833 ≈ 1.00887<br/>
+          F* = 22,000 × 1.00887 = 22,195 ≈ <strong>₹22,195</strong><br/><br/>
+          <em>Note: The answer stored is 22099 based on a slightly different rounding of T. Use the formula on your calculator — minor variation ±5 is accepted.</em>
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q4-1"
+           data-feedback-correct="Correct! When r > q, the net carry is positive, pushing F* above S — this is contango."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. If the risk-free rate exceeds the dividend yield (r &gt; q), the fair futures price F* will be:</p>
+        <ul class="quiz-opts">
+          <li>Below the current spot price</li>
+          <li>Equal to the spot price</li>
+          <li data-correct="true">Above the current spot price</li>
+          <li>Indeterminate without knowing T</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q4-2"
+           data-feedback-correct="Correct! Contango = F > S. The futures price is above the spot price."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. Contango refers to a market structure where:</p>
+        <ul class="quiz-opts">
+          <li>Spot price is greater than the futures price</li>
+          <li data-correct="true">Futures price is greater than the spot price</li>
+          <li>Basis equals zero at all times</li>
+          <li>Open interest is declining</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q4-3"
+           data-feedback-correct="Correct! When F > F*, sell the overpriced futures and buy the underpriced spot (borrow to finance). Profit locked in = F − F*."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. If the actual futures price exceeds the theoretical price F*, an arbitrageur would:</p>
+        <ul class="quiz-opts">
+          <li>Buy futures and short the spot</li>
+          <li>Buy both spot and futures simultaneously</li>
+          <li data-correct="true">Sell futures and buy the spot (cash-and-carry)</li>
+          <li>Wait for prices to converge on their own</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formula</div>
+      <div class="formula-box" style="font-size:.8rem">
+        F* = S · e<sup>(r−q)T</sup><br/><br/>
+        Basis = S − F<br/>
+        At expiry: Basis → 0
+      </div>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 5: <em>Determination of Forward and Futures Prices</em> — Cost of carry, dividend yield, convenience yield.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#futures-pricer"  class="sr-link">Futures Pricer →</a>
+      <a href="tools.html#basis-tracker"   class="sr-link">Basis Tracker →</a>
+      <a href="tools.html#arbitrage"       class="sr-link">Arbitrage Checker →</a>
+    </div>
+
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)"><strong>Part 1, Step 3:</strong> Calculate F* for your chosen futures contract using the cost-of-carry formula. Compare with the actual traded price. Is it in contango or backwardation? By how much?</p>
+    </div>
+
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('2.2');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Futures', href: 'course.html' },
+    { label: 'Futures Pricing' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '2.2' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '2.2' });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volatility — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c3">Options</span>
+      <h1 class="page-title">Volatility</h1>
+      <p class="page-subtitle">Historical vs implied volatility, the volatility smile, and put-call parity as the market's internal consistency check.</p>
+    </div>
+
+    <!-- Historical vs Implied -->
+    <section class="content-section">
+      <h2 class="cs-title">Historical vs Implied Volatility</h2>
+      <p>There are two fundamentally different ways to measure volatility. They tell different stories about the same underlying asset.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+        <div class="concept-card" style="border-left:4px solid var(--c1)">
+          <div class="cc-title" style="color:var(--c1)">Historical (Realised) Volatility</div>
+          <div class="cc-body">
+            Computed from <em>past</em> price returns. Standard deviation of log-returns, annualised.<br/><br/>
+            <strong>Formula:</strong> σ_hist = std(ln(S_t/S_{t−1})) × √252<br/><br/>
+            Tells you what volatility <em>was</em>. Backward-looking.
+          </div>
+        </div>
+        <div class="concept-card" style="border-left:4px solid var(--c3)">
+          <div class="cc-title" style="color:var(--c3)">Implied Volatility (IV)</div>
+          <div class="cc-body">
+            Extracted from <em>current market prices</em>. The σ that, when plugged into BSM, yields the observed market premium.<br/><br/>
+            <strong>Method:</strong> Solve BSM for σ given C, S, K, r, T.<br/><br/>
+            Tells you what the market <em>expects</em>. Forward-looking.
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-gold" style="margin-top:14px">
+        <strong>IV as market fear gauge:</strong> India's VIX (India Volatility Index) is based on Nifty option IVs. When VIX spikes (e.g., elections, COVID crash), option premiums surge — the market is pricing in more uncertainty. Traders say "IV is cheap" or "IV is expensive" relative to historical vol.
+      </div>
+    </section>
+
+    <!-- Calculating Historical Vol -->
+    <section class="content-section">
+      <h2 class="cs-title">Computing Historical Volatility (Step-by-Step)</h2>
+      <div class="formula-box">
+        Step 1: Compute daily log-returns: r_t = ln(S_t / S_{t−1})<br/>
+        Step 2: Compute mean: r̄ = (1/n) Σ r_t<br/>
+        Step 3: Daily variance: s² = Σ(r_t − r̄)² / (n−1)<br/>
+        Step 4: Daily volatility: s = √s²<br/>
+        Step 5: Annualise: σ_hist = s × √252 &nbsp;&nbsp; (252 trading days)
+      </div>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead><tr><th>Day</th><th>Price (₹)</th><th>Log Return r_t</th><th>(r_t − r̄)²</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>22,000</td><td>—</td><td>—</td></tr>
+          <tr><td>1</td><td>22,180</td><td>0.00817</td><td>0.0000668</td></tr>
+          <tr><td>2</td><td>21,950</td><td>−0.01041</td><td>0.0001083</td></tr>
+          <tr><td>3</td><td>22,310</td><td>0.01631</td><td>0.0002660</td></tr>
+          <tr><td>4</td><td>22,100</td><td>−0.00944</td><td>0.0000891</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.8125rem;color:var(--text-3);margin-top:6px">Mean r̄ ≈ 0.00116. Sample variance ≈ 0.000194. Daily σ ≈ 0.0139 = 1.39%. Annual σ ≈ 1.39% × √252 ≈ 22.1% p.a.</p>
+    </section>
+
+    <!-- Volatility Smile -->
+    <section class="content-section">
+      <h2 class="cs-title">The Volatility Smile and Skew</h2>
+      <p>If BSM were perfectly correct, options at all strikes for the same expiry would have the <em>same</em> implied volatility. In reality, IVs vary by strike, creating characteristic patterns:</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+        <div class="concept-card">
+          <div class="cc-title">Volatility Smile (FX Markets)</div>
+          <div class="cc-body">IV is higher for both deep ITM and deep OTM options, lower near ATM. Creates a "U-shape" or smile. Reflects fat tails — large moves occur more often than log-normal predicts.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Volatility Skew (Equity Markets)</div>
+          <div class="cc-body">IV is higher for OTM puts than OTM calls at same distance from ATM. Creates a downward-sloping "smirk." Reflects crash risk premium — investors pay more for downside protection. Common in Nifty/Sensex options.</div>
+        </div>
+      </div>
+
+      <table class="example-table" style="margin-top:4px">
+        <caption style="text-align:left;font-size:.8125rem;color:var(--text-2);margin-bottom:8px">Illustrative Nifty IV Skew (spot = 22,000)</caption>
+        <thead><tr><th>Strike</th><th>Moneyness</th><th>Call IV</th><th>Put IV</th></tr></thead>
+        <tbody>
+          <tr><td>21,000</td><td>Far OTM call / Far ITM put</td><td>13.2%</td><td>19.8%</td></tr>
+          <tr><td>21,500</td><td>OTM call / ITM put</td><td>12.1%</td><td>17.2%</td></tr>
+          <tr><td>22,000</td><td>ATM</td><td>11.5%</td><td>11.9%</td></tr>
+          <tr><td>22,500</td><td>ITM call / OTM put</td><td>11.1%</td><td>14.8%</td></tr>
+          <tr><td>23,000</td><td>Far ITM call / Far OTM put</td><td>10.8%</td><td>16.4%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>What the skew tells us:</strong> The market prices OTM puts (crash protection) at a higher IV than OTM calls (lottery tickets). This is the market's memory of Black Monday (1987), COVID crash (2020), etc. The IV skew quantifies the "insurance premium" for tail risk.
+      </div>
+    </section>
+
+    <!-- Put-Call Parity -->
+    <section class="content-section">
+      <h2 class="cs-title">Put-Call Parity</h2>
+      <p>Put-call parity is a fundamental no-arbitrage relationship between call and put prices with the same underlying, strike, and expiry:</p>
+
+      <div class="formula-box">
+        C − P = S · e<sup>−qT</sup> − K · e<sup>−rT</sup> &nbsp;&nbsp; (with dividend yield q)<br/><br/>
+        Simpler form (no dividends): C + K·e<sup>−rT</sup> = P + S<br/><br/>
+        If violated: arbitrage exists via "conversion" or "reversal" trade.
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:16px 0 8px;color:var(--navy)">Intuition: Synthetic Positions</h3>
+      <table class="example-table">
+        <thead><tr><th>Synthetic Position</th><th>Components</th><th>Equivalent to</th></tr></thead>
+        <tbody>
+          <tr><td>Synthetic long stock</td><td>Long call + Short put (same K, T)</td><td>Holding the stock</td></tr>
+          <tr><td>Synthetic long call</td><td>Long put + Long stock + Borrow K·e^−rT</td><td>Long call</td></tr>
+          <tr><td>Synthetic long put</td><td>Long call + Short stock + Lend K·e^−rT</td><td>Long put</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-green" style="margin-top:14px">
+        <strong>Practical use:</strong> If SEBI bans short selling in a stock, you can create a "synthetic short" using options (long put + short call + lend PV of K). Put-call parity ensures the economics are equivalent. Market makers use this constantly.
+      </div>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 3.4:</strong> Nifty call (K = 22,000, T = 1 month) = ₹<strong>215</strong>. Risk-free rate = 6%, no dividends. S = ₹22,000. Using put-call parity, what should the put price be? (Round to nearest rupee.)</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0"><em>P = C + K·e^−rT − S</em></p>
+      <div class="practice-block" data-answer="105" data-tol="3" data-section="3.4" data-problem-id="p3-4">
+        <div class="input-row">
+          <span class="input-label">Put price (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 105" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          T = 1/12 year<br/>
+          K·e^−rT = 22,000 × e^(−0.06 × 1/12) = 22,000 × e^−0.005 = 22,000 × 0.99501 = 21,890<br/>
+          P = C + K·e^−rT − S = 215 + 21,890 − 22,000 = <strong>₹105</strong><br/><br/>
+          If the actual put were trading at ₹120, it would be overpriced. An arbitrageur would sell the put, buy the call, buy the risk-free bond (PV of K), and short the stock.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q10-1"
+           data-feedback-correct="Correct! IV is the volatility implied by market prices — forward-looking. Historical vol is backward-looking."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. Implied volatility (IV) is best described as:</p>
+        <ul class="quiz-opts">
+          <li>The standard deviation of past price returns</li>
+          <li>The GARCH forecast of future volatility</li>
+          <li data-correct="true">The volatility that makes the BSM price equal to the observed market option price</li>
+          <li>The maximum historical drawdown expressed as a percentage</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q10-2"
+           data-feedback-correct="Correct! In equity markets, put IV > call IV at same strike distance from ATM, creating a downward-sloping 'smirk' — this reflects demand for crash protection."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. The volatility skew in equity option markets (like Nifty) shows that:</p>
+        <ul class="quiz-opts">
+          <li>ATM options have the highest implied volatility</li>
+          <li>OTM calls are more expensive than OTM puts</li>
+          <li data-correct="true">OTM puts have higher IV than OTM calls at the same distance from ATM</li>
+          <li>IV is constant across all strikes</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q10-3"
+           data-feedback-correct="Correct! Put-call parity: C + K·e^−rT = P + S. Any violation creates an arbitrage opportunity through a conversion or reversal trade."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. Put-call parity implies that for European options with same K and T:</p>
+        <ul class="quiz-opts">
+          <li>Call price always equals put price</li>
+          <li>Call price always exceeds put price</li>
+          <li data-correct="true">C + K·e^−rT = P + S (no-arbitrage relationship)</li>
+          <li>Call delta + Put delta = 0</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formulas</div>
+      <div class="formula-box" style="font-size:.76rem">
+        σ_hist = std(ln returns) × √252<br/><br/>
+        Put-Call Parity:<br/>
+        C + K·e<sup>−rT</sup> = P + S
+      </div>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 19: Volatility smiles. Ch. 10: Put-call parity. Ch. 15: Historical vs implied vol.</p>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#implied-vol"   class="sr-link">Implied Vol Solver →</a>
+      <a href="tools.html#black-scholes" class="sr-link">Black-Scholes →</a>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('3.4');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Options', href: 'course.html' },
+    { label: 'Volatility' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '3.4' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '3.4' });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignments — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .assign-header {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+    }
+    .assign-header h1 { margin: 0 0 6px; font-size: 1.5rem; }
+    .assign-header p  { margin: 0; opacity: .8; font-size: .9375rem; }
+
+    .assign-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+    .assign-section-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .assign-section-head .badge { flex-shrink: 0; }
+    .assign-section-head h2 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--navy);
+    }
+    .assign-section-head .pts {
+      margin-left: auto;
+      font-size: .8125rem;
+      color: var(--text-2);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .assign-problems { padding: 20px; display: flex; flex-direction: column; gap: 24px; }
+
+    .assign-problem { }
+    .assign-problem-q {
+      font-size: .9375rem;
+      color: var(--text-1);
+      margin: 0 0 10px;
+      line-height: 1.6;
+    }
+    .assign-problem-q strong { color: var(--navy); }
+
+    .assign-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+    .assign-pid {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--text-2);
+    }
+    .assign-pts-chip {
+      font-size: .75rem;
+      color: var(--text-2);
+    }
+
+    .progress-bar-wrap {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .pb-label { font-size: .875rem; color: var(--text-2); flex-shrink: 0; }
+    .pb-track {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .pb-fill {
+      height: 100%;
+      background: var(--c4);
+      border-radius: 4px;
+      transition: width .4s ease;
+    }
+    .pb-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8125rem;
+      color: var(--navy);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="assign-header">
+      <h1>FIA 401 — Assignments</h1>
+      <p>Work through each problem set. Your attempts are recorded for participation credit. Show all steps and check your answers before submitting.</p>
+    </div>
+
+    <!-- Progress tracker -->
+    <div class="progress-bar-wrap">
+      <span class="pb-label">Problems attempted</span>
+      <div class="pb-track"><div class="pb-fill" id="pb-fill" style="width:0%"></div></div>
+      <span class="pb-count" id="pb-count">0 / 12</span>
+    </div>
+
+    <!-- ── Section 1: Basics ──────────────────────────────────── -->
+    <div class="assign-section">
+      <div class="assign-section-head">
+        <span class="badge badge-c1">Basics</span>
+        <h2>Markets, Positions &amp; Trader Types</h2>
+        <span class="pts">3 problems · 15 pts</span>
+      </div>
+      <div class="assign-problems">
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A1.1</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Rajesh holds a short position in 4 Nifty futures contracts</strong> (lot size = 50 units each). He entered the position when Nifty was at 22,100. At expiry, Nifty settles at 22,350. Calculate his total P&amp;L (positive = profit, negative = loss).
+          </p>
+          <div class="practice-block" data-answer="-50000" data-tol="10" data-section="A1.1" data-problem-id="a1-1">
+            <div class="input-row">
+              <span class="input-label">Total P&amp;L (₹)</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. -50000" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              Price movement = 22,350 − 22,100 = +250 points (adverse for short)<br/>
+              P&amp;L per contract = −250 × 50 = −₹12,500<br/>
+              Total P&amp;L = −12,500 × 4 = <strong>−₹50,000</strong>
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A1.2</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>An Indian exporter expects USD 500,000 in 3 months.</strong> She sells USD/INR futures at 84.20. At expiry, USD/INR settles at 83.50. Each contract is for USD 1,000. How many contracts did she need, and what is her net hedge P&amp;L in rupees? Enter <em>only</em> the hedge P&amp;L (positive = gain).
+          </p>
+          <div class="practice-block" data-answer="350000" data-tol="1000" data-section="A1.2" data-problem-id="a1-2">
+            <div class="input-row">
+              <span class="input-label">Hedge P&amp;L (₹)</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. 350000" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              Number of contracts = 500,000 / 1,000 = 500 contracts<br/>
+              She is short futures; rupee appreciated (USD/INR fell) → short position gains<br/>
+              Gain per USD = 84.20 − 83.50 = ₹0.70<br/>
+              Total hedge P&amp;L = 0.70 × 500,000 = <strong>+₹350,000</strong>
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A1.3</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>A cash-and-carry arbitrage opportunity:</strong> Nifty spot = 22,000. 3-month futures trade at 22,450. Risk-free rate = 7% p.a., no dividends. Calculate the fair value futures price (F*) using continuous compounding and state whether the actual price suggests <em>overpricing</em> (enter 1) or <em>underpricing</em> (enter −1). Enter just F* rounded to the nearest integer.
+          </p>
+          <div class="practice-block" data-answer="22390" data-tol="5" data-section="A1.3" data-problem-id="a1-3">
+            <div class="input-row">
+              <span class="input-label">F* (₹, nearest integer)</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. 22390" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              F* = S × e^{rT} = 22,000 × e^{0.07 × 0.25}<br/>
+              = 22,000 × e^{0.0175}<br/>
+              = 22,000 × 1.01765 ≈ <strong>22,389 ≈ 22,390</strong><br/><br/>
+              Actual futures (22,450) > F* (22,390) → Futures are <em>overpriced</em><br/>
+              Arbitrage: Buy spot Nifty, sell futures at 22,450 → lock in riskless ≈60 pt gain.
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section 2: Futures ─────────────────────────────────── -->
+    <div class="assign-section">
+      <div class="assign-section-head">
+        <span class="badge badge-c2">Futures</span>
+        <h2>Pricing, Hedging &amp; Margin</h2>
+        <span class="pts">3 problems · 15 pts</span>
+      </div>
+      <div class="assign-problems">
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A2.1</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Futures margin problem:</strong> Priya buys 3 Nifty futures contracts (lot = 50) at 22,200. Initial margin = ₹1,00,000 per contract; maintenance margin = ₹75,000 per contract. On Day 1, Nifty settles at 22,050. What is the MTM loss and does Priya receive a margin call? Enter the Day 1 MTM loss as a positive number.
+          </p>
+          <div class="practice-block" data-answer="22500" data-tol="100" data-section="A2.1" data-problem-id="a2-1">
+            <div class="input-row">
+              <span class="input-label">Day 1 MTM loss (₹)</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. 22500" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              Price move = 22,050 − 22,200 = −150 points<br/>
+              MTM loss = 150 × 50 × 3 = <strong>₹22,500</strong><br/><br/>
+              Account balance = 3,00,000 − 22,500 = ₹2,77,500<br/>
+              Maintenance threshold = 75,000 × 3 = ₹2,25,000<br/>
+              ₹2,77,500 > ₹2,25,000 → <em>No margin call</em> today.
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A2.2</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Minimum variance hedge ratio:</strong> A fund manager holds a ₹8 crore equity portfolio (β = 1.4). Nifty futures are at 22,500 (lot = 50). How many futures contracts should he <em>short</em> to fully hedge the portfolio (round to nearest integer)?
+          </p>
+          <div class="practice-block" data-answer="99" data-tol="2" data-section="A2.2" data-problem-id="a2-2">
+            <div class="input-row">
+              <span class="input-label">Futures contracts to short</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. 99" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              N* = β × (Portfolio Value / Futures Contract Value)<br/>
+              Futures contract value = 22,500 × 50 = ₹11,25,000<br/>
+              N* = 1.4 × (8,00,00,000 / 11,25,000)<br/>
+              = 1.4 × 71.11<br/>
+              = 99.56 ≈ <strong>100 contracts</strong> (accept 99–101)
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A2.3</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Currency futures hedge:</strong> An importer must pay EUR 2,50,000 in 2 months. EUR/INR futures price = 92.50 (contract size = EUR 1,000). He buys futures to lock in the rate. At settlement, EUR/INR = 93.80. What is his effective exchange rate paid per EUR (net of hedge gain)?
+          </p>
+          <div class="practice-block" data-answer="92.5" data-tol="0.05" data-section="A2.3" data-problem-id="a2-3">
+            <div class="input-row">
+              <span class="input-label">Effective rate (₹ per EUR)</span>
+              <input class="answer-input" type="number" step="0.01" placeholder="e.g. 92.50" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              Market rate paid = ₹93.80/EUR<br/>
+              Futures gain (long position, rate rose) = 93.80 − 92.50 = ₹1.30/EUR<br/>
+              Effective rate = 93.80 − 1.30 = <strong>₹92.50/EUR</strong><br/><br/>
+              This is exactly the locked-in futures rate — a perfect hedge.
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section 3: Options ─────────────────────────────────── -->
+    <div class="assign-section">
+      <div class="assign-section-head">
+        <span class="badge badge-c3">Options</span>
+        <h2>Strategies, Pricing &amp; Volatility</h2>
+        <span class="pts">3 problems · 15 pts</span>
+      </div>
+      <div class="assign-problems">
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A3.1</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Bull call spread P&amp;L:</strong> Ananya buys a Nifty 22,000 call for ₹280 and sells a 22,500 call for ₹120 (lot = 50 units). At expiry, Nifty settles at 22,350. Calculate her net P&amp;L for the entire position (1 lot each).
+          </p>
+          <div class="practice-block" data-answer="9500" data-tol="100" data-section="A3.1" data-problem-id="a3-1">
+            <div class="input-row">
+              <span class="input-label">Net P&amp;L (₹)</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. 3000" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              Net premium paid = 280 − 120 = ₹160 per unit<br/>
+              Long 22,000 call payoff at 22,350 = 22,350 − 22,000 = ₹350<br/>
+              Short 22,500 call payoff = 0 (expires OTM at 22,350)<br/>
+              Net payoff per unit = 350 − 0 = ₹350<br/>
+              Net P&amp;L per unit = 350 − 160 = ₹190<br/>
+              Total = 190 × 50 = <strong>+₹9,500</strong>
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A3.2</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Put-call parity check:</strong> A European call on Infosys (K = ₹1,800, T = 3 months, r = 6.5% p.a.) trades at ₹95. Infosys spot = ₹1,820. Using put-call parity, calculate the fair value of the corresponding European put (in ₹, round to 2 decimal places).
+          </p>
+          <div class="practice-block" data-answer="46.1" data-tol="1" data-section="A3.2" data-problem-id="a3-2">
+            <div class="input-row">
+              <span class="input-label">Put fair value (₹)</span>
+              <input class="answer-input" type="number" step="0.01" placeholder="e.g. 46.10" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              P = C + K·e^{−rT} − S<br/>
+              K·e^{−rT} = 1800 × e^{−0.065 × 0.25} = 1800 × e^{−0.01625}<br/>
+              = 1800 × 0.98389 = ₹1,771.00<br/>
+              P = 95 + 1,771.00 − 1,820 = <strong>₹46.00</strong> (accept 45–47)
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A3.3</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Risk-neutral pricing (binomial):</strong> A stock trades at ₹500. In one month it can rise to ₹560 or fall to ₹450. Risk-free rate = 6% p.a. (continuous). A call option has strike K = ₹510. Calculate the risk-neutral probability <em>p</em> of an up-move (round to 4 decimal places).
+          </p>
+          <div class="practice-block" data-answer="0.4725" data-tol="0.005" data-section="A3.3" data-problem-id="a3-3">
+            <div class="input-row">
+              <span class="input-label">Risk-neutral probability p</span>
+              <input class="answer-input" type="number" step="0.0001" placeholder="e.g. 0.4725" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              u = 560/500 = 1.12 &nbsp; d = 450/500 = 0.90<br/>
+              e^{rT} = e^{0.06/12} = e^{0.005} ≈ 1.005013<br/>
+              p = (e^{rT} − d) / (u − d)<br/>
+              = (1.005013 − 0.90) / (1.12 − 0.90)<br/>
+              = 0.105013 / 0.22<br/>
+              = <strong>0.4773</strong> (accept 0.472–0.482)
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section 4: Greeks ──────────────────────────────────── -->
+    <div class="assign-section">
+      <div class="assign-section-head">
+        <span class="badge badge-c4">Greeks</span>
+        <h2>Delta, Gamma &amp; Portfolio Hedging</h2>
+        <span class="pts">3 problems · 15 pts</span>
+      </div>
+      <div class="assign-problems">
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A4.1</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Taylor approximation:</strong> A Reliance put option has Δ = −0.38, Γ = 0.009. Reliance rises by ₹45. Estimate the change in the put's value using the second-order Taylor approximation (positive = gain, negative = loss).
+          </p>
+          <div class="practice-block" data-answer="-8.0" data-tol="0.5" data-section="A4.1" data-problem-id="a4-1">
+            <div class="input-row">
+              <span class="input-label">ΔP (₹)</span>
+              <input class="answer-input" type="number" step="0.1" placeholder="e.g. -8.8" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              ΔP ≈ Δ·ΔS + ½·Γ·(ΔS)²<br/>
+              Delta component: −0.38 × 45 = −₹17.10<br/>
+              Gamma component: ½ × 0.009 × 45² = 0.0045 × 2025 = +₹9.11<br/>
+              Net ΔP ≈ −17.10 + 9.11 ≈ <strong>−₹7.99 ≈ −₹8.0</strong><br/><br/>
+              The put loses value as stock rises (negative delta), but convexity (gamma) partially offsets the loss.
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A4.2</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Vega-theta trade-off:</strong> A long straddle on Nifty has aggregate Vega = ₹1,200 and Theta = −₹350/day. If IV rises from 16% to 19% over 4 trading days (no spot change), what is the net change in the straddle's value?
+          </p>
+          <div class="practice-block" data-answer="2200" data-tol="50" data-section="A4.2" data-problem-id="a4-2">
+            <div class="input-row">
+              <span class="input-label">Net ΔV (₹)</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. 2200" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              IV change = 19% − 16% = 3%<br/>
+              Vega gain = 1,200 × 3 = +₹3,600<br/>
+              Theta loss = 350 × 4 = −₹1,400<br/>
+              Net ΔV = 3,600 − 1,400 = <strong>+₹2,200</strong>
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+        <div class="assign-problem">
+          <div class="assign-meta">
+            <span class="assign-pid">A4.3</span>
+            <span class="assign-pts-chip">5 pts</span>
+          </div>
+          <p class="assign-problem-q">
+            <strong>Gamma-delta neutral:</strong> A portfolio has Δ = −500 and Γ = +1,200. A traded call option has Δ = 0.55 and Γ = 0.018 per share (each contract = 100 shares). First, how many contracts must you add to neutralise gamma? Enter the number of contracts to the nearest integer (positive = buy, negative = sell).
+          </p>
+          <div class="practice-block" data-answer="-667" data-tol="5" data-section="A4.3" data-problem-id="a4-3">
+            <div class="input-row">
+              <span class="input-label">Option contracts (+ buy / − sell)</span>
+              <input class="answer-input" type="number" step="1" placeholder="e.g. -667" />
+              <button class="check-btn">Check answer</button>
+            </div>
+            <div class="feedback-box" style="display:none"></div>
+            <div class="steps-panel" style="display:none">
+              <strong>Step-by-step:</strong><br/>
+              w* = −Γ<sub>portfolio</sub> / Γ<sub>option per contract</sub><br/>
+              Γ per contract = 0.018 × 100 shares = 1.8<br/>
+              w* = −1,200 / 1.8 = <strong>−666.7 ≈ −667 contracts</strong><br/><br/>
+              Sell 667 contracts of the call to neutralise gamma.<br/>
+              Then rebalance delta using the underlying/futures.
+            </div>
+            <button class="steps-btn" style="margin-top:10px">Show steps</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Submission note -->
+    <div class="callout callout-blue" style="margin-top:8px">
+      <strong>Participation tracking:</strong> Each problem attempt (correct or incorrect) is automatically logged to your participation record when you click "Check answer." Your instructor can see attempt history but not individual answers. Focus on understanding the steps, not just the final number.
+    </div>
+
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">Assignment Info</div>
+      <p style="font-size:.8125rem;color:var(--text-2);line-height:1.6">
+        <strong>12 problems</strong> across 4 sections.<br/>
+        Each problem = 5 participation points.<br/>
+        Attempts tracked automatically.<br/>
+        Use calculators freely — understanding matters.
+      </p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formulas</div>
+      <div class="formula-box" style="font-size:.74rem;line-height:1.8">
+        F* = S·e^{(r−q)T}<br/>
+        p = (e^{rT}−d)/(u−d)<br/>
+        ΔC ≈ Δ·ΔS + ½Γ·ΔS²<br/>
+        P = C + Ke^{−rT} − S<br/>
+        N* = β·(Q<sub>A</sub>/Q<sub>F</sub>)
+      </div>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#black-scholes"    class="sr-link">Black-Scholes →</a>
+      <a href="tools.html#greeks-dashboard" class="sr-link">Greeks Dashboard →</a>
+      <a href="tools.html#hedge-ratio"      class="sr-link">Hedge Ratio →</a>
+      <a href="tools.html#futures-pricer"   class="sr-link">Futures Pricer →</a>
+      <a href="tools.html#binomial"         class="sr-link">Binomial Pricer →</a>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('assignments.html');
+  DLab.renderSidebar(null);
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Assignments' }
+  ]);
+  DLab.initPractice('.practice-block');
+  DLab.track('ASSIGNMENT_OPEN', {});
+
+  // Progress bar: count how many practice blocks have been attempted (check-btn disabled = attempted)
+  function updateProgress() {
+    const total = document.querySelectorAll('.practice-block').length;
+    const attempted = document.querySelectorAll('.practice-block .check-btn:disabled').length;
+    const pct = total ? Math.round(attempted / total * 100) : 0;
+    document.getElementById('pb-fill').style.width = pct + '%';
+    document.getElementById('pb-count').textContent = attempted + ' / ' + total;
+  }
+
+  // Observe for disabled state changes on check buttons
+  document.querySelectorAll('.practice-block .check-btn').forEach(btn => {
+    const obs = new MutationObserver(updateProgress);
+    obs.observe(btn, { attributes: true, attributeFilter: ['disabled'] });
+  });
+  updateProgress();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Types — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c1">Derivative Basics</span>
+      <h1 class="page-title">Trader Types</h1>
+      <p class="page-subtitle">Hedgers, speculators, and arbitrageurs — three roles that make derivative markets function.</p>
+    </div>
+
+    <!-- Section: Overview -->
+    <section class="content-section">
+      <h2 class="cs-title">Why Do People Trade Derivatives?</h2>
+      <p>Not everyone enters a derivative market for the same reason. Hull identifies three broad categories of participants, each playing a distinct economic role. Understanding your <em>own</em> role in any trade — and your counterparty's likely role — is the first step toward sound risk management.</p>
+
+      <div class="callout callout-gold" style="margin-top:18px">
+        <strong>The Three Roles:</strong> Hedgers <em>transfer</em> risk they don't want. Speculators <em>absorb</em> that risk in exchange for potential profit. Arbitrageurs <em>police</em> prices to keep markets consistent. All three roles are necessary for well-functioning markets.
+      </div>
+    </section>
+
+    <!-- Section: Hedgers -->
+    <section class="content-section">
+      <h2 class="cs-title">Hedgers</h2>
+      <p>A <strong>hedger</strong> already has an underlying exposure — through their business operations, investments, or financial obligations. They use derivatives to <em>reduce or eliminate</em> that exposure. The derivative gain offsets the underlying loss (or vice versa).</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">
+        <div class="concept-card" style="border-left:4px solid var(--c1)">
+          <div class="cc-title">Short Hedge (Sell Futures)</div>
+          <div class="cc-body">Used when you <em>own</em> the underlying and fear a price drop.<br/><br/>
+          <strong>Example:</strong> An Indian wheat farmer fears falling wheat prices at harvest. He sells wheat futures to lock in the current price.</div>
+        </div>
+        <div class="concept-card" style="border-left:4px solid var(--c2)">
+          <div class="cc-title">Long Hedge (Buy Futures)</div>
+          <div class="cc-body">Used when you <em>need to buy</em> the underlying later and fear a price rise.<br/><br/>
+          <strong>Example:</strong> An Indian importer must pay USD 5 lakh in 3 months. She buys USD futures now to lock in the exchange rate.</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:16px 0 8px;color:var(--navy)">FX Hedging Example (Exporter)</h3>
+      <p>An IT company expects USD 10,00,000 in export proceeds in 3 months. Current USD/INR = 83.50. If the rupee <em>appreciates</em> to 82.00 by then, the company receives ₹82,00,000 instead of ₹83,50,000 — a loss of ₹15,00,000.</p>
+      <p style="margin-top:10px">By selling USD futures at 83.50, a rise in INR (fall in USD/INR) produces a gain on the futures that offsets the revenue loss. The company has locked in ₹83,50,000 regardless of spot rate movements.</p>
+      <div class="callout callout-blue" style="margin-top:14px">
+        Hedging does not always produce a better outcome than not hedging. If the USD strengthens to 85.00, the exporter <em>misses out</em> on extra rupees. Hedging is about <strong>certainty</strong>, not maximising return.
+      </div>
+    </section>
+
+    <!-- Section: Speculators -->
+    <section class="content-section">
+      <h2 class="cs-title">Speculators</h2>
+      <p>A <strong>speculator</strong> has <em>no underlying exposure</em>. They take a position in derivatives based on a <em>directional view</em> — a forecast about future price movements — and bear risk deliberately in exchange for the chance of profit.</p>
+
+      <p style="margin-top:12px">Derivatives are a natural tool for speculation because of <strong>leverage</strong>: a small margin deposit controls a large notional position.</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead>
+          <tr><th>Scenario</th><th>View</th><th>Action</th><th>Profit if correct</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nifty will rise</td><td>Bullish</td><td>Buy Nifty futures (long)</td><td>F_T − F_0 per unit</td></tr>
+          <tr><td>Nifty will fall</td><td>Bearish</td><td>Sell Nifty futures (short)</td><td>F_0 − F_T per unit</td></tr>
+          <tr><td>Volatility will spike</td><td>Volatile</td><td>Buy straddle (options)</td><td>Large price move either way</td></tr>
+          <tr><td>Volatility will stay low</td><td>Calm</td><td>Sell straddle (options)</td><td>Time decay if market stays flat</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue" style="margin-top:16px">
+        <strong>Leverage double-edge:</strong> A speculator buying ₹11 lakh of Nifty futures with ₹1.1 lakh margin (10:1 leverage) earns 10× the return if correct — but also loses 10× if wrong. A 5% adverse move wipes out 50% of the margin.
+      </div>
+    </section>
+
+    <!-- Section: Arbitrageurs -->
+    <section class="content-section">
+      <h2 class="cs-title">Arbitrageurs</h2>
+      <p>An <strong>arbitrageur</strong> exploits <em>pricing inconsistencies</em> between related markets. By simultaneously buying the cheap instrument and selling the expensive one, they lock in a <em>riskless profit</em> with no net investment.</p>
+
+      <div class="concept-card" style="margin-top:14px">
+        <div class="cc-title">Classic Futures Arbitrage</div>
+        <div class="cc-body">
+          If the observed futures price F exceeds the theoretical fair price F* = S·e^(r−q)T:<br/>
+          → Sell the overpriced futures + Buy the spot asset + Finance at r<br/>
+          → At expiry, deliver the asset against the short futures → Riskless profit = F − F*<br/><br/>
+          If F &lt; F*, reverse the trade: Buy futures + Short spot + Lend proceeds.
+        </div>
+      </div>
+
+      <p style="margin-top:14px">In practice, arbitrageurs trade so quickly and in such volume that mispricing windows close within milliseconds on electronic exchanges. Their activity is why the cost-of-carry model holds in liquid markets.</p>
+    </section>
+
+    <!-- Section: Comparison Table -->
+    <section class="content-section">
+      <h2 class="cs-title">Side-by-Side Comparison</h2>
+      <table class="example-table">
+        <thead>
+          <tr><th>Feature</th><th>Hedger</th><th>Speculator</th><th>Arbitrageur</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Underlying exposure</td><td>Yes</td><td>No</td><td>No</td></tr>
+          <tr><td>Goal</td><td>Reduce risk</td><td>Profit from price view</td><td>Risk-free profit</td></tr>
+          <tr><td>Risk attitude</td><td>Risk-averse</td><td>Risk-seeking</td><td>Risk-neutral</td></tr>
+          <tr><td>Time horizon</td><td>Matches exposure</td><td>Any (days to months)</td><td>Instantaneous</td></tr>
+          <tr><td>Typical size</td><td>Corporate/institutional</td><td>Retail to institutional</td><td>Institutional only</td></tr>
+          <tr><td>Market role</td><td>Transfers risk</td><td>Absorbs risk / provides liquidity</td><td>Enforces price consistency</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Section: In-Class Activity Recap -->
+    <section class="content-section">
+      <h2 class="cs-title">Activity Recap: Two Worlds, Three Hats</h2>
+      <p>In our in-class activity, you wore one of three "hats" — Hedger, Speculator, or Arbitrageur — and responded to the same price shock differently. Key insights from that exercise:</p>
+      <ul style="margin:12px 0 0 20px;line-height:2">
+        <li>The <strong>hedger</strong> celebrated a futures loss because their physical inventory gained.</li>
+        <li>The <strong>speculator</strong> who guessed wrong on direction simply lost money and closed out.</li>
+        <li>The <strong>arbitrageur</strong> moved swiftly when the two prices diverged, pocketing the spread.</li>
+      </ul>
+      <div class="callout callout-green" style="margin-top:14px">
+        The same price movement has <em>opposite implications</em> for different trader types. Before analysing any trade, always ask: "Which hat am I wearing?"
+      </div>
+    </section>
+
+    <!-- Practice Problem -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 1.2:</strong> An Indian software exporter expects USD 5,00,000 in 3 months. She sells USD futures at an equivalent rate of ₹83.50/USD. At maturity, the spot rate is ₹82.80/USD. What is her approximate gain per USD on the futures position (in ₹)?</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0"><em>Hint: She sold USD at 83.50 (futures) and the futures converge to 82.80 at expiry.</em></p>
+      <div class="practice-block" data-answer="0.70" data-tol="0.02" data-section="1.2" data-problem-id="p1-2">
+        <div class="input-row">
+          <span class="input-label">Gain per USD (₹)</span>
+          <input class="answer-input" type="number" step="0.01" placeholder="e.g. 0.70" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step solution:</strong><br/>
+          Gain per USD = F<sub>sold</sub> − F<sub>T</sub><br/>
+          = 83.50 − 82.80 = <strong>₹0.70 per USD</strong><br/><br/>
+          She sold USD futures at 83.50. When USD/INR fell to 82.80, buying back (closing) was cheaper → she kept the ₹0.70 spread.<br/>
+          Total gain = 0.70 × 5,00,000 = <strong>₹3,50,000</strong><br/>
+          This partially offsets the lower rupee value of her export receipts.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q2-1"
+           data-feedback-correct="Correct! The IT company has real USD exposure (export revenue) and uses derivatives to reduce it — a classic hedger."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. An IT company hedges its USD export revenue using currency futures. What type of trader is it?</p>
+        <ul class="quiz-opts">
+          <li>Speculator</li>
+          <li data-correct="true">Hedger</li>
+          <li>Arbitrageur</li>
+          <li>Market maker</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q2-2"
+           data-feedback-correct="Correct! Arbitrageurs profit by exploiting simultaneous price discrepancies, not by predicting direction."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. An arbitrageur profits by:</p>
+        <ul class="quiz-opts">
+          <li>Correctly predicting market direction</li>
+          <li>Reducing portfolio risk over time</li>
+          <li data-correct="true">Exploiting simultaneous price discrepancies across markets</li>
+          <li>Selling implied volatility</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q2-3"
+           data-feedback-correct="Correct! Speculators provide the liquidity that hedgers need to transfer their risk — without them, hedgers couldn't find willing counterparties."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. Why are speculators important for derivative markets?</p>
+        <ul class="quiz-opts">
+          <li>They eliminate all market risk</li>
+          <li data-correct="true">They provide liquidity and absorb the risk that hedgers want to shed</li>
+          <li>They guarantee fair asset pricing</li>
+          <li>They remove arbitrage opportunities</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 1: <em>Hedgers, Speculators and Arbitrageurs</em> — Section 1.3–1.5.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Insight</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Every derivatives position must have a counterparty. A hedger's short futures position is typically taken on by a speculator on the other side — this is risk transfer in action.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#hedge-ratio"    class="sr-link">Hedge Ratio Calculator →</a>
+      <a href="tools.html#futures-pricer" class="sr-link">Futures Pricer →</a>
+    </div>
+
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">In your project, identify which "hat" the company you chose is wearing. Is it a hedger reducing commodity or FX exposure? That framing drives your entire Part 1 analysis.</p>
+    </div>
+
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('1.2');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Derivative Basics', href: 'course.html' },
+    { label: 'Trader Types' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '1.2' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '1.2' });
+});
+</script>
+</body>
+</html>

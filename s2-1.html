@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Futures Mechanics — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c2">Futures</span>
+      <h1 class="page-title">Futures Mechanics</h1>
+      <p class="page-subtitle">How futures contracts work: forwards vs futures, open interest, daily MTM settlement, and the margin system.</p>
+    </div>
+
+    <!-- Forwards vs Futures -->
+    <section class="content-section">
+      <h2 class="cs-title">Forwards vs Futures</h2>
+      <p>A <strong>forward contract</strong> is a private agreement to buy or sell an asset at a fixed price on a future date. A <strong>futures contract</strong> achieves the same economic goal but is traded on an organised exchange with several key structural differences.</p>
+
+      <table class="example-table" style="margin-top:16px">
+        <thead>
+          <tr><th>Feature</th><th>Forward</th><th>Futures</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Trading venue</td><td>OTC (bilateral)</td><td>Exchange (NSE, CME)</td></tr>
+          <tr><td>Contract design</td><td>Fully customised</td><td>Standardised (lot, expiry, underlying)</td></tr>
+          <tr><td>Settlement</td><td>Single settlement at maturity</td><td>Daily MTM + final settlement</td></tr>
+          <tr><td>Counterparty risk</td><td>High — bilateral credit exposure</td><td>Eliminated by CCP (NSCCL)</td></tr>
+          <tr><td>Margin</td><td>None (or negotiated)</td><td>Initial + maintenance margin required</td></tr>
+          <tr><td>Liquidity</td><td>Low — can't easily exit</td><td>High — can close with offsetting trade</td></tr>
+          <tr><td>Price transparency</td><td>Private</td><td>Public, real-time on exchange</td></tr>
+          <tr><td>Typical users</td><td>Corporates hedging FX/commodity</td><td>All participants — corporate, retail, institution</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue" style="margin-top:18px">
+        <strong>In India:</strong> USDINR forwards are the most common OTC derivative — banks offer them to importers/exporters. USDINR futures on NSE are the exchange-traded equivalent with smaller lot sizes (USD 1,000) accessible to retail participants.
+      </div>
+    </section>
+
+    <!-- Open Interest -->
+    <section class="content-section">
+      <h2 class="cs-title">Open Interest (OI)</h2>
+      <p><strong>Open Interest</strong> is the total number of outstanding futures contracts that have not been settled or closed. It measures the <em>depth of participation</em> in the market — how many active positions exist.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+        <div class="concept-card">
+          <div class="cc-title">OI Increases when…</div>
+          <div class="cc-body">A new buyer (long) AND a new seller (short) both open fresh positions. New money enters the market.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">OI Decreases when…</div>
+          <div class="cc-body">An existing long AND an existing short both close their positions. Money exits the market.</div>
+        </div>
+      </div>
+
+      <table class="example-table">
+        <thead>
+          <tr><th>Trade</th><th>Buyer</th><th>Seller</th><th>OI Change</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>New long vs new short</td><td>Opens new</td><td>Opens new</td><td>+1</td></tr>
+          <tr><td>New long vs old long closing</td><td>Opens new</td><td>Closes existing</td><td>No change</td></tr>
+          <tr><td>Old short closing vs old long closing</td><td>Closes existing</td><td>Closes existing</td><td>−1</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-gold" style="margin-top:16px">
+        <strong>OI ≠ Volume.</strong> Volume counts every contract traded today (buy + sell). OI counts only contracts still open at end of day. High volume + rising OI = strong new conviction. High volume + falling OI = active unwinding.
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 8px;color:var(--navy)">OI as a Trend Confirmation Tool</h3>
+      <table class="example-table">
+        <thead><tr><th>Price</th><th>OI</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr><td>Rising ↑</td><td>Rising ↑</td><td>Bullish — new longs entering, trend has conviction</td></tr>
+          <tr><td>Rising ↑</td><td>Falling ↓</td><td>Caution — short covering rally, may not sustain</td></tr>
+          <tr><td>Falling ↓</td><td>Rising ↑</td><td>Bearish — new shorts entering, downtrend has conviction</td></tr>
+          <tr><td>Falling ↓</td><td>Falling ↓</td><td>Longs liquidating, trend may be ending</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Margin System -->
+    <section class="content-section">
+      <h2 class="cs-title">The Margin System</h2>
+      <p>To ensure traders can meet their obligations, exchanges require <em>margins</em> — deposits that act as performance bonds.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0">
+        <div class="concept-card">
+          <div class="cc-title">Initial Margin</div>
+          <div class="cc-body">Deposited when opening a position. Set as a % of contract value (typically 5–15% on NSE). Covers potential 1-day loss with high confidence (99% VaR).</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Maintenance Margin</div>
+          <div class="cc-body">Minimum balance that must be maintained. If the margin account falls below this level, a margin call is triggered. Typically 75% of initial margin.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Variation Margin</div>
+          <div class="cc-body">The top-up payment required when a margin call is triggered. Must bring account back to the initial margin level (not just maintenance).</div>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        Daily MTM P&amp;L = (F<sub>t</sub> − F<sub>t−1</sub>) × lot size × number of contracts<br/><br/>
+        Margin call triggered when: Margin balance &lt; Maintenance margin<br/>
+        Variation margin = Initial margin − Current balance
+      </div>
+    </section>
+
+    <!-- MTM Worked Example -->
+    <section class="content-section">
+      <h2 class="cs-title">Worked Example: Daily MTM Settlement</h2>
+      <p><strong>Setup:</strong> Vikram buys 1 Nifty50 futures contract at <strong>₹22,000</strong>. Lot size = 50. Initial margin = ₹1,20,000. Maintenance margin = ₹90,000.</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead>
+          <tr><th>Day</th><th>Closing Price</th><th>Daily MTM</th><th>Cumulative P&amp;L</th><th>Margin Balance</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0 (entry)</td><td>₹22,000</td><td>—</td><td>₹0</td>
+            <td>₹1,20,000</td><td>Position opened</td>
+          </tr>
+          <tr>
+            <td>1</td><td>₹21,800</td>
+            <td class="text-red">−₹10,000</td><td class="text-red">−₹10,000</td>
+            <td>₹1,10,000</td><td>—</td>
+          </tr>
+          <tr>
+            <td>2</td><td>₹21,600</td>
+            <td class="text-red">−₹10,000</td><td class="text-red">−₹20,000</td>
+            <td>₹1,00,000</td><td>—</td>
+          </tr>
+          <tr>
+            <td>3</td><td>₹21,400</td>
+            <td class="text-red">−₹10,000</td><td class="text-red">−₹30,000</td>
+            <td style="color:#c0392b;font-weight:600">₹90,000</td>
+            <td style="color:#c0392b;font-weight:600">Margin call! Top up ₹30,000</td>
+          </tr>
+          <tr>
+            <td>4 (after top-up)</td><td>₹21,700</td>
+            <td class="text-green">+₹15,000</td><td class="text-red">−₹15,000</td>
+            <td>₹1,35,000</td><td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:12px;font-size:.875rem;color:var(--text-2)">Day 1 MTM: (21,800 − 22,000) × 50 = −200 × 50 = −₹10,000. If Vikram cannot meet the margin call on Day 3, the broker will force-close his position.</p>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>Key insight:</strong> Daily MTM prevents large credit exposures from accumulating. Each day's loss is settled <em>that night</em>. The maximum credit risk at any point is roughly one day's price move — not the cumulative loss since inception.
+      </div>
+    </section>
+
+    <!-- Practice Problem -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 2.1:</strong> You buy 2 Nifty50 futures contracts at <strong>₹22,500</strong> (lot size = 50). The next day the contract closes at <strong>₹22,350</strong>. What is your total MTM loss (in ₹)?</p>
+      <div class="practice-block" data-answer="15000" data-tol="10" data-section="2.1" data-problem-id="p2-1">
+        <div class="input-row">
+          <span class="input-label">MTM Loss (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 15000" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Price change per unit = 22,350 − 22,500 = −150<br/>
+          MTM = −150 × 50 (lot size) × 2 (contracts)<br/>
+          = −150 × 100 = <strong>−₹15,000</strong><br/><br/>
+          Enter 15000 (the magnitude of the loss). This amount is debited from your margin account that evening.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q3-1"
+           data-feedback-correct="Correct! When both buyer and seller are closing existing positions, OI falls by 1."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. What happens to Open Interest when both the buyer and seller of a futures contract are closing their existing positions?</p>
+        <ul class="quiz-opts">
+          <li>OI increases by 1</li>
+          <li>OI stays the same</li>
+          <li data-correct="true">OI decreases by 1</li>
+          <li>OI doubles</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q3-2"
+           data-feedback-correct="Correct! A margin call is triggered when the margin balance falls below the maintenance margin threshold."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. A margin call is triggered when:</p>
+        <ul class="quiz-opts">
+          <li>Open interest falls sharply</li>
+          <li>The futures price rises sharply</li>
+          <li data-correct="true">The margin balance falls below the maintenance margin</li>
+          <li>The contract approaches its expiry date</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q3-3"
+           data-feedback-correct="Correct! Daily MTM settles gains/losses every evening so that only one day's exposure accumulates — preventing large defaults."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. Daily MTM settlement in futures markets primarily serves to:</p>
+        <ul class="quiz-opts">
+          <li>Eliminate the need for any margin deposit</li>
+          <li>Let gains accumulate tax-free until expiry</li>
+          <li data-correct="true">Prevent large credit risk from building up over time</li>
+          <li>Only apply to currency futures, not equity futures</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formula</div>
+      <div class="formula-box" style="font-size:.8125rem">
+        MTM<sub>daily</sub> = (F<sub>t</sub> − F<sub>t−1</sub>) × lot × N<br/><br/>
+        Margin call if:<br/>
+        Balance &lt; Maintenance margin
+      </div>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 2: <em>Mechanics of Futures Markets</em> — Margins, marking to market, OI, and settlement.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🎮 Simulation</div>
+      <a href="simulation.html" class="sr-link">Futures Hedging Sim →</a>
+      <p style="font-size:.8rem;color:var(--text-3);margin-top:6px">Experience live MTM settlement in the simulation.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#futures-pricer"  class="sr-link">Futures Pricer →</a>
+      <a href="tools.html#basis-tracker"   class="sr-link">Basis Tracker →</a>
+    </div>
+
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)"><strong>Part 1, Step 2:</strong> Build a daily MTM table for your chosen futures contract using downloaded NSE data. Compute daily gains/losses and a running margin account balance.</p>
+    </div>
+
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('2.1');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Futures', href: 'course.html' },
+    { label: 'Futures Mechanics' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '2.1' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '2.1' });
+});
+</script>
+</body>
+</html>

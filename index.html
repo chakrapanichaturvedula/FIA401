@@ -1,198 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DerivativesLab — Sign In · FIA 401</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#05080f;--surf:#0a0f1a;--surf2:#111827;--accent:#e8c547;--accent2:#4ecdc4;--text:#eef2f7;--text2:#7f8fa6;--text3:#3d4f6b;--border:rgba(232,197,71,0.15);--border2:rgba(255,255,255,0.06);--red:#ff6b6b;--green:#00e676;}
-*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;}
-body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-body::before{content:'';position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(232,197,71,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(232,197,71,0.025) 1px,transparent 1px);background-size:52px 52px;animation:gs 18s linear infinite;pointer-events:none;}
-@keyframes gs{to{background-position:52px 52px;}}
-body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 55% 50% at 15% 50%,rgba(232,197,71,0.07) 0%,transparent 60%),radial-gradient(ellipse 45% 55% at 85% 30%,rgba(78,205,196,0.04) 0%,transparent 60%);}
-.wrap{position:relative;z-index:1;display:grid;grid-template-columns:1fr 400px;min-height:100vh;width:100%;}
-.left{display:flex;flex-direction:column;justify-content:center;padding:60px 72px;border-right:1px solid var(--border2);position:relative;overflow:hidden;}
-.left::before{content:'FIA\A401';white-space:pre;position:absolute;font-size:18vw;font-weight:800;color:rgba(232,197,71,0.022);right:-4vw;bottom:-6vw;line-height:0.9;pointer-events:none;letter-spacing:-0.04em;}
-.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:12px;}
-.eyebrow::before{content:'';width:28px;height:1px;background:var(--accent);}
-.left h1{font-size:clamp(3rem,5.5vw,5rem);font-weight:800;line-height:0.95;letter-spacing:-0.03em;margin-bottom:12px;}
-.left h1 em{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;color:var(--accent);}
-.ccode{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:44px;}
-.feats{display:flex;flex-direction:column;gap:14px;margin-bottom:44px;}
-.feat{display:flex;align-items:flex-start;gap:12px;}
-.fd{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:8px;box-shadow:0 0 7px var(--accent);}
-.ft{font-size:0.87rem;color:var(--text2);line-height:1.55;}
-.ft strong{color:var(--text);}
-.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(232,197,71,0.07);border:1px solid var(--border);border-radius:100px;padding:7px 15px;font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--accent);letter-spacing:0.07em;width:fit-content;}
-.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:pl 2s infinite;}
-@keyframes pl{0%,100%{opacity:1}50%{opacity:0.25}}
-.right{display:flex;flex-direction:column;justify-content:center;padding:56px 44px;background:rgba(10,15,26,0.55);backdrop-filter:blur(24px);}
-.ftitle{font-size:1.45rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:5px;}
-.fsub{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--accent2);letter-spacing:0.1em;margin-bottom:32px;}
-.field{margin-bottom:18px;}
-.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text);letter-spacing:0.13em;text-transform:uppercase;margin-bottom:7px;font-weight:600;}
-.field input{width:100%;background:var(--surf2);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:12px 15px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.85rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;letter-spacing:0.04em;}
-.field input:focus{border-color:rgba(232,197,71,0.4);box-shadow:0 0 0 3px rgba(232,197,71,0.07);}
-.field input::placeholder{color:#5a6a80;}
-.field input.err{border-color:rgba(255,107,107,0.5);}
-.hint{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:#8a9bb5;margin-top:5px;}
-.btn-login{width:100%;padding:13px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-login:hover{background:#f0d060;transform:translateY(-1px);box-shadow:0 6px 22px rgba(232,197,71,0.22);}
-.btn-login:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
-.spinner{width:15px;height:15px;border:2px solid rgba(0,0,0,0.25);border-top-color:#000;border-radius:50%;animation:sp 0.6s linear infinite;display:none;}
-@keyframes sp{to{transform:rotate(360deg)}}
-.errmsg{display:none;background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.22);border-radius:5px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--red);margin-top:12px;line-height:1.55;}
-.errmsg.show{display:block;}
-.okmsg{display:none;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.22);border-radius:5px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--green);margin-top:12px;}
-.okmsg.show{display:block;}
-.divider{display:flex;align-items:center;gap:10px;margin:24px 0;color:#8a9bb5;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
-.infobox{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:rgba(78,205,196,0.08);border:1px solid rgba(78,205,196,0.25);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:#b0c4d8;line-height:1.65;}
-.infobox::before{content:'ℹ';color:var(--accent2);flex-shrink:0;margin-top:1px;font-size:0.8rem;}
-.ffooter{margin-top:28px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:#7a8fa8;text-align:center;line-height:1.85;}
-@media(max-width:820px){.wrap{grid-template-columns:1fr;}.left{display:none;}.right{padding:44px 28px;min-height:100vh;}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DerivativesLab — FIA 401</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; }
 
-<script>
+    .login-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
 
-</script>
+    .login-card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 32px rgba(21,39,68,.10);
+      padding: 48px 40px 40px;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+    }
+    .login-card::before {
+      content: '';
+      display: block;
+      width: 48px; height: 4px;
+      background: linear-gradient(90deg, var(--c1), var(--c3));
+      border-radius: 2px;
+      margin: 0 auto 28px;
+    }
+
+    .login-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .login-brand-icon {
+      width: 44px; height: 44px;
+      background: var(--navy);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.3rem;
+    }
+    .login-brand-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+    }
+    .login-subtitle {
+      font-size: .875rem;
+      color: var(--text-3);
+      margin-bottom: 36px;
+    }
+
+    .login-field { text-align: left; margin-bottom: 18px; }
+    .login-field label {
+      display: block;
+      font-size: .8125rem;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 6px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .login-field input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: .9375rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      letter-spacing: .05em;
+      box-sizing: border-box;
+    }
+    .login-field input:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(21,39,68,.10);
+    }
+    .login-field input::placeholder { color: var(--text-3); letter-spacing: 0; font-family: var(--font-sans); }
+
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background .2s, transform .1s;
+    }
+    .login-btn:hover  { background: var(--navy-d); }
+    .login-btn:active { transform: scale(.98); }
+    .login-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .login-error {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: #FEF0F0;
+      border: 1px solid #FECACA;
+      border-radius: 6px;
+      color: #991B1B;
+      font-size: .875rem;
+      display: none;
+    }
+    .login-success {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 6px;
+      color: #166534;
+      font-size: .875rem;
+      display: none;
+    }
+
+    .login-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0 20px; }
+    .instructor-link { font-size: .8125rem; color: var(--text-3); }
+    .instructor-link a { color: var(--navy); font-weight: 500; text-decoration: none; }
+    .instructor-link a:hover { text-decoration: underline; }
+
+    .login-footer {
+      padding: 20px;
+      text-align: center;
+      font-size: .8125rem;
+      color: var(--text-3);
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="left">
-    <div class="eyebrow">FIA 401 · IMT Hyderabad · AY 2025–26</div>
-    <h1>Derivatives<br><em>Lab</em></h1>
-    <div class="ccode">FINANCIAL DERIVATIVES · PGDM / PGDM(FIN) / PGDM(MKT)</div>
-    <div class="feats">
-      <div class="feat"><div class="fd"></div><div class="ft"><strong>7 interactive modules</strong> — futures, options, pricing models, Greeks &amp; Monte Carlo</div></div>
-      <div class="feat"><div class="fd"></div><div class="ft"><strong>Live NSE data</strong> — Reliance Industries as the running example throughout</div></div>
-      <div class="feat"><div class="fd"></div><div class="ft"><strong>AI-graded quizzes</strong> with instant feedback mapped to CO1, CO3, CO4</div></div>
-      <div class="feat"><div class="fd"></div><div class="ft"><strong>Your progress is tracked</strong> — module time, quiz scores and completions sent to your instructor</div></div>
-    </div>
-    <div class="pill">7 / 7 Modules Live · Hull 9th Ed.</div>
-  </div>
 
-  <div class="right">
-    <div class="ftitle">Student Sign In</div>
-    <div class="fsub">FIA 401 · DerivativesLab · IMT Hyderabad</div>
+<div class="login-wrap">
+  <div class="login-card">
 
-    <div class="field">
-      <label>Enrollment ID</label>
-      <input type="text" id="enrollId" placeholder="e.g. 26A1HP013" autocomplete="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()">
-      <div class="hint">Your IMT enrollment / roll number</div>
+    <div class="login-brand">
+      <div class="login-brand-icon">◈</div>
+      <span class="login-brand-name">DerivativesLab</span>
     </div>
-    <div class="field">
-      <label>Class Key</label>
-      <input type="password" id="classKey" placeholder="Provided by Dr. Chaturvedula">
-      <div class="hint">Shared by your instructor in class</div>
+    <p class="login-subtitle">FIA 401 Financial Derivatives · IMT Hyderabad</p>
+
+    <div class="login-field">
+      <label for="classKey">Class Key</label>
+      <input type="text" id="classKey" placeholder="e.g. IMTFD26"
+             autocomplete="off" spellcheck="false" />
     </div>
 
-    <button class="btn-login" id="loginBtn" onclick="doLogin()">
-      <span id="btnText">Enter DerivativesLab →</span>
-      <div class="spinner" id="spinner"></div>
+    <div class="login-field">
+      <label for="studentId">Student ID</label>
+      <input type="text" id="studentId" placeholder="e.g. 26A1HP013"
+             autocomplete="off" spellcheck="false" />
+    </div>
+
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">
+      Enter DerivativesLab
     </button>
-    <div class="errmsg" id="errMsg"></div>
-    <div class="okmsg"  id="okMsg"></div>
 
-    <div class="divider">ABOUT YOUR ACCESS</div>
-    <div class="infobox">Your enrollment ID and class key verify your identity. Quiz scores, module visits and time spent are automatically recorded in your instructor's gradebook.</div>
+    <div class="login-error"   id="loginError"></div>
+    <div class="login-success" id="loginSuccess">✓ Welcome! Loading your dashboard…</div>
 
-    <div class="ffooter">
-      DerivativesLab · FIA 401 · IMT Hyderabad<br>
-      Instructor: Dr. Chakrapani Chaturvedula<br>
-      cchakrapani@imthyderabad.edu.in
-    </div>
+    <hr class="login-divider" />
+    <p class="instructor-link">Instructor? <a href="dashboard.html">Go to Dashboard →</a></p>
+
   </div>
 </div>
 
+<footer class="login-footer">
+  © 2026 Dr. Chakrapani Chaturvedula · IMT Hyderabad
+</footer>
+
+<script src="app.js"></script>
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
-const CLASS_KEY      = 'IMTFD26';  // plain comparison — safe, file is on HTTPS
-const VALID_IDS      = ['26A1HP013','26A1HP085','26A1HP153','26A3HP640','26A1HP215'];
+const VALID_IDS_LOCAL = ['26A1HP013','26A1HP085','26A1HP153','26A3HP640','26A1HP215'];
+const CLASS_KEY_LOCAL = 'IMTFD26';
 
-// JSONP helper — bypasses CORS for Google Apps Script
-function callAppsScript(params){
-  return new Promise((resolve, reject)=>{
-    const cbName = 'cb_' + Math.random().toString(36).slice(2);
-    const timeout = setTimeout(()=>{ delete window[cbName]; reject(new Error('timeout')); }, 10000);
-    window[cbName] = function(data){
-      clearTimeout(timeout);
-      delete window[cbName];
-      document.getElementById('_jsonp_script') && document.getElementById('_jsonp_script').remove();
-      resolve(data);
-    };
-    const qs = Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
-    const s = document.createElement('script');
-    s.id = '_jsonp_script';
-    s.src = APPS_SCRIPT_URL + '?' + qs + '&callback=' + cbName;
-    s.onerror = function(){ clearTimeout(timeout); delete window[cbName]; reject(new Error('script error')); };
-    document.head.appendChild(s);
+window.addEventListener('DOMContentLoaded', () => {
+  /* Skip login if session already exists */
+  if (DLab.getSession()) { window.location.href = 'course.html'; return; }
+  /* Enter key on inputs */
+  ['classKey','studentId'].forEach(id =>
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    })
+  );
+});
+
+function doLogin() {
+  const btn   = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  const okEl  = document.getElementById('loginSuccess');
+  const ck    = document.getElementById('classKey').value.trim().toUpperCase();
+  const sid   = document.getElementById('studentId').value.trim().toUpperCase();
+
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+
+  if (!ck || !sid) { showError('Please enter both Class Key and Student ID.'); return; }
+  if (ck !== CLASS_KEY_LOCAL) { showError('Invalid Class Key. Please check with your instructor.'); return; }
+
+  // Check uploaded ID list first (set by instructor via dashboard), fall back to built-in list
+  const _storedIDs = localStorage.getItem('dlabValidIDs');
+  const _validIDs  = _storedIDs ? JSON.parse(_storedIDs) : VALID_IDS_LOCAL;
+  if (!_validIDs.includes(sid)) { showError('Student ID not recognised. Contact your instructor if you think this is an error.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  DLab.saveSession(sid);
+
+  /* Log login to gradebook (fire-and-forget JSONP) */
+  DLab._callAppsScript({
+    action: 'LOGIN', studentId: sid, classKey: ck,
+    timestamp: new Date().toISOString(), callback: 'dlabLoginCb'
   });
+  window.dlabLoginCb = () => {};
+
+  okEl.style.display = 'block';
+  setTimeout(() => { window.location.href = 'course.html'; }, 1400);
 }
 
-function doLogin(){
-  const enrollId = document.getElementById('enrollId').value.trim().toUpperCase();
-  const classKey = document.getElementById('classKey').value.trim();
-  clearMsgs();
-
-  // Validate fields
-  if(!enrollId){ markErr('enrollId','Please enter your Enrollment ID.'); return; }
-  if(!classKey){  markErr('classKey','Please enter the Class Key.');      return; }
-
-  // Check class key
-  if(classKey !== CLASS_KEY){
-    showErr('Incorrect Class Key. Please check with your instructor.');
-    return;
-  }
-
-  // Check enrollment ID locally first (instant feedback)
-  if(!VALID_IDS.includes(enrollId)){
-    showErr('Enrollment ID not recognised. Please contact Dr. Chaturvedula.');
-    return;
-  }
-
-  // All checks passed — save session and redirect
-  setLoading(true);
-  saveSession(enrollId, enrollId, false);
-  showOk('Welcome, ' + enrollId + '! Loading your modules...');
-
-  // Also log to Google Sheet in background (non-blocking)
-  try {
-    callAppsScript({action:'login', id: enrollId}).catch(function(){});
-  } catch(e) {}
-
-  setTimeout(function(){ window.location.href = 'course.html'; }, 1400);
+function showError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
 }
-
-function saveSession(id,name,offline){
-  localStorage.setItem('dlabSession',JSON.stringify({
-    enrollId:id,name,loginTime:new Date().toISOString(),
-    expires:Date.now()+24*60*60*1000,offline
-  }));
-}
-function setLoading(on){
-  document.getElementById('btnText').style.display=on?'none':'inline';
-  document.getElementById('spinner').style.display=on?'block':'none';
-  document.getElementById('loginBtn').disabled=on;
-}
-function clearMsgs(){
-  document.getElementById('errMsg').classList.remove('show');
-  document.getElementById('okMsg').classList.remove('show');
-  ['enrollId','classKey'].forEach(id=>document.getElementById(id).classList.remove('err'));
-}
-function markErr(fid,msg){document.getElementById(fid).classList.add('err');showErr(msg);}
-function showErr(msg){const e=document.getElementById('errMsg');e.textContent=msg;e.classList.add('show');}
-function showOk(msg){const e=document.getElementById('okMsg');e.textContent=msg;e.classList.add('show');}
-
-document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-
-// Auto-redirect if already logged in
-try{
-  const s=JSON.parse(localStorage.getItem('dlabSession')||'null');
-  if(s&&s.expires>Date.now())window.location.href='course.html';
-}catch(e){localStorage.removeItem('dlabSession');}
 </script>
 </body>
 </html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theta, Vega & Rho — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c4">Greeks</span>
+      <h1 class="page-title">Theta, Vega &amp; Rho</h1>
+      <p class="page-subtitle">Time decay, volatility sensitivity, and interest rate sensitivity — the remaining dimensions of option risk.</p>
+    </div>
+
+    <!-- Theta -->
+    <section class="content-section">
+      <h2 class="cs-title">Theta (Θ): Time Decay</h2>
+      <p><strong>Theta</strong> measures how much the option's value decreases as one day passes, all else held equal. It represents the "rent" paid for holding the option — the cost of time.</p>
+
+      <div class="formula-box">
+        Θ = ∂C / ∂t &nbsp;&nbsp; (usually reported per day or per year)<br/><br/>
+        BSM (Call, with dividend yield q):<br/>
+        Θ<sub>call</sub> = −S·σ·e<sup>−qT</sup>·N'(d₁)/(2√T) − r·K·e<sup>−rT</sup>·N(d₂) + q·S·e<sup>−qT</sup>·N(d₁)<br/><br/>
+        Typically reported as: ΔC per day = Θ / 365
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0">
+        <div class="concept-card" style="border-left:4px solid #c0392b">
+          <div class="cc-title" style="color:#c0392b">Long Options: Negative Theta</div>
+          <div class="cc-body">Option buyers lose time value every day. An ATM Nifty call might lose ₹8–12 per day from theta decay alone, even if Nifty doesn't move.</div>
+        </div>
+        <div class="concept-card" style="border-left:4px solid var(--c4)">
+          <div class="cc-title" style="color:var(--c4)">Short Options: Positive Theta</div>
+          <div class="cc-body">Option sellers earn theta daily — time value flows to them as the option's time premium erodes. This is the "income" from selling straddles or covered calls.</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:16px 0 8px;color:var(--navy)">Theta Acceleration Near Expiry</h3>
+      <p>Theta is not constant — it accelerates as expiry approaches, especially for ATM options. Deep OTM options lose most of their value in the final weeks as the last shred of time value evaporates.</p>
+
+      <table class="example-table">
+        <thead><tr><th>Days to Expiry</th><th>ATM Call Theta (illustrative)</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td>90 days</td><td>−₹4/day</td><td>Slow decay</td></tr>
+          <tr><td>30 days</td><td>−₹8/day</td><td>Picking up</td></tr>
+          <tr><td>7 days</td><td>−₹18/day</td><td>Accelerating sharply</td></tr>
+          <tr><td>1 day</td><td>−₹45/day</td><td>Last day — almost entirely time value remains</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-gold" style="margin-top:14px">
+        <strong>Gamma-Theta duality:</strong> High gamma = high theta cost. ATM options near expiry have maximum gamma (convexity) but also maximum theta decay. Option sellers exploit theta but are exposed to gamma risk. You cannot have gamma without theta.
+      </div>
+    </section>
+
+    <!-- Vega -->
+    <section class="content-section">
+      <h2 class="cs-title">Vega (ν): Volatility Sensitivity</h2>
+      <p><strong>Vega</strong> measures how much an option's price changes for a 1% change in implied volatility. Vega is not a Greek letter — it's a made-up name, but it is universally used in the industry.</p>
+
+      <div class="formula-box">
+        ν = ∂C / ∂σ = ∂P / ∂σ<br/><br/>
+        BSM: ν = S · e<sup>−qT</sup> · N'(d₁) · √T<br/><br/>
+        Vega is identical for calls and puts (same K, T, S)<br/>
+        Reported as: ₹ change per 1% rise in IV
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+        <div class="concept-card">
+          <div class="cc-title">Long Vega (Option Buyers)</div>
+          <div class="cc-body">All long option positions have positive vega. When IV rises, options become more valuable. Straddle buyers are "long vega" — they profit when fear spikes.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Short Vega (Option Sellers)</div>
+          <div class="cc-body">All short option positions have negative vega. When IV spikes (market panic), short option positions suffer significant mark-to-market losses even if the stock barely moves.</div>
+        </div>
+      </div>
+
+      <table class="example-table">
+        <thead><tr><th>Scenario</th><th>Vega</th><th>Typical magnitude</th></tr></thead>
+        <tbody>
+          <tr><td>ATM option, long expiry</td><td>Maximum</td><td>Large (e.g. ₹80 per 1% IV change for 3-month ATM)</td></tr>
+          <tr><td>OTM option</td><td>Moderate</td><td>Lower than ATM</td></tr>
+          <tr><td>Near expiry (any strike)</td><td>Near zero</td><td>IV changes have little effect — time almost gone</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>IV regime matters:</strong> Buying options when IV is historically low and selling when IV is high is a popular volatility trading strategy. The India VIX hovering at 12 vs spiking to 30 makes a huge difference to vega P&amp;L for option portfolios.
+      </div>
+    </section>
+
+    <!-- Rho -->
+    <section class="content-section">
+      <h2 class="cs-title">Rho (ρ): Interest Rate Sensitivity</h2>
+      <p><strong>Rho</strong> measures an option's sensitivity to changes in the risk-free interest rate. It is typically the least important Greek for short-term equity options, but matters more for long-dated options and interest rate derivatives.</p>
+
+      <div class="formula-box">
+        ρ<sub>call</sub> = K · T · e<sup>−rT</sup> · N(d₂) &nbsp;&gt; 0 &nbsp;&nbsp; (Calls benefit from rate rises)<br/>
+        ρ<sub>put</sub>  = −K · T · e<sup>−rT</sup> · N(−d₂) &lt; 0 &nbsp;&nbsp; (Puts suffer from rate rises)
+      </div>
+
+      <p style="margin-top:14px"><strong>Intuition:</strong> Higher rates make it cheaper to synthetically own the underlying (less cost of carry), increasing call value. They also reduce the PV of the strike payment, which hurts puts. For long-dated options (LEAPS), rho can be substantial.</p>
+    </section>
+
+    <!-- Greeks Summary Table -->
+    <section class="content-section">
+      <h2 class="cs-title">All Greeks at a Glance</h2>
+      <table class="example-table">
+        <thead>
+          <tr><th>Greek</th><th>Measures sensitivity to…</th><th>Long Call</th><th>Long Put</th><th>Largest when…</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Delta (Δ)</td><td>Spot price change</td><td>+0 to +1</td><td>−1 to 0</td><td>Deep ITM</td></tr>
+          <tr><td>Gamma (Γ)</td><td>Rate of delta change</td><td>Positive</td><td>Positive</td><td>ATM, near expiry</td></tr>
+          <tr><td>Theta (Θ)</td><td>Time passing (daily)</td><td>Negative</td><td>Negative</td><td>ATM, near expiry</td></tr>
+          <tr><td>Vega (ν)</td><td>Implied volatility</td><td>Positive</td><td>Positive</td><td>ATM, long expiry</td></tr>
+          <tr><td>Rho (ρ)</td><td>Risk-free rate change</td><td>Positive</td><td>Negative</td><td>Long expiry, deep ITM</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 4.2:</strong> A call option has Vega = <strong>₹85</strong> (per 1% change in IV) and Theta = <strong>−₹12/day</strong>. If implied volatility rises by <strong>2%</strong> and 3 days pass with no change in spot, what is the net estimated change in the call's value?</p>
+      <div class="practice-block" data-answer="134" data-tol="2" data-section="4.2" data-problem-id="p4-2">
+        <div class="input-row">
+          <span class="input-label">Net ΔC (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 134" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Vega gain = ν × Δσ = 85 × 2 = +₹170<br/>
+          Theta loss = Θ × days = −12 × 3 = −₹36<br/>
+          Net ΔC = 170 − 36 = <strong>+₹134</strong><br/><br/>
+          The IV spike more than offset 3 days of time decay — the call gained ₹134 in value.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q12-1"
+           data-feedback-correct="Correct! Theta is negative for all long option positions — time passing erodes time value, reducing the option price."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. A trader who is long a straddle has:</p>
+        <ul class="quiz-opts">
+          <li>Positive theta (earns from time decay)</li>
+          <li data-correct="true">Negative theta (loses time value each day)</li>
+          <li>Zero theta (calls and puts cancel)</li>
+          <li>Theta that depends on whether Nifty is rising</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q12-2"
+           data-feedback-correct="Correct! Vega is highest for ATM options with long time to expiry — they have the most time value sensitive to volatility changes."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. Vega is generally highest for:</p>
+        <ul class="quiz-opts">
+          <li>Deep OTM options with 1 week to expiry</li>
+          <li>Deep ITM options near expiry</li>
+          <li data-correct="true">ATM options with long time to expiry</li>
+          <li>Deep ITM options with long time to expiry</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q12-3"
+           data-feedback-correct="Correct! Rho is positive for calls (higher rates = higher call value, lower PV of strike payment), and negative for puts."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. When interest rates rise (all else equal), the value of a European call option:</p>
+        <ul class="quiz-opts">
+          <li>Decreases (higher discount rate reduces all future payoffs)</li>
+          <li>Stays the same (interest rates don't affect options)</li>
+          <li data-correct="true">Increases (higher rates lower the PV of the strike payment)</li>
+          <li>Could go either way depending on dividend yield</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">Greeks Quick Ref</div>
+      <div class="formula-box" style="font-size:.76rem">
+        Θ &lt; 0 for long options<br/>
+        ν &gt; 0 for long options<br/>
+        ρ &gt; 0 for calls<br/>
+        ρ &lt; 0 for puts<br/><br/>
+        ΔC ≈ Δ·ΔS + ½·Γ·ΔS² + Θ·Δt + ν·Δσ
+      </div>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 19: <em>The Greek Letters</em> — Theta, vega, rho, and their management.</p>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#greeks-dashboard" class="sr-link">Greeks Dashboard →</a>
+      <a href="tools.html#implied-vol"      class="sr-link">Implied Vol Solver →</a>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('4.2');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Greeks', href: 'course.html' },
+    { label: 'Theta, Vega & Rho' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '4.2' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '4.2' });
+});
+</script>
+</body>
+</html>

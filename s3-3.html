@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option Pricing — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c3">Options</span>
+      <h1 class="page-title">Option Pricing</h1>
+      <p class="page-subtitle">From the binomial tree to Black-Scholes — the mathematics of fair option value.</p>
+    </div>
+
+    <!-- Intuition -->
+    <section class="content-section">
+      <h2 class="cs-title">The Core Pricing Intuition</h2>
+      <p>An option's fair price is the cost of a <strong>replicating portfolio</strong> — a combination of the underlying asset and a risk-free bond that produces exactly the same payoffs as the option in all future states. Because two identical payoff streams must sell at the same price (no-arbitrage), the option's price equals the replicating portfolio's cost.</p>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>No-arbitrage pricing:</strong> We don't need to know investors' risk preferences to price an option. We only need to know that no free lunch exists — if the option were mispriced, arbitrageurs would exploit the gap immediately, restoring fair value.
+      </div>
+    </section>
+
+    <!-- Binomial -->
+    <section class="content-section">
+      <h2 class="cs-title">Binomial Option Pricing Model</h2>
+      <p>The binomial model assumes the stock price can move to only two values over a single period: <strong>up</strong> (to Su) or <strong>down</strong> (to Sd). This allows us to find the replicating portfolio analytically.</p>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 10px;color:var(--navy)">One-Period Binomial: Call Pricing</h3>
+      <div class="formula-box">
+        Risk-neutral probability: p = (e<sup>rΔt</sup> − d) / (u − d)<br/><br/>
+        Call value: C = e<sup>−rΔt</sup> · [p · C<sub>u</sub> + (1−p) · C<sub>d</sub>]<br/><br/>
+        where: u = up factor, d = down factor, r = risk-free rate,<br/>
+        C<sub>u</sub> = max(Su − K, 0), C<sub>d</sub> = max(Sd − K, 0)
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 10px;color:var(--navy)">Worked Example: One-Period Binomial</h3>
+      <p><strong>Given:</strong> S = ₹100, K = ₹100, u = 1.15, d = 0.90, r = 5%, Δt = 1 year.</p>
+      <table class="example-table" style="margin-top:12px">
+        <thead><tr><th>Step</th><th>Calculation</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Up price</td><td>Su = 100 × 1.15</td><td>₹115</td></tr>
+          <tr><td>Down price</td><td>Sd = 100 × 0.90</td><td>₹90</td></tr>
+          <tr><td>C<sub>u</sub></td><td>max(115 − 100, 0)</td><td>₹15</td></tr>
+          <tr><td>C<sub>d</sub></td><td>max(90 − 100, 0)</td><td>₹0</td></tr>
+          <tr><td>p (risk-neutral)</td><td>(e^0.05 − 0.90) / (1.15 − 0.90) = (1.0513 − 0.90)/0.25</td><td>0.6051</td></tr>
+          <tr><td>Call value</td><td>e^−0.05 × [0.6051×15 + 0.3949×0] = 0.9512 × 9.077</td><td><strong>₹8.63</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-gold" style="margin-top:14px">
+        <strong>Risk-neutral pricing:</strong> The probability p is not the "real" probability of the stock going up. It's the probability that makes the expected return on all assets equal to the risk-free rate in a world where risk is ignored. This mathematical trick lets us discount all payoffs at r.
+      </div>
+    </section>
+
+    <!-- Multi-period -->
+    <section class="content-section">
+      <h2 class="cs-title">Multi-Step Binomial Tree</h2>
+      <p>Extending to multiple periods, the stock price follows a tree of possible paths. For a 2-period tree:</p>
+
+      <div class="formula-box">
+        Nodes at T: S·u², S·ud, S·d²<br/><br/>
+        Work <strong>backwards</strong> from terminal payoffs:<br/>
+        At each node: V = e<sup>−rΔt</sup> · [p·V<sub>u</sub> + (1−p)·V<sub>d</sub>]<br/><br/>
+        For American options, compare to immediate exercise value at each node:<br/>
+        V = max(intrinsic value, continuation value)
+      </div>
+
+      <p style="margin-top:14px">The binomial tree converges to the Black-Scholes formula as the number of steps → ∞ (and Δt → 0). With 50+ steps, the binomial price is essentially indistinguishable from Black-Scholes for European options.</p>
+    </section>
+
+    <!-- Black-Scholes -->
+    <section class="content-section">
+      <h2 class="cs-title">The Black-Scholes Model</h2>
+      <p>Black and Scholes (1973) derived a closed-form solution for European option prices assuming the underlying follows <strong>geometric Brownian motion</strong> (continuous log-normal price paths).</p>
+
+      <div class="formula-box">
+        C = S · N(d₁) − K · e<sup>−rT</sup> · N(d₂) &nbsp;&nbsp; (Call)<br/>
+        P = K · e<sup>−rT</sup> · N(−d₂) − S · N(−d₁) &nbsp;&nbsp; (Put)<br/><br/>
+        d₁ = [ln(S/K) + (r + σ²/2)T] / (σ√T)<br/>
+        d₂ = d₁ − σ√T<br/><br/>
+        N(·) = cumulative standard normal distribution function<br/>
+        σ = annual volatility of returns, T = time to expiry (years)
+      </div>
+
+      <div class="callout callout-blue" style="margin-top:16px">
+        <strong>What N(d₁) and N(d₂) mean:</strong> N(d₂) = risk-neutral probability that the call finishes ITM at expiry. N(d₁) = delta of the call — the fraction of the underlying held in the replicating portfolio. S·N(d₁) is the "asset part" of the option; K·e^−rT·N(d₂) is the "payment part."
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 10px;color:var(--navy)">BSM Inputs and Sensitivities</h3>
+      <table class="example-table">
+        <thead><tr><th>Input</th><th>Symbol</th><th>Effect on Call Price</th><th>Effect on Put Price</th></tr></thead>
+        <tbody>
+          <tr><td>Current stock price</td><td>S</td><td>↑ S → ↑ Call</td><td>↑ S → ↓ Put</td></tr>
+          <tr><td>Strike price</td><td>K</td><td>↑ K → ↓ Call</td><td>↑ K → ↑ Put</td></tr>
+          <tr><td>Time to expiry</td><td>T</td><td>↑ T → ↑ Call</td><td>↑ T → ↑ Put (usually)</td></tr>
+          <tr><td>Risk-free rate</td><td>r</td><td>↑ r → ↑ Call</td><td>↑ r → ↓ Put</td></tr>
+          <tr><td>Volatility</td><td>σ</td><td>↑ σ → ↑ Call</td><td>↑ σ → ↑ Put</td></tr>
+          <tr><td>Dividend yield</td><td>q</td><td>↑ q → ↓ Call</td><td>↑ q → ↑ Put</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 10px;color:var(--navy)">Worked Example: BSM Call Price</h3>
+      <p><strong>Inputs:</strong> S = ₹2,460, K = ₹2,500, r = 6.5%, σ = 25%, T = 1/12 (1 month), q = 1.2%.</p>
+      <table class="example-table" style="margin-top:12px">
+        <thead><tr><th>Step</th><th>Calculation</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>d₁</td><td>[ln(2460/2500) + (0.065 − 0.012 + 0.0313)×0.0833] / (0.25×√0.0833)</td><td>−0.128</td></tr>
+          <tr><td>d₂</td><td>d₁ − 0.25×√0.0833 = −0.128 − 0.0722</td><td>−0.200</td></tr>
+          <tr><td>N(d₁)</td><td>N(−0.128)</td><td>0.449</td></tr>
+          <tr><td>N(d₂)</td><td>N(−0.200)</td><td>0.421</td></tr>
+          <tr><td>Call price</td><td>2460×0.449 − 2500×e^−(0.065×0.0833)×0.421</td><td><strong>≈ ₹55.4</strong></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.8125rem;color:var(--text-3);margin-top:8px">Use the Black-Scholes calculator on this site for precise values — the table above shows the process.</p>
+    </section>
+
+    <!-- BSM Assumptions -->
+    <section class="content-section">
+      <h2 class="cs-title">Key BSM Assumptions (and their limits)</h2>
+      <table class="example-table">
+        <thead><tr><th>Assumption</th><th>Reality / Limitation</th></tr></thead>
+        <tbody>
+          <tr><td>Returns are log-normally distributed</td><td>Fat tails in reality — large crashes more frequent than model predicts</td></tr>
+          <tr><td>Volatility σ is constant</td><td>IV varies by strike (vol smile/skew) and time (vol surface)</td></tr>
+          <tr><td>Continuous trading, no transaction costs</td><td>Real hedging is discrete and has friction costs</td></tr>
+          <tr><td>European exercise only</td><td>American options allow early exercise — BSM understates their value</td></tr>
+          <tr><td>Risk-free rate is constant</td><td>Rates change over the option's life</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 3.3:</strong> Using a one-period binomial model: S = ₹<strong>200</strong>, K = ₹<strong>200</strong>, u = <strong>1.20</strong>, d = <strong>0.85</strong>, r = 6%, Δt = 1 year. What is the risk-neutral probability p? (Round to 4 decimal places)</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0"><em>p = (e^r·Δt − d) / (u − d)</em></p>
+      <div class="practice-block" data-answer="0.6018" data-tol="0.005" data-section="3.3" data-problem-id="p3-3">
+        <div class="input-row">
+          <span class="input-label">p (0 to 1)</span>
+          <input class="answer-input" type="number" step="0.0001" placeholder="e.g. 0.6018" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          e^(r·Δt) = e^0.06 = 1.0618<br/>
+          p = (1.0618 − 0.85) / (1.20 − 0.85)<br/>
+          = 0.2118 / 0.35 = <strong>0.6051</strong><br/><br/>
+          <em>Note: accepted range is 0.597 to 0.613</em>
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q9-1"
+           data-feedback-correct="Correct! Higher volatility increases the chance of large moves in either direction, making both calls and puts more valuable."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. If implied volatility increases, all else equal, the price of a call option will:</p>
+        <ul class="quiz-opts">
+          <li>Decrease — higher vol means more risk</li>
+          <li data-correct="true">Increase — higher vol expands the potential payoff range</li>
+          <li>Stay the same — vol doesn't affect calls</li>
+          <li>Depend on whether the call is ITM or OTM</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q9-2"
+           data-feedback-correct="Correct! N(d₂) is the risk-neutral probability that the option expires in-the-money."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. In the Black-Scholes formula, N(d₂) represents:</p>
+        <ul class="quiz-opts">
+          <li>The delta of the call option</li>
+          <li>The probability that the call is currently ITM</li>
+          <li data-correct="true">The risk-neutral probability that the call expires ITM</li>
+          <li>The fraction of the strike paid as premium</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q9-3"
+           data-feedback-correct="Correct! The binomial model converges to Black-Scholes as the number of time steps increases and Δt shrinks to zero."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. As the number of steps in a binomial tree increases toward infinity, the binomial option price:</p>
+        <ul class="quiz-opts">
+          <li>Diverges and becomes unstable</li>
+          <li>Equals the current spot price</li>
+          <li data-correct="true">Converges to the Black-Scholes price</li>
+          <li>Equals the put price by put-call parity</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">BSM Formula</div>
+      <div class="formula-box" style="font-size:.72rem">
+        C = S·N(d₁) − K·e<sup>−rT</sup>·N(d₂)<br/>
+        d₁ = [ln(S/K)+(r+σ²/2)T]/(σ√T)<br/>
+        d₂ = d₁ − σ√T
+      </div>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 12: <em>Binomial Trees</em>. Ch. 15: <em>The Black-Scholes-Merton Model</em>.</p>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#binomial"      class="sr-link">Binomial Pricer →</a>
+      <a href="tools.html#black-scholes" class="sr-link">Black-Scholes →</a>
+      <a href="tools.html#implied-vol"   class="sr-link">Implied Vol Solver →</a>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('3.3');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Options', href: 'course.html' },
+    { label: 'Option Pricing' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '3.3' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '3.3' });
+});
+</script>
+</body>
+</html>

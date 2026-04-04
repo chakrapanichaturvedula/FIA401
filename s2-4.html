@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hedging Strategies — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c2">Futures</span>
+      <h1 class="page-title">Hedging Strategies</h1>
+      <p class="page-subtitle">Minimum variance hedge ratio, beta management of stock portfolios, and rolling hedges forward.</p>
+    </div>
+
+    <!-- Why Hedge Ratio Matters -->
+    <section class="content-section">
+      <h2 class="cs-title">Why Not Hedge 1-for-1?</h2>
+      <p>When the underlying exposure and the futures contract are <em>different assets</em> — or even the same asset with imperfect correlation — a naive 1:1 hedge will leave residual risk. The <strong>minimum variance hedge ratio (MVHR)</strong> finds the exact fraction of the exposure to hedge that minimises the variance of the hedged portfolio's value.</p>
+
+      <div class="callout callout-blue" style="margin-top:16px">
+        <strong>OLS regression insight:</strong> Regress ΔS (changes in spot price) on ΔF (changes in futures price): ΔS = α + h*·ΔF + ε. The slope coefficient h* is the optimal hedge ratio. The R² of this regression = hedge effectiveness — how much of the spot price variance is explained by the futures.
+      </div>
+    </section>
+
+    <!-- MVHR Formula -->
+    <section class="content-section">
+      <h2 class="cs-title">Minimum Variance Hedge Ratio</h2>
+
+      <div class="formula-box">
+        h* = ρ · (σ<sub>S</sub> / σ<sub>F</sub>)<br/><br/>
+        where:<br/>
+        ρ = correlation between ΔS and ΔF<br/>
+        σ<sub>S</sub> = standard deviation of changes in spot price<br/>
+        σ<sub>F</sub> = standard deviation of changes in futures price
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0">
+        <div class="concept-card">
+          <div class="cc-title">When h* &lt; 1</div>
+          <div class="cc-body">Futures are more volatile than spot, or correlation is less than 1. Hedge less than 100% of exposure. Useful in cross-hedges (different but related assets).</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">When h* = 1 (perfect hedge)</div>
+          <div class="cc-body">ρ = 1 and σ<sub>S</sub> = σ<sub>F</sub>. The futures perfectly tracks the spot — one futures contract hedges exactly one unit of exposure.</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:16px 0 8px;color:var(--navy)">Number of Contracts</h3>
+      <div class="formula-box">
+        N* = h* × (Q<sub>A</sub> / Q<sub>F</sub>)<br/><br/>
+        Q<sub>A</sub> = size of position being hedged (units)<br/>
+        Q<sub>F</sub> = size of one futures contract (units)
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 8px;color:var(--navy)">Worked Example</h3>
+      <p><strong>Given:</strong> A refinery needs to hedge 1,00,000 barrels of crude oil using crude futures (contract = 1,000 barrels). From historical data: ρ = 0.92, σ<sub>S</sub> = 2.8 USD/barrel, σ<sub>F</sub> = 3.1 USD/barrel.</p>
+      <table class="example-table" style="margin-top:12px">
+        <thead><tr><th>Step</th><th>Calculation</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>MVHR</td><td>h* = 0.92 × (2.8 / 3.1)</td><td>h* = 0.831</td></tr>
+          <tr><td>Contracts needed</td><td>N* = 0.831 × (1,00,000 / 1,000)</td><td><strong>83 contracts</strong></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.875rem;color:var(--text-2);margin-top:10px">The refinery shorts 83 futures contracts (not 100) because the futures are more volatile than the spot. Hedging 100 contracts would over-hedge and actually introduce more variance.</p>
+    </section>
+
+    <!-- Beta Management -->
+    <section class="content-section">
+      <h2 class="cs-title">Stock Portfolio Hedging: Beta Management</h2>
+      <p>A fund manager with a diversified equity portfolio can use <strong>index futures</strong> to adjust the portfolio's market sensitivity (beta) without selling individual stocks.</p>
+
+      <div class="formula-box">
+        N* = (β<sub>target</sub> − β<sub>portfolio</sub>) × P / (F × A)<br/><br/>
+        where:<br/>
+        β<sub>portfolio</sub> = current portfolio beta<br/>
+        β<sub>target</sub> = desired beta (0 = fully hedged, market neutral)<br/>
+        P = portfolio market value (₹)<br/>
+        F = current index futures price<br/>
+        A = index multiplier (lot size)<br/><br/>
+        Positive N* → Buy contracts (increase beta)<br/>
+        Negative N* → Sell contracts (reduce beta)
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 8px;color:var(--navy)">Worked Example: Nifty Portfolio Hedge</h3>
+      <p><strong>Setup:</strong> Portfolio value P = ₹2,50,00,000. Portfolio β = 1.3. Target β = 0 (full hedge). Nifty futures price F = 22,000. Lot size A = 50.</p>
+
+      <table class="example-table" style="margin-top:12px">
+        <thead><tr><th>Step</th><th>Calculation</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Contract value</td><td>F × A = 22,000 × 50</td><td>₹11,00,000</td></tr>
+          <tr><td>N* (contracts to sell)</td><td>(0 − 1.3) × 2,50,00,000 / 11,00,000</td><td>−29.5 → <strong>Sell 30 contracts</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px">
+        <div class="concept-card">
+          <div class="cc-title">Reducing Beta (Defensive)</div>
+          <div class="cc-body">Bear market expected. Sell Nifty futures to reduce β → portfolio less sensitive to market decline. β<sub>target</sub> &lt; β<sub>portfolio</sub> → Sell contracts.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Increasing Beta (Aggressive)</div>
+          <div class="cc-body">Bull market expected. Buy Nifty futures to increase β → portfolio more sensitive to market rise. β<sub>target</sub> &gt; β<sub>portfolio</sub> → Buy contracts.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rolling the Hedge -->
+    <section class="content-section">
+      <h2 class="cs-title">Rolling the Hedge Forward</h2>
+      <p>When the hedging horizon extends <em>beyond</em> the nearest futures expiry date, you cannot maintain a single contract to the end. You must <strong>roll the hedge</strong>: close the near-month contract just before expiry and open the next-month contract.</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead><tr><th>Date</th><th>Action</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Month 1</td><td>Short near-month contract</td><td>Initiate hedge</td></tr>
+          <tr><td>Near expiry</td><td>Buy back near-month; sell next-month</td><td>Roll forward</td></tr>
+          <tr><td>Month 2 expiry</td><td>Buy back Month 2; sell Month 3</td><td>Roll again if needed</td></tr>
+          <tr><td>Final date</td><td>Close final contract</td><td>Complete hedge</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-gold" style="margin-top:14px">
+        <strong>Roll risk:</strong> Each roll introduces a new basis (the difference between near and far contract prices). If the far contract is significantly in contango, rolling costs money. This "roll cost" can erode the hedge benefit over time. Stack-and-roll strategies used by airlines (fuel hedges) often span 12–18 months and face significant roll costs.
+      </div>
+    </section>
+
+    <!-- Practice Problem -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 2.4:</strong> A fund has a portfolio worth <strong>₹1,50,00,000</strong> with β = <strong>1.2</strong>. The manager wants to reduce β to <strong>0</strong> (fully hedge against market). Nifty futures are trading at <strong>₹21,500</strong> with lot size = 50. How many contracts should the manager sell?</p>
+      <div class="practice-block" data-answer="17" data-tol="1" data-section="2.4" data-problem-id="p2-4">
+        <div class="input-row">
+          <span class="input-label">Contracts to sell</span>
+          <input class="answer-input" type="number" placeholder="e.g. 17" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Contract value = 21,500 × 50 = ₹10,75,000<br/>
+          N* = (β<sub>target</sub> − β<sub>P</sub>) × P / (F × A)<br/>
+          = (0 − 1.2) × 1,50,00,000 / 10,75,000<br/>
+          = −1.2 × 13.95 = −16.74<br/>
+          Round to <strong>17 contracts short</strong> (sell 17)
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q6-1"
+           data-feedback-correct="Correct! h* = ρ × (σ_S / σ_F). The higher the futures volatility relative to spot, the smaller the hedge ratio."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. The minimum variance hedge ratio h* is calculated as:</p>
+        <ul class="quiz-opts">
+          <li>σ<sub>S</sub> / σ<sub>F</sub> (volatility ratio only)</li>
+          <li>ρ × (σ<sub>F</sub> / σ<sub>S</sub>)</li>
+          <li data-correct="true">ρ × (σ<sub>S</sub> / σ<sub>F</sub>)</li>
+          <li>ρ² × (σ<sub>S</sub> / σ<sub>F</sub>)</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q6-2"
+           data-feedback-correct="Correct! R² = the proportion of spot price variance explained by the futures price. This directly measures hedge effectiveness."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. An R² of 0.90 in the hedge ratio regression means:</p>
+        <ul class="quiz-opts">
+          <li>The optimal hedge ratio is exactly 0.90</li>
+          <li data-correct="true">90% of the spot price variance is explained by futures price variance</li>
+          <li>The hedge eliminates 90% of all risk</li>
+          <li>The hedge ratio is 10% too large</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q6-3"
+           data-feedback-correct="Correct! Rolling means closing the expiring contract and opening the next one — allowing the hedge to extend beyond a single contract's life."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. "Rolling a hedge" in futures markets means:</p>
+        <ul class="quiz-opts">
+          <li>Closing the position early for a guaranteed profit</li>
+          <li>Switching from futures to options to reduce cost</li>
+          <li data-correct="true">Closing the expiring contract and opening the next-month contract</li>
+          <li>Changing the number of contracts to match a new exposure</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formulas</div>
+      <div class="formula-box" style="font-size:.78rem">
+        h* = ρ · (σ<sub>S</sub>/σ<sub>F</sub>)<br/>
+        N* = h* · (Q<sub>A</sub>/Q<sub>F</sub>)<br/><br/>
+        N*<sub>β</sub> = (β<sub>T</sub>−β<sub>P</sub>)·P/(F·A)
+      </div>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 3: <em>Hedging Strategies Using Futures</em> — MVHR, beta hedging, rolling.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#hedge-ratio"    class="sr-link">Hedge Ratio Calculator →</a>
+      <a href="tools.html#futures-pricer" class="sr-link">Futures Pricer →</a>
+    </div>
+
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)"><strong>Part 2:</strong> Calculate the MVHR for your company using historical spot and futures data (regression in Excel). Then compute the number of contracts for an optimal hedge and evaluate its effectiveness.</p>
+    </div>
+
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('2.4');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Futures', href: 'course.html' },
+    { label: 'Hedging Strategies' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '2.4' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '2.4' });
+});
+</script>
+</body>
+</html>

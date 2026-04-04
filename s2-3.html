@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Currency Futures — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c2">Futures</span>
+      <h1 class="page-title">Currency Futures</h1>
+      <p class="page-subtitle">FX exposure types, interest rate parity pricing, and executing hedges with USDINR futures.</p>
+    </div>
+
+    <!-- FX Exposure -->
+    <section class="content-section">
+      <h2 class="cs-title">Foreign Exchange Exposure</h2>
+      <p>Indian companies routinely face <strong>FX exposure</strong> — uncertainty about the INR value of foreign-currency cash flows. This exposure can be a risk to manage (hedger) or an opportunity to exploit (speculator).</p>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0">
+        <div class="concept-card">
+          <div class="cc-title">Transaction Exposure</div>
+          <div class="cc-body">Known future cash flows in a foreign currency. <em>Examples:</em> Import payment due in 90 days, export invoice receivable in USD.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Translation Exposure</div>
+          <div class="cc-body">Accounting effect of converting foreign subsidiary's financials into INR. Affects the P&amp;L and balance sheet but may not represent real cash flows.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Economic Exposure</div>
+          <div class="cc-body">Long-run impact of exchange rate changes on competitive position. An IT firm competing with US peers faces economic exposure if USD weakens.</div>
+        </div>
+      </div>
+
+      <p>For this course, we focus on <strong>transaction exposure</strong> — the most direct and easiest to hedge with futures.</p>
+    </section>
+
+    <!-- IRP Pricing -->
+    <section class="content-section">
+      <h2 class="cs-title">Currency Futures Pricing: Covered Interest Rate Parity</h2>
+      <p>Currency futures are priced by the principle of <strong>Covered Interest Rate Parity (CIRP)</strong>. If you can earn r<sub>d</sub> at home or r<sub>f</sub> abroad, the futures rate must satisfy:</p>
+
+      <div class="formula-box">
+        F<sub>FX</sub> = S · e<sup>(r<sub>d</sub> − r<sub>f</sub>)T</sup><br/><br/>
+        where: S = spot rate (INR per USD), r<sub>d</sub> = INR risk-free rate,<br/>
+        r<sub>f</sub> = USD risk-free rate, T = time to expiry (years)
+      </div>
+
+      <div class="callout callout-blue" style="margin-top:16px">
+        <strong>Intuition:</strong> If Indian rates are higher than US rates (r<sub>d</sub> &gt; r<sub>f</sub>), the rupee is expected to depreciate — so the futures USD/INR rate is higher than the spot rate. INR is "cheaper in the future" because you could earn more by holding rupees at home.
+      </div>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 8px;color:var(--navy)">Worked Example: Pricing USDINR Futures</h3>
+      <table class="example-table">
+        <thead><tr><th>Input</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Spot USD/INR (S)</td><td>₹83.50</td></tr>
+          <tr><td>INR risk-free rate (r<sub>d</sub>)</td><td>6.8% p.a.</td></tr>
+          <tr><td>USD risk-free rate (r<sub>f</sub>)</td><td>5.3% p.a.</td></tr>
+          <tr><td>Time to expiry (T)</td><td>3 months = 0.25 years</td></tr>
+          <tr><td>Net carry = r<sub>d</sub> − r<sub>f</sub></td><td>1.5% p.a.</td></tr>
+          <tr><td>F* = 83.50 × e^(0.015 × 0.25)</td><td><strong>₹83.81</strong></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Hedge Execution -->
+    <section class="content-section">
+      <h2 class="cs-title">Executing a Currency Hedge</h2>
+
+      <p>The direction of the hedge depends on your underlying exposure:</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead>
+          <tr><th>Party</th><th>Underlying Exposure</th><th>Futures Action</th><th>Hedge Type</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Exporter (IT company)</td>
+            <td>Will receive USD → long USD</td>
+            <td><strong>Sell USD futures</strong> (short)</td>
+            <td>Short hedge</td>
+          </tr>
+          <tr>
+            <td>Importer (oil company)</td>
+            <td>Must pay USD → short USD</td>
+            <td><strong>Buy USD futures</strong> (long)</td>
+            <td>Long hedge</td>
+          </tr>
+          <tr>
+            <td>USD borrower</td>
+            <td>USD loan → short USD</td>
+            <td>Buy USD futures</td>
+            <td>Long hedge</td>
+          </tr>
+          <tr>
+            <td>USD lender</td>
+            <td>USD investment → long USD</td>
+            <td>Sell USD futures</td>
+            <td>Short hedge</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size:.9375rem;margin:18px 0 10px;color:var(--navy)">Number of Contracts</h3>
+      <div class="formula-box">
+        N = Exposure (USD) ÷ Contract size (USD per contract)<br/><br/>
+        NSE USDINR contract size = USD 1,000<br/>
+        Monthly expiry, cash-settled in INR
+      </div>
+    </section>
+
+    <!-- Full Importer Example -->
+    <section class="content-section">
+      <h2 class="cs-title">Full Hedge Example: Indian Importer</h2>
+      <p><strong>Scenario:</strong> An Indian oil company must pay USD 5,00,000 in 3 months for crude oil. Current spot = ₹83.50. 3-month futures = ₹84.20 (in contango).</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead><tr><th>Step</th><th>Action</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Now</strong></td>
+            <td>Buy 500 USDINR futures at ₹84.20</td>
+            <td>N = 5,00,000 ÷ 1,000 = 500 contracts</td>
+          </tr>
+          <tr>
+            <td><strong>At expiry (spot = 85.00)</strong></td>
+            <td>Futures converge to ₹85.00</td>
+            <td>Gain = (85.00 − 84.20) × 1,000 × 500 = ₹4,00,000</td>
+          </tr>
+          <tr>
+            <td><strong>Import cost</strong></td>
+            <td>Pay ₹85.00 per USD in spot market</td>
+            <td>Extra cost vs budget = (85.00 − 83.50) × 5,00,000 = ₹75,00,000 more</td>
+          </tr>
+          <tr>
+            <td><strong>Net outcome</strong></td>
+            <td>Futures gain offsets part of extra cost</td>
+            <td>Effective rate ≈ ₹84.20/USD (locked-in futures rate)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-gold" style="margin-top:14px">
+        <strong>Basis risk here:</strong> The company budgeted at the futures rate (₹84.20), but the actual effective rate may differ slightly because the futures may not perfectly converge to the exact spot rate used in the import contract. This small residual is basis risk.
+      </div>
+    </section>
+
+    <!-- Basis Risk -->
+    <section class="content-section">
+      <h2 class="cs-title">Basis Risk in Currency Hedging</h2>
+      <p>A hedge is rarely perfect. Basis risk arises from mismatches between the futures contract and the actual exposure:</p>
+      <ul style="margin:12px 0 0 20px;line-height:2.1">
+        <li><strong>Maturity mismatch:</strong> The futures expiry doesn't exactly match the payment date.</li>
+        <li><strong>Size mismatch:</strong> Contract size may not match exposure exactly (rounding to whole contracts).</li>
+        <li><strong>Currency mismatch:</strong> Hedging EUR exposure with USD contracts (cross-hedge).</li>
+        <li><strong>Daily settlement:</strong> The futures produces daily cash flows while the underlying transaction settles at one point — this creates reinvestment uncertainty.</li>
+      </ul>
+    </section>
+
+    <!-- Practice Problem -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 2.3:</strong> An IT exporter has USD 2,00,000 receivable in 2 months. She sells 200 USDINR futures contracts at <strong>₹83.80</strong>. At expiry, the spot rate is <strong>₹83.00</strong>. What is the total gain on her short hedge (in ₹)?</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0"><em>Gain = (F<sub>sold</sub> − F<sub>T</sub>) × 1,000 × N</em></p>
+      <div class="practice-block" data-answer="160000" data-tol="500" data-section="2.3" data-problem-id="p2-3">
+        <div class="input-row">
+          <span class="input-label">Gain (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 160000" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Sold at 83.80, settled at 83.00<br/>
+          Gain per USD = 83.80 − 83.00 = ₹0.80<br/>
+          Each contract = 1,000 USD<br/>
+          Total gain = 0.80 × 1,000 × 200 = <strong>₹1,60,000</strong><br/><br/>
+          This offsets the lower rupee value of her export proceeds (which decreased because USD weakened).
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q5-1"
+           data-feedback-correct="Correct! An exporter is naturally long USD (will receive USD), so they sell USD futures to create an offsetting short position."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. An Indian exporter expecting USD receivables would hedge by:</p>
+        <ul class="quiz-opts">
+          <li>Buying USD futures (long hedge)</li>
+          <li data-correct="true">Selling USD futures (short hedge)</li>
+          <li>Buying INR futures</li>
+          <li>Entering an interest rate swap</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q5-2"
+           data-feedback-correct="Correct! CIRP (Covered Interest Rate Parity) is the no-arbitrage pricing relationship for currency forwards and futures."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. Currency futures pricing is based on:</p>
+        <ul class="quiz-opts">
+          <li>Purchasing power parity</li>
+          <li data-correct="true">Covered interest rate parity (CIRP)</li>
+          <li>Uncovered interest rate parity</li>
+          <li>SEBI-mandated exchange rates</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q5-3"
+           data-feedback-correct="Correct! Basis risk arises when the futures contract doesn't perfectly match the underlying exposure — size, maturity, or currency mismatches."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. Basis risk in currency hedging arises because:</p>
+        <ul class="quiz-opts">
+          <li>The hedge position is always too large</li>
+          <li data-correct="true">The futures contract doesn't perfectly match the underlying exposure</li>
+          <li>Exchange rates are fundamentally unpredictable</li>
+          <li>Importers and exporters cancel each other out</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formula</div>
+      <div class="formula-box" style="font-size:.8rem">
+        F<sub>FX</sub> = S · e<sup>(r<sub>d</sub> − r<sub>f</sub>)T</sup><br/><br/>
+        N = Exposure ÷ Contract size<br/>
+        NSE: Contract = USD 1,000
+      </div>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 3: <em>Hedging Strategies Using Futures</em>. Ch. 5: Currency futures pricing and CIRP.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#forward-rate"   class="sr-link">Forward Rate Calculator →</a>
+      <a href="tools.html#futures-pricer" class="sr-link">Futures Pricer →</a>
+    </div>
+
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">If your project company has FX exposure (IT exporters, oil importers, pharma), use this module to set up their currency hedge and compute the number of contracts.</p>
+    </div>
+
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('2.3');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Futures', href: 'course.html' },
+    { label: 'Currency Futures' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '2.3' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '2.3' });
+});
+</script>
+</body>
+</html>

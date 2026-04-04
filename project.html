@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .proj-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1e3a6e 100%);
+      color: #fff;
+      border-radius: 12px;
+      padding: 32px 36px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .proj-hero::after {
+      content: '';
+      position: absolute;
+      right: -40px; bottom: -40px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+    }
+    .proj-hero h1 { margin: 0 0 6px; font-size: 1.5rem; }
+    .proj-hero p  { margin: 0; opacity: .82; font-size: .9375rem; max-width: 600px; }
+    .proj-hero .hero-pills {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+    }
+    .proj-hero .hero-pill {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 32px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--c1), var(--c2), var(--c3), var(--c4));
+      border-radius: 1px;
+    }
+    .tl-item {
+      position: relative;
+      margin-bottom: 28px;
+    }
+    .tl-dot {
+      position: absolute;
+      left: -26px; top: 4px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 3px solid var(--card);
+      box-shadow: 0 0 0 2px currentColor;
+    }
+    .tl-dot.c1 { color: var(--c1); background: var(--c1); }
+    .tl-dot.c2 { color: var(--c2); background: var(--c2); }
+    .tl-dot.c3 { color: var(--c3); background: var(--c3); }
+    .tl-dot.c4 { color: var(--c4); background: var(--c4); }
+
+    .tl-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .tl-card-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tl-card-head h3 { margin: 0; font-size: 1rem; color: var(--navy); }
+    .tl-card-head .tl-due {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+      color: var(--text-2);
+    }
+    .tl-card-body { padding: 16px 18px; }
+    .tl-card-body p { margin: 0 0 10px; font-size: .9375rem; color: var(--text-1); line-height: 1.6; }
+    .tl-card-body p:last-child { margin-bottom: 0; }
+
+    .task-list {
+      list-style: none;
+      padding: 0; margin: 12px 0 0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .task-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: .9rem;
+      color: var(--text-1);
+      line-height: 1.5;
+    }
+    .task-list li .task-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      color: var(--text-2);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .deliverable-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-top: 12px;
+    }
+    .deliverable-box .db-title {
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+    .deliverable-box ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: .875rem;
+      color: var(--text-1);
+      line-height: 1.7;
+    }
+
+    .calc-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .calc-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--navy);
+      font-size: .8125rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .calc-link-btn:hover {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+
+    /* Grading rubric table */
+    .rubric-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    .rubric-table th {
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .rubric-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-1);
+      vertical-align: top;
+    }
+    .rubric-table tr:last-child td { border-bottom: none; }
+    .rubric-table tr:nth-child(even) td { background: var(--bg); }
+    .rubric-pts {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--navy);
+    }
+  </style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <!-- Hero -->
+    <div class="proj-hero">
+      <h1>FIA 401 — Course Project</h1>
+      <p>A three-part empirical project applying derivatives theory to live Indian market data. You will price options, hedge a portfolio, and run a Monte Carlo simulation — all using real NSE data.</p>
+      <div class="hero-pills">
+        <span class="hero-pill">BSM Pricing</span>
+        <span class="hero-pill">Greeks Analysis</span>
+        <span class="hero-pill">Delta Hedging</span>
+        <span class="hero-pill">Monte Carlo</span>
+        <span class="hero-pill">NSE Data</span>
+      </div>
+    </div>
+
+    <!-- Overview callout -->
+    <div class="callout callout-blue" style="margin-bottom:24px">
+      <strong>Project overview:</strong> Work individually or in pairs. Use the DerivativesLab calculators to generate outputs, then write up your analysis. Submit a single PDF report with screenshots of calculator outputs, hand-worked verification, and economic interpretation. Total: <strong>60 marks</strong>.
+    </div>
+
+    <!-- Timeline -->
+    <section class="content-section">
+      <h2 class="cs-title">Project Milestones</h2>
+
+      <div class="timeline">
+
+        <!-- Part 1 -->
+        <div class="tl-item">
+          <div class="tl-dot c1"></div>
+          <div class="tl-card">
+            <div class="tl-card-head">
+              <span class="badge badge-c1">Part 1</span>
+              <h3>Option Pricing &amp; Greeks Analysis</h3>
+              <span class="tl-due">20 marks</span>
+            </div>
+            <div class="tl-card-body">
+              <p>Select any one Nifty 50 stock currently traded on NSE. Download the current option chain from NSE (<a href="https://www.nseindia.com/option-chain" target="_blank" style="color:var(--c1)">nseindia.com/option-chain</a>) for the <strong>near-month expiry</strong>.</p>
+
+              <ul class="task-list">
+                <li><span class="task-num">1</span> Record spot price (S), strike (K), expiry (T), and the last traded price (LTP) of one call and one put at ATM, one OTM call, and one ITM call.</li>
+                <li><span class="task-num">2</span> Use the <strong>Black-Scholes calculator</strong> to price each option using r = 6.5% (RBI repo rate) and σ = historical volatility (compute using 30 days of closing prices).</li>
+                <li><span class="task-num">3</span> Use the <strong>Implied Volatility solver</strong> to back out market-implied volatility from each LTP. Compare with your historical vol estimate.</li>
+                <li><span class="task-num">4</span> Use the <strong>Greeks Dashboard</strong> to tabulate Δ, Γ, Θ, ν for your 4 option positions. Interpret each Greek economically in 2–3 sentences.</li>
+                <li><span class="task-num">5</span> Construct and visualise the payoff diagram for a <strong>protective put</strong> on your chosen stock using the Payoff Builder.</li>
+              </ul>
+
+              <div class="deliverable-box">
+                <div class="db-title">Deliverables</div>
+                <ul>
+                  <li>Table of BSM vs market prices for 4 options with % deviation</li>
+                  <li>IV vs HV comparison with interpretation (overpriced / underpriced?)</li>
+                  <li>Greeks table with economic commentary</li>
+                  <li>Screenshot of payoff diagram from Payoff Builder</li>
+                </ul>
+              </div>
+
+              <div class="calc-links">
+                <a href="tools.html#black-scholes"    class="calc-link-btn">🔢 Black-Scholes</a>
+                <a href="tools.html#implied-vol"      class="calc-link-btn">📈 Implied Vol</a>
+                <a href="tools.html#greeks-dashboard" class="calc-link-btn">🎛️ Greeks Dashboard</a>
+                <a href="tools.html#payoff-builder"   class="calc-link-btn">📊 Payoff Builder</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Part 2 -->
+        <div class="tl-item">
+          <div class="tl-dot c2"></div>
+          <div class="tl-card">
+            <div class="tl-card-head">
+              <span class="badge badge-c2">Part 2</span>
+              <h3>Delta Hedging Simulation</h3>
+              <span class="tl-due">20 marks</span>
+            </div>
+            <div class="tl-card-body">
+              <p>You are a market maker who has just sold 10 call contracts (lot = 50) on your chosen stock to a client. Your task is to simulate <strong>10 days of dynamic delta hedging</strong> using actual closing prices from NSE for a past period of your choosing.</p>
+
+              <ul class="task-list">
+                <li><span class="task-num">1</span> Identify a 10-trading-day period in the last 6 months. Download daily closing prices for your stock.</li>
+                <li><span class="task-num">2</span> On Day 0, price the call using BSM, compute the initial delta, and determine shares to buy for delta neutrality.</li>
+                <li><span class="task-num">3</span> Each subsequent day: re-compute the call price and delta using the new spot price and remaining T. Calculate the shares adjustment required (buy or sell) to re-establish delta neutrality.</li>
+                <li><span class="task-num">4</span> Track cumulative hedging cost (P&amp;L from share trades + option premium collected). Show the hedging error vs the theoretical BSM cost.</li>
+                <li><span class="task-num">5</span> Identify which days had the largest gamma-driven rebalancing. Discuss the gamma-theta trade-off you experienced.</li>
+              </ul>
+
+              <div class="deliverable-box">
+                <div class="db-title">Deliverables</div>
+                <ul>
+                  <li>Day-by-day hedging table (spot, delta, shares held, trade, cumulative cost)</li>
+                  <li>Chart: portfolio value vs unhedged option value over 10 days</li>
+                  <li>Analysis: did you over- or under-collect premium relative to hedging cost?</li>
+                  <li>Reflection: what would you do differently with gamma-delta neutrality?</li>
+                </ul>
+              </div>
+
+              <div class="calc-links">
+                <a href="tools.html#black-scholes"    class="calc-link-btn">🔢 Black-Scholes</a>
+                <a href="tools.html#greeks-dashboard" class="calc-link-btn">🎛️ Greeks Dashboard</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Part 3 -->
+        <div class="tl-item">
+          <div class="tl-dot c3"></div>
+          <div class="tl-card">
+            <div class="tl-card-head">
+              <span class="badge badge-c3">Part 3</span>
+              <h3>Monte Carlo Option Pricing</h3>
+              <span class="tl-due">20 marks</span>
+            </div>
+            <div class="tl-card-body">
+              <p>Use the <strong>Monte Carlo Simulation</strong> module to price your ATM call option from Part 1, and compare results with your BSM price. Explore convergence and variance reduction.</p>
+
+              <ul class="task-list">
+                <li><span class="task-num">1</span> Run the simulation for N = 100, 500, 1,000, 5,000, and 10,000 paths. Record the MC call price and standard error at each N.</li>
+                <li><span class="task-num">2</span> Plot MC price vs N (convergence chart). At what N does the MC price converge to within ±1% of your BSM price?</li>
+                <li><span class="task-num">3</span> From the simulation, record the % of paths that expire ITM. Compare this with N(d₂) from your BSM calculation — are they consistent?</li>
+                <li><span class="task-num">4</span> Explain the role of the GBM model in this simulation: what assumptions are you making about returns, and how realistic are they for your stock?</li>
+                <li><span class="task-num">5</span> (Bonus, +5 marks) Implement antithetic variates in a spreadsheet by running paired paths (Z and −Z) and show the standard error reduction vs standard MC at N = 1,000.</li>
+              </ul>
+
+              <div class="deliverable-box">
+                <div class="db-title">Deliverables</div>
+                <ul>
+                  <li>Convergence table and chart (MC price vs N)</li>
+                  <li>Comparison of MC % ITM paths vs BSM N(d₂)</li>
+                  <li>Discussion of GBM assumptions and real-world applicability</li>
+                  <li>(Bonus) Antithetic variates SE comparison</li>
+                </ul>
+              </div>
+
+              <div class="calc-links">
+                <a href="s5-1.html"               class="calc-link-btn">🎲 Monte Carlo Sim</a>
+                <a href="tools.html#black-scholes" class="calc-link-btn">🔢 Black-Scholes</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submission -->
+        <div class="tl-item">
+          <div class="tl-dot c4"></div>
+          <div class="tl-card">
+            <div class="tl-card-head">
+              <span class="badge badge-c4">Submission</span>
+              <h3>Final Report Guidelines</h3>
+              <span class="tl-due">PDF upload</span>
+            </div>
+            <div class="tl-card-body">
+              <p>Submit a single well-formatted PDF. Structure it with three clearly labelled sections corresponding to Parts 1, 2, and 3. Each section should contain your methodology, tables/charts, calculator screenshots, and economic interpretation.</p>
+              <ul class="task-list">
+                <li><span class="task-num">✓</span> Include a title page: names, roll numbers, stock chosen, data date.</li>
+                <li><span class="task-num">✓</span> All tables must show intermediate calculations — not just final answers.</li>
+                <li><span class="task-num">✓</span> All screenshots from DerivativesLab must be legible with parameter values visible.</li>
+                <li><span class="task-num">✓</span> Economic interpretation is essential — marks are given for insight, not just correct numbers.</li>
+                <li><span class="task-num">✓</span> Cite data sources: NSE website, date downloaded, closing prices used.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Grading rubric -->
+    <section class="content-section">
+      <h2 class="cs-title">Grading Rubric</h2>
+      <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border)">
+        <table class="rubric-table">
+          <thead>
+            <tr>
+              <th>Criterion</th>
+              <th>Excellent (full marks)</th>
+              <th>Good (75%)</th>
+              <th>Pass (50%)</th>
+              <th style="width:60px">Marks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Data collection &amp; BSM pricing</strong></td>
+              <td>Accurate data, BSM correctly applied, deviation table complete</td>
+              <td>Minor errors in inputs or formula</td>
+              <td>Correct approach but computational errors</td>
+              <td class="rubric-pts">10</td>
+            </tr>
+            <tr>
+              <td><strong>Greeks interpretation</strong></td>
+              <td>All 5 Greeks explained with precise economic meaning and examples</td>
+              <td>3–4 Greeks well explained</td>
+              <td>Basic description without deeper insight</td>
+              <td class="rubric-pts">10</td>
+            </tr>
+            <tr>
+              <td><strong>Delta hedging simulation</strong></td>
+              <td>All 10 days correct; gamma cost analysis insightful</td>
+              <td>8–9 days correct; basic cost analysis</td>
+              <td>5–7 days with mechanical errors</td>
+              <td class="rubric-pts">20</td>
+            </tr>
+            <tr>
+              <td><strong>Monte Carlo analysis</strong></td>
+              <td>Full convergence study; deep GBM assumption discussion</td>
+              <td>Partial convergence; surface-level discussion</td>
+              <td>Simulation run; minimal analysis</td>
+              <td class="rubric-pts">15</td>
+            </tr>
+            <tr>
+              <td><strong>Report quality &amp; clarity</strong></td>
+              <td>Professional format, clear narrative, all steps shown</td>
+              <td>Mostly clear; some gaps in explanation</td>
+              <td>Readable but incomplete documentation</td>
+              <td class="rubric-pts">5</td>
+            </tr>
+            <tr>
+              <td><strong>Bonus: Antithetic variates</strong></td>
+              <td>Correct implementation with SE comparison table</td>
+              <td>—</td>
+              <td>—</td>
+              <td class="rubric-pts">+5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tips -->
+    <section class="content-section">
+      <h2 class="cs-title">Tips for Success</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="concept-card">
+          <div class="cc-title">Start with real data</div>
+          <div class="cc-body">Download your stock's option chain from NSE early. Prices change daily — take a snapshot on a specific date and use that consistently throughout all three parts.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Check calculator outputs</div>
+          <div class="cc-body">Use the in-module practice problems and formula boxes to verify your inputs make sense before submitting. Cross-check BSM call price with put-call parity.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Interpret, don't just compute</div>
+          <div class="cc-body">The highest marks go to students who explain <em>why</em> the numbers look the way they do — not just what the numbers are. Always add an economic sentence.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Use the simulation module</div>
+          <div class="cc-body">The Monte Carlo module in Section 5.1 auto-runs paths and shows you % ITM, mean terminal price, and MC call price directly — screenshot those outputs.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">Project at a Glance</div>
+      <p style="font-size:.8125rem;color:var(--text-2);line-height:1.8">
+        <strong>Part 1</strong> — BSM Pricing · 20 marks<br/>
+        <strong>Part 2</strong> — Delta Hedging · 20 marks<br/>
+        <strong>Part 3</strong> — Monte Carlo · 20 marks<br/>
+        <strong>Bonus</strong> — Antithetic · +5 marks<br/>
+        <strong>Total</strong> — 60 marks (+ 5 bonus)
+      </p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Useful Links</div>
+      <a href="https://www.nseindia.com/option-chain" target="_blank" class="sr-link">NSE Option Chain ↗</a>
+      <a href="https://in.finance.yahoo.com" target="_blank" class="sr-link">Yahoo Finance India ↗</a>
+      <a href="https://www.rbi.org.in" target="_blank" class="sr-link">RBI Rates ↗</a>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 All Calculators</div>
+      <a href="tools.html#black-scholes"    class="sr-link">Black-Scholes →</a>
+      <a href="tools.html#implied-vol"      class="sr-link">Implied Vol →</a>
+      <a href="tools.html#greeks-dashboard" class="sr-link">Greeks Dashboard →</a>
+      <a href="tools.html#payoff-builder"   class="sr-link">Payoff Builder →</a>
+      <a href="s5-1.html"                   class="sr-link">Monte Carlo →</a>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 13 (BSM), Ch. 19 (Greeks &amp; Hedging), Ch. 21 (Monte Carlo).</p>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('project.html');
+  DLab.renderSidebar(null);
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Project' }
+  ]);
+  DLab.track('PROJECT_OPEN', {});
+});
+</script>
+</body>
+</html>

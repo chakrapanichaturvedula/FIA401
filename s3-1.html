@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option Basics — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Option Chain Styles ── */
+    .chain-wrap {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+    .chain-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--navy);
+      color: #fff;
+    }
+    .chain-header h3 { font-size: .9375rem; font-weight: 700; }
+    .chain-spot { font-family: var(--font-mono); font-size: .875rem; color: rgba(255,255,255,.75); }
+    .chain-spot b { color: #7eb8e0; font-size: 1rem; }
+
+    .chain-selector {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .chain-sel-btn {
+      padding: 4px 12px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--navy);
+      transition: all .15s;
+    }
+    .chain-sel-btn.active, .chain-sel-btn:hover {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+
+    .chain-table { width: 100%; border-collapse: collapse; font-size: .8125rem; }
+    .chain-table thead th {
+      padding: 8px 10px;
+      background: #f8fafc;
+      color: var(--text-2);
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 1.5px solid var(--border);
+      position: relative;
+      font-size: .75rem;
+      letter-spacing: .03em;
+      cursor: help;
+    }
+    .chain-table thead th:hover .col-tip { display: block; }
+
+    /* Column tooltip */
+    .col-tip {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: .75rem;
+      font-weight: 400;
+      white-space: nowrap;
+      z-index: 100;
+      line-height: 1.5;
+      pointer-events: none;
+      max-width: 220px;
+      white-space: normal;
+      text-align: left;
+    }
+    .col-tip::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-bottom-color: var(--navy);
+    }
+
+    /* CALLS side = c3-bg tint; PUTS side = c2-bg tint */
+    .chain-table .call-side { background: #f6f3fb; }
+    .chain-table .put-side  { background: #fdf5f1; }
+    .chain-table .strike-col {
+      background: var(--navy);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-align: center;
+      padding: 9px 12px;
+    }
+
+    /* ITM / ATM / OTM row classes */
+    .chain-table tr.atm-row .call-side { background: #ede8f7; }
+    .chain-table tr.atm-row .put-side  { background: #ede8f7; }
+    .chain-table tr.atm-row .strike-col { background: var(--c3); }
+    .chain-table tr.itm-call .call-side { background: #dff0eb; }
+    .chain-table tr.itm-put  .put-side  { background: #dff0eb; }
+
+    .chain-table td {
+      padding: 8px 10px;
+      text-align: center;
+      border-bottom: 1px solid rgba(0,0,0,.04);
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      color: var(--text);
+      position: relative;
+      cursor: pointer;
+    }
+    .chain-table td:hover .cell-tip { display: block; }
+    .chain-table tbody tr:hover td { opacity: .85; }
+
+    /* Cell tooltip */
+    .cell-tip {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: .75rem;
+      font-weight: 400;
+      white-space: normal;
+      z-index: 200;
+      min-width: 180px;
+      text-align: left;
+      font-family: var(--font-sans);
+      pointer-events: none;
+      line-height: 1.5;
+    }
+    .cell-tip::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-bottom-color: #1e293b;
+    }
+
+    .chain-legend {
+      display: flex;
+      gap: 16px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      font-size: .75rem;
+      color: var(--text-2);
+      flex-wrap: wrap;
+    }
+    .leg { display: flex; align-items: center; gap: 6px; }
+    .leg-dot { width: 12px; height: 12px; border-radius: 3px; }
+    .leg-atm  { background: #ede8f7; border: 1px solid var(--c3); }
+    .leg-itm  { background: #dff0eb; border: 1px solid var(--c4); }
+    .leg-otm  { background: #f6f3fb; border: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c3">Options</span>
+      <h1 class="page-title">Option Basics</h1>
+      <p class="page-subtitle">Calls, puts, payoff profiles, and reading a real NSE-style option chain. Hover over any cell for an explanation.</p>
+    </div>
+
+    <!-- What is an Option -->
+    <section class="content-section">
+      <h2 class="cs-title">What is an Option?</h2>
+      <p>An option gives the <strong>buyer the right — but not the obligation</strong> — to buy or sell an underlying asset at a predetermined price (the <em>strike</em>) on or before a specific date (the <em>expiry</em>). This right comes at a cost: the <strong>premium</strong> paid upfront.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+        <div class="concept-card" style="border-left:4px solid var(--c3)">
+          <div class="cc-title" style="color:var(--c3)">Call Option</div>
+          <div class="cc-body">
+            Right to <strong>buy</strong> the underlying at the strike price.<br/><br/>
+            Call buyer profits when: Spot &gt; Strike + Premium<br/>
+            Call seller (writer) profits when: Spot ≤ Strike + Premium<br/><br/>
+            <em>Bullish instrument.</em>
+          </div>
+        </div>
+        <div class="concept-card" style="border-left:4px solid var(--c2)">
+          <div class="cc-title" style="color:var(--c2)">Put Option</div>
+          <div class="cc-body">
+            Right to <strong>sell</strong> the underlying at the strike price.<br/><br/>
+            Put buyer profits when: Spot &lt; Strike − Premium<br/>
+            Put seller (writer) profits when: Spot ≥ Strike − Premium<br/><br/>
+            <em>Bearish instrument.</em>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-gold">
+        <strong>Key asymmetry:</strong> The option buyer's maximum loss = premium paid (limited downside). The option seller's maximum gain = premium received — but faces potentially unlimited loss. This asymmetry is what makes options fundamentally different from futures.
+      </div>
+    </section>
+
+    <!-- Option Payoff -->
+    <section class="content-section">
+      <h2 class="cs-title">Payoff at Expiry</h2>
+
+      <div class="formula-box">
+        Long Call payoff = max(S<sub>T</sub> − K, 0) − C<br/>
+        Long Put payoff  = max(K − S<sub>T</sub>, 0) − P<br/>
+        Short Call payoff = C − max(S<sub>T</sub> − K, 0)<br/>
+        Short Put payoff  = P − max(K − S<sub>T</sub>, 0)<br/><br/>
+        K = strike price, S<sub>T</sub> = spot at expiry, C = call premium, P = put premium
+      </div>
+
+      <table class="example-table" style="margin-top:16px">
+        <thead>
+          <tr><th>Position</th><th>Max Profit</th><th>Max Loss</th><th>Breakeven</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Long Call</td><td>Unlimited (as S<sub>T</sub>→∞)</td><td>Premium paid (C)</td><td>K + C</td></tr>
+          <tr><td>Short Call</td><td>Premium received (C)</td><td>Unlimited</td><td>K + C</td></tr>
+          <tr><td>Long Put</td><td>K − P (when S<sub>T</sub>=0)</td><td>Premium paid (P)</td><td>K − P</td></tr>
+          <tr><td>Short Put</td><td>Premium received (P)</td><td>K − P (when S<sub>T</sub>=0)</td><td>K − P</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ITM ATM OTM -->
+    <section class="content-section">
+      <h2 class="cs-title">Moneyness: ITM, ATM, OTM</h2>
+      <p>Moneyness describes the relationship between the current spot price and the strike price. It tells you whether exercising the option right now would generate value.</p>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead>
+          <tr><th>Moneyness</th><th>Call Option</th><th>Put Option</th><th>Intrinsic Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>In-the-Money (ITM)</strong></td><td>Spot &gt; Strike</td><td>Spot &lt; Strike</td><td>Positive (S−K or K−S)</td></tr>
+          <tr><td><strong>At-the-Money (ATM)</strong></td><td>Spot ≈ Strike</td><td>Spot ≈ Strike</td><td>≈ Zero</td></tr>
+          <tr><td><strong>Out-of-the-Money (OTM)</strong></td><td>Spot &lt; Strike</td><td>Spot &gt; Strike</td><td>Zero (no intrinsic value)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue" style="margin-top:14px">
+        <strong>Time value:</strong> Option premium = Intrinsic value + Time value. Even OTM options have a positive premium (time value) because there's a chance they could become ITM before expiry. Time value decays to zero at expiry (theta decay).
+      </div>
+    </section>
+
+    <!-- Interactive Option Chain -->
+    <section class="content-section">
+      <h2 class="cs-title">Interactive Option Chain</h2>
+      <p>Hover over <strong>column headers</strong> to understand each metric. Hover over any <strong>data cell</strong> for a contextual interpretation of that specific value. Click the stock selector to switch between underlyings.</p>
+
+      <div class="chain-wrap">
+        <div class="chain-header">
+          <h3 id="chainTitle">NIFTY Option Chain</h3>
+          <div class="chain-spot">Spot: <b id="chainSpot">22,150</b> | Expiry: <span id="chainExpiry">25-Apr-2026</span></div>
+        </div>
+
+        <div class="chain-selector">
+          <button class="chain-sel-btn active" onclick="loadChain('nifty')">NIFTY</button>
+          <button class="chain-sel-btn" onclick="loadChain('reliance')">RELIANCE</button>
+          <button class="chain-sel-btn" onclick="loadChain('infy')">INFOSYS</button>
+          <button class="chain-sel-btn" onclick="loadChain('hdfc')">HDFCBANK</button>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table class="chain-table" id="chainTable">
+            <thead>
+              <tr>
+                <!-- CALLS side -->
+                <th class="call-side" style="min-width:70px">
+                  OI (Call)
+                  <div class="col-tip">Open Interest (Calls): Total outstanding call contracts at this strike. High OI = strong consensus / resistance. Rising OI with rising price = bullish signal.</div>
+                </th>
+                <th class="call-side">
+                  Vol (Call)
+                  <div class="col-tip">Volume (Calls): Number of call contracts traded today. Spike in volume at a strike often signals institutional activity or gamma hedging.</div>
+                </th>
+                <th class="call-side">
+                  IV%
+                  <div class="col-tip">Implied Volatility (Calls): The market's expectation of future volatility embedded in this call's price. Higher IV = more expensive call. Typically lowest near ATM.</div>
+                </th>
+                <th class="call-side">
+                  LTP (Call)
+                  <div class="col-tip">Last Traded Price (Call): The most recent traded premium for this call option. LTP = Intrinsic Value + Time Value.</div>
+                </th>
+                <!-- STRIKE -->
+                <th class="strike-col" style="background:var(--navy)">
+                  STRIKE
+                </th>
+                <!-- PUTS side -->
+                <th class="put-side">
+                  LTP (Put)
+                  <div class="col-tip">Last Traded Price (Put): The most recent traded premium for this put option. A put with same strike as a call should cost less if the underlying is in an uptrend (put-call parity at work).</div>
+                </th>
+                <th class="put-side">
+                  IV%
+                  <div class="col-tip">Implied Volatility (Puts): IV of puts is often higher than calls at the same strike (volatility skew) due to demand for downside protection. The IV smile/skew pattern is visible across strikes.</div>
+                </th>
+                <th class="put-side">
+                  Vol (Put)
+                  <div class="col-tip">Volume (Puts): Heavy put volume at a strike suggests institutional hedging or bearish bets. "Max pain" theory tracks strike with highest combined OI to predict expiry price.</div>
+                </th>
+                <th class="put-side">
+                  OI (Put)
+                  <div class="col-tip">Open Interest (Puts): High put OI at a strike = support level. Market makers may defend that level (gamma hedging). Often cited in "Put-Call Ratio" analysis.</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="chainBody"></tbody>
+          </table>
+        </div>
+
+        <div class="chain-legend">
+          <div class="leg"><div class="leg-dot leg-atm"></div> ATM (nearest to spot)</div>
+          <div class="leg"><div class="leg-dot leg-itm"></div> ITM (call: strike &lt; spot; put: strike &gt; spot)</div>
+          <div class="leg"><div class="leg-dot leg-otm"></div> OTM (no intrinsic value)</div>
+          <div style="margin-left:auto;color:var(--text-3);font-style:italic">Illustrative data only — not live NSE feed</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 3.1:</strong> A trader buys a Nifty call option with strike K = <strong>22,000</strong> and pays a premium of <strong>₹180</strong> (per unit). At expiry, Nifty is at <strong>22,250</strong>. What is the net profit/loss per unit? (Positive = profit)</p>
+      <div class="practice-block" data-answer="70" data-tol="2" data-section="3.1" data-problem-id="p3-1">
+        <div class="input-row">
+          <span class="input-label">Net P&amp;L per unit (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 70" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          Intrinsic value at expiry = max(S<sub>T</sub> − K, 0) = max(22,250 − 22,000, 0) = ₹250<br/>
+          Net P&amp;L = Intrinsic value − Premium paid = 250 − 180 = <strong>₹70 profit</strong><br/><br/>
+          The call is ITM by ₹250 (intrinsic value), but only ₹70 is profit after subtracting the ₹180 premium cost.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q7-1"
+           data-feedback-correct="Correct! A put option with Strike > Spot has intrinsic value (K − S > 0), making it In-the-Money."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. A put option with strike ₹22,000 when Nifty spot is ₹21,500 is:</p>
+        <ul class="quiz-opts">
+          <li>Out-of-the-Money</li>
+          <li>At-the-Money</li>
+          <li data-correct="true">In-the-Money (ITM)</li>
+          <li>Cannot be determined without the premium</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q7-2"
+           data-feedback-correct="Correct! Option premium = Intrinsic Value + Time Value. OTM options have zero intrinsic value but still have positive time value before expiry."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. An Out-of-the-Money (OTM) option can still have a positive premium because:</p>
+        <ul class="quiz-opts">
+          <li>SEBI regulations require a minimum premium</li>
+          <li data-correct="true">It still has time value — a chance to become ITM before expiry</li>
+          <li>It is equivalent to an ITM option on the other side</li>
+          <li>The seller charges a convenience fee</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q7-3"
+           data-feedback-correct="Correct! The call buyer's maximum loss is exactly the premium paid — the option simply expires worthless."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. The maximum loss for a call option buyer is:</p>
+        <ul class="quiz-opts">
+          <li>Unlimited (if the market falls sharply)</li>
+          <li>The strike price minus the premium</li>
+          <li data-correct="true">The premium paid</li>
+          <li>The difference between strike and spot</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formulas</div>
+      <div class="formula-box" style="font-size:.78rem">
+        Call payoff = max(S<sub>T</sub>−K, 0)−C<br/>
+        Put payoff  = max(K−S<sub>T</sub>, 0)−P<br/><br/>
+        Breakeven (Call) = K + C<br/>
+        Breakeven (Put)  = K − P
+      </div>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 9: <em>Mechanics of Options Markets</em>. Ch. 10: Properties of stock options.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#payoff-builder"   class="sr-link">Payoff Builder →</a>
+      <a href="tools.html#black-scholes"    class="sr-link">Black-Scholes →</a>
+      <a href="tools.html#greeks-dashboard" class="sr-link">Greeks Dashboard →</a>
+    </div>
+
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">In <strong>Part 3</strong> of your project, you will download an option chain for your chosen company from NSE. Identify which strikes are ITM, ATM, OTM and compute intrinsic values.</p>
+    </div>
+
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+/* ── Option Chain Data ── */
+const CHAINS = {
+  nifty: {
+    title: 'NIFTY Option Chain',
+    spot: 22150,
+    expiry: '25-Apr-2026',
+    rows: [
+      { k:21500, c_oi:2840, c_vol:412, c_iv:14.2, c_ltp:685, p_oi:520,  p_vol:88,  p_iv:16.1, p_ltp:18  },
+      { k:21700, c_oi:3120, c_vol:531, c_iv:13.5, c_ltp:490, p_oi:810,  p_vol:142, p_iv:15.4, p_ltp:32  },
+      { k:21900, c_oi:4850, c_vol:880, c_iv:12.8, c_ltp:300, p_oi:1640, p_vol:290, p_iv:14.8, p_ltp:58  },
+      { k:22000, c_oi:6200, c_vol:1240,c_iv:12.2, c_ltp:215, p_oi:2800, p_vol:510, p_iv:14.2, p_ltp:85  },
+      { k:22100, c_oi:5400, c_vol:960, c_iv:11.9, c_ltp:145, p_oi:3500, p_vol:640, p_iv:13.9, p_ltp:120 },
+      { k:22200, c_oi:7800, c_vol:1650,c_iv:11.5, c_ltp:88,  p_oi:5200, p_vol:980, p_iv:13.5, p_ltp:170 },
+      { k:22300, c_oi:5100, c_vol:820, c_iv:11.2, c_ltp:48,  p_oi:4100, p_vol:720, p_iv:13.2, p_ltp:235 },
+      { k:22500, c_oi:3200, c_vol:510, c_iv:10.8, c_ltp:19,  p_oi:1800, p_vol:310, p_iv:12.8, p_ltp:368 },
+      { k:22700, c_oi:1400, c_vol:210, c_iv:10.5, c_ltp:7,   p_oi:680,  p_vol:105, p_iv:12.4, p_ltp:520 },
+    ]
+  },
+  reliance: {
+    title: 'RELIANCE Option Chain',
+    spot: 2460,
+    expiry: '25-Apr-2026',
+    rows: [
+      { k:2300, c_oi:1200, c_vol:180, c_iv:18.4, c_ltp:172, p_oi:240,  p_vol:38,  p_iv:20.1, p_ltp:9   },
+      { k:2340, c_oi:1840, c_vol:310, c_iv:17.2, c_ltp:128, p_oi:420,  p_vol:71,  p_iv:19.0, p_ltp:16  },
+      { k:2380, c_oi:2640, c_vol:490, c_iv:16.3, c_ltp:89,  p_oi:810,  p_vol:145, p_iv:17.9, p_ltp:28  },
+      { k:2420, c_oi:3900, c_vol:720, c_iv:15.5, c_ltp:55,  p_oi:1620, p_vol:295, p_iv:16.8, p_ltp:48  },
+      { k:2460, c_oi:5800, c_vol:1100,c_iv:14.8, c_ltp:31,  p_oi:3100, p_vol:580, p_iv:16.2, p_ltp:72  },
+      { k:2500, c_oi:4200, c_vol:780, c_iv:14.2, c_ltp:16,  p_oi:2400, p_vol:440, p_iv:15.6, p_ltp:106 },
+      { k:2540, c_oi:2100, c_vol:360, c_iv:13.8, c_ltp:7,   p_oi:980,  p_vol:165, p_iv:15.0, p_ltp:148 },
+      { k:2580, c_oi:880,  c_vol:140, c_iv:13.4, c_ltp:3,   p_oi:340,  p_vol:52,  p_iv:14.5, p_ltp:194 },
+    ]
+  },
+  infy: {
+    title: 'INFOSYS Option Chain',
+    spot: 1520,
+    expiry: '25-Apr-2026',
+    rows: [
+      { k:1420, c_oi:920,  c_vol:140, c_iv:19.2, c_ltp:106, p_oi:180,  p_vol:28,  p_iv:21.4, p_ltp:4   },
+      { k:1460, c_oi:1540, c_vol:260, c_iv:17.8, c_ltp:65,  p_oi:420,  p_vol:72,  p_iv:19.8, p_ltp:10  },
+      { k:1480, c_oi:2200, c_vol:410, c_iv:16.9, c_ltp:46,  p_oi:840,  p_vol:148, p_iv:18.5, p_ltp:16  },
+      { k:1500, c_oi:3800, c_vol:720, c_iv:15.8, c_ltp:31,  p_oi:2100, p_vol:390, p_iv:17.4, p_ltp:26  },
+      { k:1520, c_oi:5600, c_vol:1080,c_iv:14.9, c_ltp:19,  p_oi:3400, p_vol:640, p_iv:16.8, p_ltp:38  },
+      { k:1540, c_oi:3100, c_vol:560, c_iv:14.3, c_ltp:11,  p_oi:2200, p_vol:400, p_iv:16.1, p_ltp:54  },
+      { k:1560, c_oi:1400, c_vol:240, c_iv:13.8, c_ltp:5,   p_oi:860,  p_vol:148, p_iv:15.5, p_ltp:74  },
+      { k:1600, c_oi:420,  c_vol:65,  c_iv:13.2, c_ltp:2,   p_oi:220,  p_vol:34,  p_iv:14.8, p_ltp:118 },
+    ]
+  },
+  hdfc: {
+    title: 'HDFCBANK Option Chain',
+    spot: 1680,
+    expiry: '25-Apr-2026',
+    rows: [
+      { k:1560, c_oi:680,  c_vol:95,  c_iv:20.1, c_ltp:124, p_oi:120,  p_vol:18,  p_iv:22.5, p_ltp:4   },
+      { k:1600, c_oi:1280, c_vol:200, c_iv:18.6, c_ltp:84,  p_oi:310,  p_vol:55,  p_iv:20.8, p_ltp:10  },
+      { k:1640, c_oi:2800, c_vol:520, c_iv:17.0, c_ltp:49,  p_oi:920,  p_vol:175, p_iv:19.0, p_ltp:21  },
+      { k:1660, c_oi:4200, c_vol:820, c_iv:16.2, c_ltp:34,  p_oi:2200, p_vol:420, p_iv:18.1, p_ltp:30  },
+      { k:1680, c_oi:6400, c_vol:1300,c_iv:15.4, c_ltp:22,  p_oi:3800, p_vol:730, p_iv:17.5, p_ltp:42  },
+      { k:1700, c_oi:4600, c_vol:880, c_iv:14.8, c_ltp:13,  p_oi:2800, p_vol:520, p_iv:16.9, p_ltp:58  },
+      { k:1720, c_oi:2100, c_vol:380, c_iv:14.2, c_ltp:7,   p_oi:1100, p_vol:195, p_iv:16.2, p_ltp:78  },
+      { k:1760, c_oi:680,  c_vol:110, c_iv:13.5, c_ltp:2,   p_oi:320,  p_vol:52,  p_iv:15.5, p_ltp:120 },
+    ]
+  }
+};
+
+function fmt(n) { return n.toLocaleString('en-IN'); }
+
+function rowClass(spot, k, prev_k, next_k) {
+  const atm_dist = Math.abs(k - spot);
+  const prev_dist = prev_k !== null ? Math.abs(prev_k - spot) : Infinity;
+  const next_dist = next_k !== null ? Math.abs(next_k - spot) : Infinity;
+  if (atm_dist <= Math.min(prev_dist, next_dist)) return 'atm-row';
+  if (k < spot) return 'itm-call';
+  if (k > spot) return 'itm-put';
+  return '';
+}
+
+function callCellTip(col, row, spot) {
+  const itm = row.k < spot;
+  const otm = row.k > spot;
+  const tips = {
+    c_oi:  `${fmt(row.c_oi)} open contracts at this strike. ` + (row.c_oi > 5000 ? 'Very high OI — significant resistance/support level.' : 'Moderate participation.'),
+    c_vol: `${fmt(row.c_vol)} call contracts traded today. ` + (row.c_vol > 1000 ? 'High activity — possible institutional positioning.' : ''),
+    c_iv:  `${row.c_iv}% implied vol (call). ` + (row.c_iv < 12 ? 'Relatively cheap calls.' : 'Premium elevated.'),
+    c_ltp: `Call premium = ₹${row.c_ltp}. ` + (itm ? `ITM by ₹${spot - row.k}. Intrinsic = ₹${spot - row.k}, Time value = ₹${Math.max(0, row.c_ltp - (spot - row.k)).toFixed(0)}.` : otm ? `OTM — pure time value. Needs spot > ₹${row.k + row.c_ltp} to profit.` : `ATM — mostly time value. Breakeven ≈ ₹${row.k + row.c_ltp}.`)
+  };
+  return tips[col] || '';
+}
+
+function putCellTip(col, row, spot) {
+  const itm = row.k > spot;
+  const otm = row.k < spot;
+  const tips = {
+    p_ltp: `Put premium = ₹${row.p_ltp}. ` + (itm ? `ITM by ₹${row.k - spot}. Intrinsic = ₹${row.k - spot}, Time value = ₹${Math.max(0, row.p_ltp - (row.k - spot)).toFixed(0)}.` : otm ? `OTM — pure time value. Needs spot < ₹${row.k - row.p_ltp} to profit.` : `ATM — mostly time value. Breakeven ≈ ₹${row.k - row.p_ltp}.`),
+    p_iv:  `${row.p_iv}% implied vol (put). ` + (row.p_iv > row.c_iv ? 'Higher than call IV at same strike — typical volatility skew (demand for protection).' : ''),
+    p_vol: `${fmt(row.p_vol)} put contracts traded today. ` + (row.p_vol > 500 ? 'Heavy put buying may signal hedging or bearish bets.' : ''),
+    p_oi:  `${fmt(row.p_oi)} open put contracts. ` + (row.p_oi > 3000 ? 'High OI — potential support level. Market makers may defend.' : '')
+  };
+  return tips[col] || '';
+}
+
+function loadChain(sym) {
+  document.querySelectorAll('.chain-sel-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const d = CHAINS[sym];
+  document.getElementById('chainTitle').textContent = d.title;
+  document.getElementById('chainSpot').textContent = d.spot.toLocaleString('en-IN');
+  document.getElementById('chainExpiry').textContent = d.expiry;
+
+  const body = document.getElementById('chainBody');
+  body.innerHTML = '';
+
+  d.rows.forEach((row, i) => {
+    const prev_k = i > 0 ? d.rows[i-1].k : null;
+    const next_k = i < d.rows.length - 1 ? d.rows[i+1].k : null;
+    const rc = rowClass(d.spot, row.k, prev_k, next_k);
+    const tr = document.createElement('tr');
+    tr.className = rc;
+
+    const cols = [
+      { cls: 'call-side', key: 'c_oi',  val: fmt(row.c_oi), tip: () => callCellTip('c_oi', row, d.spot) },
+      { cls: 'call-side', key: 'c_vol', val: fmt(row.c_vol), tip: () => callCellTip('c_vol', row, d.spot) },
+      { cls: 'call-side', key: 'c_iv',  val: row.c_iv + '%', tip: () => callCellTip('c_iv', row, d.spot) },
+      { cls: 'call-side', key: 'c_ltp', val: '₹' + row.c_ltp, tip: () => callCellTip('c_ltp', row, d.spot) },
+      { cls: 'strike-col', val: row.k.toLocaleString('en-IN'), tip: () => {
+          const diff = row.k - d.spot;
+          return diff === 0 ? 'ATM Strike' : (diff > 0 ? `OTM Call / ITM Put (${diff} above spot)` : `ITM Call / OTM Put (${Math.abs(diff)} below spot)`);
+        }
+      },
+      { cls: 'put-side',  key: 'p_ltp', val: '₹' + row.p_ltp, tip: () => putCellTip('p_ltp', row, d.spot) },
+      { cls: 'put-side',  key: 'p_iv',  val: row.p_iv + '%', tip: () => putCellTip('p_iv', row, d.spot) },
+      { cls: 'put-side',  key: 'p_vol', val: fmt(row.p_vol), tip: () => putCellTip('p_vol', row, d.spot) },
+      { cls: 'put-side',  key: 'p_oi',  val: fmt(row.p_oi), tip: () => putCellTip('p_oi', row, d.spot) },
+    ];
+
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      td.className = c.cls;
+      const tipText = c.tip();
+      td.innerHTML = c.val + (tipText ? `<div class="cell-tip">${tipText}</div>` : '');
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('3.1');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Options', href: 'course.html' },
+    { label: 'Option Basics' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '3.1' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '3.1' });
+  loadChain('nifty');
+});
+</script>
+</body>
+</html>

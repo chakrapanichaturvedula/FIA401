@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markets, Longs & Shorts — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+
+  <!-- Left sidebar -->
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c1">Derivative Basics</span>
+      <h1 class="page-title">Markets, Longs &amp; Shorts</h1>
+      <p class="page-subtitle">What derivatives are, where they trade, and the two fundamental positions every trader takes.</p>
+    </div>
+
+    <!-- SECTION: What is a Derivative? -->
+    <section class="content-section">
+      <h2 class="cs-title">What is a Derivative?</h2>
+      <p>A <strong>derivative</strong> is a financial contract whose value <em>derives</em> from the performance of an underlying asset, index, or rate. The underlying can be an equity (Reliance, Nifty), commodity (gold, crude oil), currency (USD/INR), or interest rate.</p>
+      <p style="margin-top:12px">Derivatives are not investments in the underlying itself — they are <em>agreements</em> about the future value of that underlying. This distinction gives derivatives their power: you can take a large economic exposure with a fraction of the capital.</p>
+
+      <div class="callout callout-blue" style="margin-top:18px">
+        <strong>Key idea:</strong> If you buy 100 shares of Reliance at ₹2,450, you own ₹2,45,000 worth of stock. If you buy one Reliance futures contract (lot size 250), you control ₹6,12,500 of exposure with an initial margin of roughly ₹60,000 — about 10% of the notional.
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px">
+        <div class="concept-card">
+          <div class="cc-title">Futures</div>
+          <div class="cc-body">Agreement to buy/sell an asset at a fixed price on a fixed future date. Traded on exchange, daily MTM.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Options</div>
+          <div class="cc-body">Right (but not obligation) to buy (call) or sell (put) at a strike price before or on expiry.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Swaps</div>
+          <div class="cc-body">Exchange of cash flows over time — e.g. fixed interest rate for floating rate (interest rate swap).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Derivative Markets -->
+    <section class="content-section">
+      <h2 class="cs-title">Exchange-Traded vs OTC Markets</h2>
+      <p>Derivatives trade in two distinct arenas, each with its own risk profile and regulation.</p>
+
+      <table class="example-table" style="margin-top:16px">
+        <thead>
+          <tr><th>Feature</th><th>Exchange-Traded</th><th>OTC (Over-the-Counter)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Trading venue</td><td>NSE / BSE (India), CME (US)</td><td>Bilateral agreement between two parties</td></tr>
+          <tr><td>Contract design</td><td>Standardised (lot size, expiry)</td><td>Fully customised</td></tr>
+          <tr><td>Settlement</td><td>Daily MTM + central clearing</td><td>At maturity (usually)</td></tr>
+          <tr><td>Counterparty risk</td><td>Eliminated — NSCCL guarantees</td><td>High — depends on credit of counterparty</td></tr>
+          <tr><td>Transparency</td><td>Public prices, volumes, OI</td><td>Private — reported post-trade</td></tr>
+          <tr><td>Liquidity</td><td>High for major contracts</td><td>Depends on relationship</td></tr>
+          <tr><td>Indian example</td><td>Nifty50 futures, USD/INR futures</td><td>USD/INR 3-month forward with a bank</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue" style="margin-top:18px">
+        <strong>Central Clearing:</strong> Exchange-traded derivatives eliminate counterparty risk through a central counterparty (CCP). In India, the <strong>NSE Clearing Ltd (NSCCL)</strong> stands between every buyer and seller. If one party defaults, the CCP covers the loss from the margin pool.
+      </div>
+    </section>
+
+    <!-- SECTION: Long & Short Positions -->
+    <section class="content-section">
+      <h2 class="cs-title">Long &amp; Short Positions</h2>
+      <p>Every derivative trade involves exactly two sides — a long and a short. Understanding which side you are on, and how you profit or lose, is the foundation of all further analysis.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px">
+        <div class="concept-card" style="border-left:4px solid #2D6A4F">
+          <div class="cc-title" style="color:#2D6A4F">📈 Long Position</div>
+          <div class="cc-body">
+            You <strong>buy</strong> (or agree to buy) the asset. You profit when the price <strong>rises</strong>. You lose when the price falls.<br/><br/>
+            <em>Examples:</em> Buying a call option. Taking the buy side of a futures contract. Buying shares.
+          </div>
+        </div>
+        <div class="concept-card" style="border-left:4px solid #c0392b">
+          <div class="cc-title" style="color:#c0392b">📉 Short Position</div>
+          <div class="cc-body">
+            You <strong>sell</strong> (or agree to sell) the asset. You profit when the price <strong>falls</strong>. You lose when the price rises.<br/><br/>
+            <em>Examples:</em> Writing a call option. Taking the sell side of a futures contract. Short-selling shares.
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin:24px 0 10px;font-size:1rem;color:var(--navy)">Payoff at Expiry</h3>
+      <div class="formula-box">
+        Long futures payoff &nbsp;= F<sub>T</sub> − F<sub>0</sub><br/>
+        Short futures payoff = F<sub>0</sub> − F<sub>T</sub><br/><br/>
+        where F<sub>0</sub> = entry price, F<sub>T</sub> = closing/expiry price
+      </div>
+
+      <table class="example-table" style="margin-top:16px">
+        <thead>
+          <tr><th>Expiry Price F<sub>T</sub></th><th>Long P&amp;L (F<sub>0</sub> = 22,000, lot 50)</th><th>Short P&amp;L</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>21,500</td><td class="text-red">−₹25,000</td><td class="text-green">+₹25,000</td></tr>
+          <tr><td>22,000</td><td>₹0</td><td>₹0</td></tr>
+          <tr><td>22,500</td><td class="text-green">+₹25,000</td><td class="text-red">−₹25,000</td></tr>
+          <tr><td>23,000</td><td class="text-green">+₹50,000</td><td class="text-red">−₹50,000</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.8125rem;color:var(--text-3);margin-top:6px">P&amp;L = (F<sub>T</sub> − F<sub>0</sub>) × lot size × contracts</p>
+
+      <div class="callout callout-gold" style="margin-top:18px">
+        <strong>Zero-sum game:</strong> The long's gain is exactly equal to the short's loss and vice versa. Derivatives do not create wealth — they <em>transfer</em> risk from those who don't want it (hedgers) to those who do (speculators).
+      </div>
+    </section>
+
+    <!-- SECTION: Worked Example -->
+    <section class="content-section">
+      <h2 class="cs-title">Worked Example</h2>
+      <p><strong>Scenario:</strong> Arjun is bullish on Nifty. He buys one Nifty50 futures contract at <strong>₹22,000</strong>. The lot size is 50 units.</p>
+      <table class="example-table" style="margin-top:14px">
+        <thead><tr><th>Outcome at Expiry</th><th>Nifty closes at</th><th>Arjun's P&amp;L</th><th>What happened</th></tr></thead>
+        <tbody>
+          <tr><td>Bullish view correct</td><td>22,350</td><td class="text-green">+₹17,500</td><td>(22,350 − 22,000) × 50</td></tr>
+          <tr><td>Sideways</td><td>22,000</td><td>₹0</td><td>No movement</td></tr>
+          <tr><td>Bearish move</td><td>21,700</td><td class="text-red">−₹15,000</td><td>(21,700 − 22,000) × 50</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px">Notice that if Arjun had simply bought 50 shares of the Nifty ETF at ₹220 each (≈ ₹11,000 outlay), his upside would be the same but he would have needed much more capital. The futures allowed him to take the same economic position with lower upfront capital.</p>
+    </section>
+
+    <!-- SECTION: Practice Problem -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 1.1:</strong> Priya shorts one Nifty50 futures contract at <strong>₹21,800</strong> (lot size = 50). The contract closes at expiry at <strong>₹21,600</strong>. What is her total P&amp;L on the position (in ₹)?</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0">Enter your answer (positive = profit, negative = loss):</p>
+      <div class="practice-block" data-answer="10000" data-tol="10" data-section="1.1" data-problem-id="p1-1">
+        <div class="input-row">
+          <span class="input-label">P&amp;L (₹)</span>
+          <input class="answer-input" type="number" placeholder="e.g. 10000" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step solution:</strong><br/>
+          Short P&amp;L = (F<sub>0</sub> − F<sub>T</sub>) × lot size<br/>
+          = (21,800 − 21,600) × 50<br/>
+          = 200 × 50<br/>
+          = <strong>₹10,000 profit</strong><br/><br/>
+          Priya sold at 21,800 and the price fell to 21,600 — the short position gained ₹200 per unit × 50 units.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- SECTION: Quick Check Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q1-1"
+           data-feedback-correct="Correct! Exchange-traded derivatives use central clearing (NSCCL in India) to eliminate counterparty risk."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. Which market uses standardised contracts and central clearing to eliminate counterparty risk?</p>
+        <ul class="quiz-opts">
+          <li data-correct="true">Exchange-traded (e.g. NSE)</li>
+          <li>OTC bilateral market</li>
+          <li>Forward market</li>
+          <li>Swap market</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q1-2"
+           data-feedback-correct="Correct! Long payoff = F_T − F_0. When F_T > F_0, the long profits."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. An investor who is LONG a futures contract benefits when the price:</p>
+        <ul class="quiz-opts">
+          <li>Falls below the entry price</li>
+          <li data-correct="true">Rises above the entry price</li>
+          <li>Stays exactly the same</li>
+          <li>Becomes more volatile</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q1-3"
+           data-feedback-correct="Correct! Central clearing makes the CCP (NSCCL) the counterparty to every trade, eliminating bilateral default risk."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. What primarily eliminates counterparty risk in exchange-traded derivatives?</p>
+        <ul class="quiz-opts">
+          <li>SEBI regulation alone</li>
+          <li>Large margin requirements</li>
+          <li data-correct="true">Central clearing through NSCCL</li>
+          <li>Credit default swaps</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+
+    <div class="sr-card">
+      <div class="sr-card-title">Key Formulas</div>
+      <div class="formula-box" style="font-size:.8125rem">
+        Long P&amp;L = F<sub>T</sub> − F<sub>0</sub><br/>
+        Short P&amp;L = F<sub>0</sub> − F<sub>T</sub><br/>
+        × lot size × contracts
+      </div>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull, <em>Options, Futures &amp; Other Derivatives</em>, Chapter 1: Introduction — Derivative markets and instruments.</p>
+    </div>
+
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#futures-pricer" class="sr-link">Futures Pricer →</a>
+      <a href="tools.html#payoff-builder" class="sr-link">Payoff Builder →</a>
+    </div>
+
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">In <strong>Part 1 of your project</strong>, you will identify a real NSE futures contract, record the long/short positions your chosen company might take, and download live data. Start thinking now: what company and what exposure?</p>
+    </div>
+
+  </aside>
+
+</div><!-- /page-inner -->
+
+<script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('1.1');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Derivative Basics', href: 'course.html' },
+    { label: 'Markets, Longs & Shorts' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '1.1' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '1.1' });
+});
+</script>
+</body>
+</html>

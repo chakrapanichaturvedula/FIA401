@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monte Carlo Simulation — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Simulation Canvas Area ── */
+    .sim-panel {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 18px;
+    }
+    .sim-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .sim-field label {
+      display: block;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .sim-field input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: .875rem;
+      color: var(--text);
+      background: var(--bg);
+      box-sizing: border-box;
+    }
+    .sim-field input:focus { outline: none; border-color: var(--c5); }
+
+    .sim-run-btn {
+      padding: 10px 24px;
+      background: var(--c5);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: .9375rem;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .sim-run-btn:hover { background: #9a700a; }
+
+    canvas#simCanvas {
+      width: 100%;
+      height: 320px;
+      display: block;
+      border-radius: 8px;
+      background: #0f172a;
+    }
+
+    .sim-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .sim-stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-width: 130px;
+    }
+    .sim-stat-label { font-size: .72rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; }
+    .sim-stat-val { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-top: 2px; }
+  </style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="page-inner">
+  <aside class="sidebar-left" id="sidebar-tree"></aside>
+
+  <main class="main-content">
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="page-header">
+      <span class="badge badge-c5">Simulation & Valuation</span>
+      <h1 class="page-title">Monte Carlo Simulation</h1>
+      <p class="page-subtitle">Simulating thousands of stock price paths using Geometric Brownian Motion to price options and understand uncertainty.</p>
+    </div>
+
+    <!-- Conceptual Introduction -->
+    <section class="content-section">
+      <h2 class="cs-title">Why Monte Carlo?</h2>
+      <p>Many derivatives are too complex for closed-form formulas like Black-Scholes. <strong>Monte Carlo simulation</strong> solves this by generating thousands of possible future price paths, computing the option payoff at the end of each, and averaging them (discounted to present value).</p>
+
+      <p style="margin-top:12px">The law of large numbers guarantees that with enough paths, the average converges to the true expected value. This is how banks price exotic options, compute VaR, and run stress tests.</p>
+
+      <div class="callout callout-gold">
+        <strong>Real-world use:</strong> Beninga's Excel model (which you've seen in class) does exactly this — 10,000 GBM paths, compute payoff for each, discount average. The simulation below lets you see this live.
+      </div>
+    </section>
+
+    <!-- GBM Model -->
+    <section class="content-section">
+      <h2 class="cs-title">Geometric Brownian Motion (GBM)</h2>
+      <p>Stock prices are modelled using GBM — continuous random walks with drift. The key insight is that <em>log-returns</em> are normally distributed, which ensures prices remain positive.</p>
+
+      <div class="formula-box">
+        Continuous form: dS = μ·S·dt + σ·S·dW<br/><br/>
+        Discrete simulation (Euler scheme):<br/>
+        S<sub>t+Δt</sub> = S<sub>t</sub> · exp[(μ − σ²/2)·Δt + σ·√Δt·Z]<br/><br/>
+        where: Z ~ N(0,1) (standard normal random draw)<br/>
+        μ = drift (expected return), σ = volatility, Δt = time step
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0">
+        <div class="concept-card">
+          <div class="cc-title">Drift (μ)</div>
+          <div class="cc-body">The expected daily/annual return of the stock. Under risk-neutral pricing (for option valuation), μ = r (risk-free rate), not the stock's actual expected return. This is a critical subtlety.</div>
+        </div>
+        <div class="concept-card">
+          <div class="cc-title">Random Shock (σ·Z)</div>
+          <div class="cc-body">Random component. Each step draws a new Z from N(0,1). This models the unpredictable daily noise in stock returns. σ·√Δt scales the shock to the appropriate time interval.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-blue" style="margin-top:4px">
+        <strong>Risk-neutral pricing:</strong> When valuing derivatives via MC, we use μ = r (risk-free rate) as the drift, not the actual stock return. This is the same risk-neutral probability trick used in the binomial model. The discounted expected payoff is then the fair option price.
+      </div>
+    </section>
+
+    <!-- Interactive Simulation -->
+    <section class="content-section">
+      <h2 class="cs-title">Live GBM Simulation</h2>
+      <p>Adjust the parameters and click <strong>Run Simulation</strong> to generate random price paths. The simulation prices a European call option by averaging discounted payoffs across all paths.</p>
+
+      <div class="sim-panel">
+        <div class="sim-controls">
+          <div class="sim-field">
+            <label>Spot Price S₀ (₹)</label>
+            <input type="number" id="simS" value="22000" />
+          </div>
+          <div class="sim-field">
+            <label>Strike K (₹)</label>
+            <input type="number" id="simK" value="22200" />
+          </div>
+          <div class="sim-field">
+            <label>Risk-free Rate r (%)</label>
+            <input type="number" id="simR" value="6.5" step="0.1" />
+          </div>
+          <div class="sim-field">
+            <label>Volatility σ (%)</label>
+            <input type="number" id="simSigma" value="18" step="0.5" />
+          </div>
+          <div class="sim-field">
+            <label>Time T (months)</label>
+            <input type="number" id="simT" value="1" step="0.5" />
+          </div>
+          <div class="sim-field">
+            <label>Paths N</label>
+            <input type="number" id="simN" value="500" step="100" max="2000" />
+          </div>
+        </div>
+        <button class="sim-run-btn" onclick="runSim()">▶ Run Simulation</button>
+
+        <div style="margin-top:18px">
+          <canvas id="simCanvas" width="800" height="320"></canvas>
+        </div>
+
+        <div class="sim-stats" id="simStats" style="display:none">
+          <div class="sim-stat">
+            <div class="sim-stat-label">Paths simulated</div>
+            <div class="sim-stat-val" id="statPaths">—</div>
+          </div>
+          <div class="sim-stat">
+            <div class="sim-stat-label">Mean terminal price</div>
+            <div class="sim-stat-val" id="statMean">—</div>
+          </div>
+          <div class="sim-stat">
+            <div class="sim-stat-label">Std deviation</div>
+            <div class="sim-stat-val" id="statStd">—</div>
+          </div>
+          <div class="sim-stat">
+            <div class="sim-stat-label">% paths expire ITM</div>
+            <div class="sim-stat-val" id="statITM">—</div>
+          </div>
+          <div class="sim-stat" style="border-color:var(--c5)">
+            <div class="sim-stat-label">MC Call Price</div>
+            <div class="sim-stat-val" id="statPrice" style="color:var(--c5)">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Convergence -->
+    <section class="content-section">
+      <h2 class="cs-title">Convergence and Accuracy</h2>
+      <p>Monte Carlo is subject to <strong>sampling error</strong> — with too few paths, the estimated option price can vary significantly between runs. More paths = better accuracy, but higher computation time.</p>
+
+      <div class="formula-box">
+        Standard error of MC estimate = σ<sub>payoff</sub> / √N<br/><br/>
+        95% confidence interval: MC price ± 1.96 × (σ<sub>payoff</sub> / √N)<br/><br/>
+        To halve the error: multiply N by 4 (not 2)
+      </div>
+
+      <table class="example-table" style="margin-top:14px">
+        <thead><tr><th>N (paths)</th><th>Approx. SE (illustrative)</th><th>95% CI Width</th></tr></thead>
+        <tbody>
+          <tr><td>100</td><td>±₹25</td><td>±₹49</td></tr>
+          <tr><td>1,000</td><td>±₹7.9</td><td>±₹15.5</td></tr>
+          <tr><td>10,000</td><td>±₹2.5</td><td>±₹4.9</td></tr>
+          <tr><td>1,00,000</td><td>±₹0.79</td><td>±₹1.6</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-green" style="margin-top:14px">
+        <strong>Variance reduction:</strong> Banks use techniques like antithetic variates (pairing each Z with −Z), control variates, and quasi-random sequences to achieve BSM-level accuracy with fewer paths. With these methods, 10,000 paths can match what 1,00,000 naive paths achieve.
+      </div>
+    </section>
+
+    <!-- Practice -->
+    <section class="content-section">
+      <h2 class="cs-title">Practice Problem</h2>
+      <p><strong>Problem 5.1:</strong> A Monte Carlo simulation uses 1,000 paths. The standard deviation of payoffs across paths is ₹<strong>1,200</strong>. What is the standard error of the MC option price estimate (in ₹, round to 2 decimal places)?</p>
+      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0"><em>SE = σ<sub>payoff</sub> / √N</em></p>
+      <div class="practice-block" data-answer="37.95" data-tol="0.5" data-section="5.1" data-problem-id="p5-1">
+        <div class="input-row">
+          <span class="input-label">Standard Error (₹)</span>
+          <input class="answer-input" type="number" step="0.01" placeholder="e.g. 37.95" />
+          <button class="check-btn">Check answer</button>
+        </div>
+        <div class="feedback-box" style="display:none"></div>
+        <div class="steps-panel" style="display:none">
+          <strong>Step-by-step:</strong><br/>
+          SE = σ<sub>payoff</sub> / √N = 1,200 / √1,000<br/>
+          = 1,200 / 31.623 = <strong>₹37.95</strong><br/><br/>
+          The 95% confidence interval for the option price would be: estimate ± 1.96 × 37.95 = estimate ± ₹74.4. A wide range — you'd need ~10× more paths (10,000) to get ±₹23.5.
+        </div>
+        <button class="steps-btn" style="margin-top:10px">Show steps</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="content-section">
+      <h2 class="cs-title">Quick Check</h2>
+
+      <div class="quiz-block" data-quiz-id="q14-1"
+           data-feedback-correct="Correct! Under risk-neutral pricing, we use μ = r (risk-free rate) as the drift, regardless of the stock's actual expected return. This is the core of no-arbitrage pricing."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">1. When using Monte Carlo to price a European call option, the drift (μ) in the GBM model should be set to:</p>
+        <ul class="quiz-opts">
+          <li>The stock's historical average return</li>
+          <li>The stock's beta × market risk premium</li>
+          <li data-correct="true">The risk-free rate (r) — risk-neutral pricing</li>
+          <li>Zero (prices are a random walk with no drift)</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q14-2"
+           data-feedback-correct="Correct! SE ∝ 1/√N. Halving the standard error requires quadrupling N."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">2. To reduce the standard error of a Monte Carlo estimate by half, you must:</p>
+        <ul class="quiz-opts">
+          <li>Double the number of paths</li>
+          <li data-correct="true">Quadruple the number of paths</li>
+          <li>Use a finer time step</li>
+          <li>Increase volatility in the model</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+      <div class="quiz-block" data-quiz-id="q14-3"
+           data-feedback-correct="Correct! MC is particularly valuable for path-dependent options (barriers, Asians, lookbacks) where BSM doesn't apply — and for portfolios with multiple correlated assets."
+           data-feedback-wrong="Not quite — see the highlighted answer.">
+        <p class="quiz-q">3. Monte Carlo simulation is most valuable (vs Black-Scholes) when:</p>
+        <ul class="quiz-opts">
+          <li>Pricing a simple European call on a dividend-paying stock</li>
+          <li>The option has a very short time to expiry</li>
+          <li data-correct="true">Pricing path-dependent or exotic options where no closed-form exists</li>
+          <li>Implied volatility is constant across strikes</li>
+        </ul>
+        <div class="quiz-feedback" style="display:none"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="sidebar-right">
+    <div class="sr-card">
+      <div class="sr-card-title">GBM Formula</div>
+      <div class="formula-box" style="font-size:.75rem">
+        S<sub>T</sub> = S<sub>0</sub>·exp[(r−σ²/2)T + σ√T·Z]<br/><br/>
+        MC Call = e<sup>−rT</sup>·(1/N)·Σ max(S<sub>T,i</sub>−K, 0)
+      </div>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">Hull Reference</div>
+      <p style="font-size:.8125rem;color:var(--text-2)">Hull Ch. 21: <em>Monte Carlo Simulation</em>. Ch. 15: GBM and the BSM model derivation.</p>
+    </div>
+    <div class="sr-card">
+      <div class="sr-card-title">🧮 Calculators</div>
+      <a href="tools.html#black-scholes"  class="sr-link">Black-Scholes →</a>
+      <a href="tools.html#implied-vol"    class="sr-link">Implied Vol →</a>
+    </div>
+    <div class="sr-card" style="border-left:3px solid var(--c5);background:var(--c5-bg)">
+      <div class="sr-card-title">📊 Project Connection</div>
+      <p style="font-size:.8125rem;color:var(--text-2)"><strong>Part 3 (advanced):</strong> Run a Monte Carlo simulation for your chosen option using the BSM-calibrated σ. Compare the MC price distribution with the BSM closed-form price.</p>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js"></script>
+<script>
+/* ── Normal random variable (Box-Muller) ── */
+function randn() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function runSim() {
+  const S0    = parseFloat(document.getElementById('simS').value)    || 22000;
+  const K     = parseFloat(document.getElementById('simK').value)    || 22200;
+  const r     = parseFloat(document.getElementById('simR').value)/100 || 0.065;
+  const sigma = parseFloat(document.getElementById('simSigma').value)/100 || 0.18;
+  const T     = parseFloat(document.getElementById('simT').value)/12  || 1/12;
+  const N     = Math.min(parseInt(document.getElementById('simN').value) || 500, 2000);
+  const steps = 30; // time steps per path
+
+  const dt = T / steps;
+  const drift = (r - 0.5 * sigma * sigma) * dt;
+  const diffusion = sigma * Math.sqrt(dt);
+
+  const canvas  = document.getElementById('simCanvas');
+  const ctx     = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * window.devicePixelRatio || 800;
+  const H = canvas.height = 320 * (window.devicePixelRatio || 1);
+  ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  const cW = W / (window.devicePixelRatio || 1);
+  const cH = H / (window.devicePixelRatio || 1);
+
+  const paths = [];
+  const terminals = [];
+  let payoffSum = 0;
+
+  for (let i = 0; i < N; i++) {
+    let S = S0;
+    const path = [S];
+    for (let t = 0; t < steps; t++) {
+      S = S * Math.exp(drift + diffusion * randn());
+      path.push(S);
+    }
+    paths.push(path);
+    terminals.push(S);
+    payoffSum += Math.max(S - K, 0);
+  }
+
+  const callPrice = Math.exp(-r * T) * payoffSum / N;
+  const mean_T    = terminals.reduce((a, b) => a + b, 0) / N;
+  const variance  = terminals.reduce((s, v) => s + (v - mean_T) ** 2, 0) / N;
+  const std_T     = Math.sqrt(variance);
+  const itm_pct   = (terminals.filter(s => s > K).length / N * 100).toFixed(1);
+
+  /* Draw */
+  const allPrices = paths.flat();
+  const minP = Math.min(...allPrices) * 0.97;
+  const maxP = Math.max(...allPrices) * 1.03;
+  const toX = (i) => (i / steps) * (cW - 40) + 20;
+  const toY = (p) => cH - 30 - ((p - minP) / (maxP - minP)) * (cH - 50);
+
+  ctx.clearRect(0, 0, cW, cH);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, cW, cH);
+
+  /* Grid */
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= 4; g++) {
+    const y = 20 + (cH - 50) * g / 4;
+    ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(cW - 20, y); ctx.stroke();
+    const price = maxP - (maxP - minP) * g / 4;
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.font = '10px Inter';
+    ctx.fillText('₹' + Math.round(price).toLocaleString('en-IN'), 22, y + 4);
+  }
+
+  /* Paths */
+  const drawN = Math.min(N, 200);
+  for (let i = 0; i < drawN; i++) {
+    const terminal = paths[i][steps];
+    const hue = terminal > K ? '120' : terminal > S0 ? '45' : '0';
+    ctx.strokeStyle = `hsla(${hue},70%,55%,0.18)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(S0));
+    for (let t = 1; t <= steps; t++) {
+      ctx.lineTo(toX(t), toY(paths[i][t]));
+    }
+    ctx.stroke();
+  }
+
+  /* Strike line */
+  const ky = toY(K);
+  ctx.strokeStyle = '#f59e0b';
+  ctx.setLineDash([6, 4]);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(20, ky); ctx.lineTo(cW - 20, ky); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = 'bold 11px Inter';
+  ctx.fillText('K = ' + K.toLocaleString('en-IN'), cW - 100, ky - 5);
+
+  /* S0 dot */
+  ctx.fillStyle = '#7eb8e0';
+  ctx.beginPath();
+  ctx.arc(toX(0), toY(S0), 4, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.fillStyle = '#7eb8e0';
+  ctx.font = '10px Inter';
+  ctx.fillText('S₀', toX(0) + 6, toY(S0) + 4);
+
+  /* Stats */
+  document.getElementById('statPaths').textContent  = N.toLocaleString('en-IN');
+  document.getElementById('statMean').textContent   = '₹' + Math.round(mean_T).toLocaleString('en-IN');
+  document.getElementById('statStd').textContent    = '₹' + Math.round(std_T).toLocaleString('en-IN');
+  document.getElementById('statITM').textContent    = itm_pct + '%';
+  document.getElementById('statPrice').textContent  = '₹' + callPrice.toFixed(2);
+  document.getElementById('simStats').style.display = 'flex';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('course.html');
+  DLab.renderSidebar('5.1');
+  DLab.setBreadcrumb([
+    { label: 'Home', href: 'course.html' },
+    { label: 'Simulation & Valuation', href: 'course.html' },
+    { label: 'Monte Carlo Simulation' }
+  ]);
+  DLab.initQuiz('.quiz-block', { sectionId: '5.1' });
+  DLab.initPractice('.practice-block');
+  DLab.track('MODULE_OPEN', { pageId: '5.1' });
+  // Auto-run with defaults
+  setTimeout(runSim, 400);
+});
+</script>
+</body>
+</html>

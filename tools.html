@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculators — DerivativesLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .tools-page { max-width: 1140px; margin: 0 auto; padding: 32px 32px 80px; }
+    .tools-hero { margin-bottom: 36px; }
+    .tools-hero h1 { font-size: 2rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+    .tools-hero p  { color: var(--text-2); font-size: .9375rem; }
+
+    /* Tab nav */
+    .tool-nav {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .tool-nav-btn {
+      padding: 7px 14px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      font-size: .8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--navy);
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .tool-nav-btn.active, .tool-nav-btn:hover {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+
+    /* Calculator card */
+    .calc-card { display: none; }
+    .calc-card.active { display: block; }
+    .calc-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .calc-header h2 { font-size: 1.25rem; font-weight: 700; color: var(--navy); }
+    .calc-header p  { font-size: .875rem; color: var(--text-2); margin-top: 2px; }
+
+    .calc-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 700px) { .calc-body { grid-template-columns: 1fr; } }
+
+    .calc-inputs { background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 20px; }
+    .calc-output { background: var(--navy); border-radius: 10px; padding: 20px; color: #fff; }
+
+    .calc-field { margin-bottom: 14px; }
+    .calc-field label { display: block; font-size: .78rem; font-weight: 600; color: var(--text-2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+    .calc-field input, .calc-field select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-family: var(--font-mono);
+      font-size: .9rem;
+      color: var(--text);
+      background: var(--bg);
+      box-sizing: border-box;
+    }
+    .calc-field input:focus, .calc-field select:focus { outline: none; border-color: var(--navy); }
+
+    .calc-btn {
+      width: 100%;
+      padding: 11px;
+      background: var(--c5);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .9375rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background .2s;
+    }
+    .calc-btn:hover { background: #9a700a; }
+
+    .calc-result-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; opacity: .6; margin-bottom: 4px; }
+    .calc-result-val   { font-family: var(--font-mono); font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 16px; }
+    .calc-result-sub   { font-size: .8125rem; opacity: .75; line-height: 1.8; }
+
+    .calc-error { color: #fca5a5; font-size: .875rem; margin-top: 8px; display: none; }
+
+    /* Formula strip */
+    .calc-formula { font-family: var(--font-mono); font-size: .8125rem; background: rgba(255,255,255,.08); border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; color: rgba(255,255,255,.85); }
+  </style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<div class="tools-page">
+  <div class="tools-hero">
+    <h1>🧮 Web Calculators</h1>
+    <p>10 purpose-built calculators for FIA 401. Results update instantly. All calculations are performed in your browser.</p>
+  </div>
+
+  <!-- Tool Navigation -->
+  <div class="tool-nav" id="toolNav">
+    <button class="tool-nav-btn active" onclick="showTool('futures-pricer',this)">Futures Pricer</button>
+    <button class="tool-nav-btn" onclick="showTool('basis-tracker',this)">Basis Tracker</button>
+    <button class="tool-nav-btn" onclick="showTool('arbitrage',this)">Arbitrage Checker</button>
+    <button class="tool-nav-btn" onclick="showTool('forward-rate',this)">Forward Rate</button>
+    <button class="tool-nav-btn" onclick="showTool('hedge-ratio',this)">Hedge Ratio</button>
+    <button class="tool-nav-btn" onclick="showTool('binomial',this)">Binomial Pricer</button>
+    <button class="tool-nav-btn" onclick="showTool('black-scholes',this)">Black-Scholes</button>
+    <button class="tool-nav-btn" onclick="showTool('implied-vol',this)">Implied Vol</button>
+    <button class="tool-nav-btn" onclick="showTool('payoff-builder',this)">Payoff Builder</button>
+    <button class="tool-nav-btn" onclick="showTool('greeks-dashboard',this)">Greeks Dashboard</button>
+  </div>
+
+  <!-- ── 1. Futures Pricer ── -->
+  <div class="calc-card active" id="futures-pricer">
+    <div class="calc-header">
+      <div><h2>Futures Pricer (Cost of Carry)</h2><p>Compute the theoretical futures price F* and compare to the market price.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot Price S (₹)</label><input type="number" id="fp_S" value="22000" /></div>
+        <div class="calc-field"><label>Risk-free Rate r (% p.a.)</label><input type="number" id="fp_r" value="6.5" step="0.1" /></div>
+        <div class="calc-field"><label>Dividend/Yield q (% p.a.)</label><input type="number" id="fp_q" value="1.2" step="0.1" /></div>
+        <div class="calc-field"><label>Time to Expiry T (months)</label><input type="number" id="fp_T" value="1" step="0.5" /></div>
+        <div class="calc-field"><label>Market Futures Price F (₹)</label><input type="number" id="fp_F" value="22090" /></div>
+        <button class="calc-btn" onclick="calcFP()">Calculate</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">F* = S · e^{(r−q)·T}</div>
+        <div class="calc-result-label">Fair Futures Price (F*)</div>
+        <div class="calc-result-val" id="fp_result">—</div>
+        <div class="calc-result-sub" id="fp_sub">Enter values and click Calculate.</div>
+        <div class="calc-error" id="fp_err"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. Basis Tracker ── -->
+  <div class="calc-card" id="basis-tracker">
+    <div class="calc-header">
+      <div><h2>Basis Tracker</h2><p>Track basis (Spot − Futures) and convergence over time.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot Price S (₹)</label><input type="number" id="bt_S" value="22150" /></div>
+        <div class="calc-field"><label>Futures Price F (₹)</label><input type="number" id="bt_F" value="22230" /></div>
+        <div class="calc-field"><label>Days to Expiry</label><input type="number" id="bt_days" value="21" /></div>
+        <button class="calc-btn" onclick="calcBT()">Calculate</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">Basis = S − F</div>
+        <div class="calc-result-label">Current Basis</div>
+        <div class="calc-result-val" id="bt_result">—</div>
+        <div class="calc-result-sub" id="bt_sub">Enter values and click Calculate.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. Arbitrage Checker ── -->
+  <div class="calc-card" id="arbitrage">
+    <div class="calc-header">
+      <div><h2>Arbitrage Checker</h2><p>Checks if cash-and-carry arbitrage exists and estimates the profit.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot Price S (₹)</label><input type="number" id="arb_S" value="2460" /></div>
+        <div class="calc-field"><label>Market Futures Price F (₹)</label><input type="number" id="arb_F" value="2485" /></div>
+        <div class="calc-field"><label>Risk-free Rate r (% p.a.)</label><input type="number" id="arb_r" value="6.5" step="0.1" /></div>
+        <div class="calc-field"><label>Dividend Yield q (% p.a.)</label><input type="number" id="arb_q" value="1.2" step="0.1" /></div>
+        <div class="calc-field"><label>Time to Expiry T (months)</label><input type="number" id="arb_T" value="1" step="0.5" /></div>
+        <button class="calc-btn" onclick="calcARB()">Check Arbitrage</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">F* = S·e^{(r−q)T} · · · Profit = |F − F*|</div>
+        <div class="calc-result-label">Arbitrage Opportunity</div>
+        <div class="calc-result-val" id="arb_result">—</div>
+        <div class="calc-result-sub" id="arb_sub">Enter values and click Check Arbitrage.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. Forward Rate (FX) ── -->
+  <div class="calc-card" id="forward-rate">
+    <div class="calc-header">
+      <div><h2>Forward Rate Calculator (CIRP)</h2><p>Price USDINR forwards using Covered Interest Rate Parity.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot USD/INR (S)</label><input type="number" id="fx_S" value="83.50" step="0.01" /></div>
+        <div class="calc-field"><label>INR Rate r_d (% p.a.)</label><input type="number" id="fx_rd" value="6.8" step="0.1" /></div>
+        <div class="calc-field"><label>USD Rate r_f (% p.a.)</label><input type="number" id="fx_rf" value="5.3" step="0.1" /></div>
+        <div class="calc-field"><label>Time T (months)</label><input type="number" id="fx_T" value="3" step="0.5" /></div>
+        <button class="calc-btn" onclick="calcFX()">Calculate Forward Rate</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">F = S · e^{(r_d − r_f) · T}</div>
+        <div class="calc-result-label">Forward USD/INR Rate</div>
+        <div class="calc-result-val" id="fx_result">—</div>
+        <div class="calc-result-sub" id="fx_sub">Enter values and click Calculate.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. Hedge Ratio ── -->
+  <div class="calc-card" id="hedge-ratio">
+    <div class="calc-header">
+      <div><h2>Hedge Ratio Calculator</h2><p>Minimum variance hedge ratio and number of contracts (equity or commodity).</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Correlation ρ (−1 to 1)</label><input type="number" id="hr_rho" value="0.88" step="0.01" min="-1" max="1" /></div>
+        <div class="calc-field"><label>σ of Spot (same units)</label><input type="number" id="hr_sigS" value="2.8" step="0.1" /></div>
+        <div class="calc-field"><label>σ of Futures (same units)</label><input type="number" id="hr_sigF" value="3.1" step="0.1" /></div>
+        <div class="calc-field"><label>Exposure Q_A (units)</label><input type="number" id="hr_QA" value="100000" /></div>
+        <div class="calc-field"><label>Contract Size Q_F (units)</label><input type="number" id="hr_QF" value="1000" /></div>
+        <button class="calc-btn" onclick="calcHR()">Calculate</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">h* = ρ·(σ_S/σ_F) · · · N* = h*·(Q_A/Q_F)</div>
+        <div class="calc-result-label">Optimal Contracts N*</div>
+        <div class="calc-result-val" id="hr_result">—</div>
+        <div class="calc-result-sub" id="hr_sub">Enter values and click Calculate.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. Binomial Pricer ── -->
+  <div class="calc-card" id="binomial">
+    <div class="calc-header">
+      <div><h2>Binomial Option Pricer</h2><p>One-period or multi-period binomial tree pricing for European and American options.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot S (₹)</label><input type="number" id="bn_S" value="100" /></div>
+        <div class="calc-field"><label>Strike K (₹)</label><input type="number" id="bn_K" value="100" /></div>
+        <div class="calc-field"><label>Up Factor u</label><input type="number" id="bn_u" value="1.15" step="0.01" /></div>
+        <div class="calc-field"><label>Down Factor d</label><input type="number" id="bn_d" value="0.90" step="0.01" /></div>
+        <div class="calc-field"><label>Risk-free Rate r (% p.a.)</label><input type="number" id="bn_r" value="5" step="0.1" /></div>
+        <div class="calc-field"><label>Steps n</label><input type="number" id="bn_n" value="1" min="1" max="10" /></div>
+        <div class="calc-field"><label>Option Type</label>
+          <select id="bn_type"><option value="call">Call</option><option value="put">Put</option></select>
+        </div>
+        <button class="calc-btn" onclick="calcBN()">Calculate</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">p = (e^{rΔt} − d)/(u − d) · · · C = e^{−rΔt}[p·Cu + (1−p)·Cd]</div>
+        <div class="calc-result-label">Option Price</div>
+        <div class="calc-result-val" id="bn_result">—</div>
+        <div class="calc-result-sub" id="bn_sub">Enter values and click Calculate.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7. Black-Scholes ── -->
+  <div class="calc-card" id="black-scholes">
+    <div class="calc-header">
+      <div><h2>Black-Scholes-Merton Calculator</h2><p>European option pricing with all five Greeks.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot S (₹)</label><input type="number" id="bs_S" value="2460" /></div>
+        <div class="calc-field"><label>Strike K (₹)</label><input type="number" id="bs_K" value="2500" /></div>
+        <div class="calc-field"><label>Risk-free Rate r (% p.a.)</label><input type="number" id="bs_r" value="6.5" step="0.1" /></div>
+        <div class="calc-field"><label>Dividend Yield q (% p.a.)</label><input type="number" id="bs_q" value="1.2" step="0.1" /></div>
+        <div class="calc-field"><label>Volatility σ (% p.a.)</label><input type="number" id="bs_sigma" value="22" step="0.5" /></div>
+        <div class="calc-field"><label>Time T (months)</label><input type="number" id="bs_T" value="1" step="0.5" /></div>
+        <button class="calc-btn" onclick="calcBS()">Calculate</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">C = S·e^{−qT}·N(d₁) − K·e^{−rT}·N(d₂)</div>
+        <div class="calc-result-label">Call Price</div>
+        <div class="calc-result-val" id="bs_call">—</div>
+        <div class="calc-result-sub" id="bs_sub">Enter values and click Calculate.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 8. Implied Vol ── -->
+  <div class="calc-card" id="implied-vol">
+    <div class="calc-header">
+      <div><h2>Implied Volatility Solver</h2><p>Back-solve BSM to find the market's implied volatility from an observed option price.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot S (₹)</label><input type="number" id="iv_S" value="22150" /></div>
+        <div class="calc-field"><label>Strike K (₹)</label><input type="number" id="iv_K" value="22200" /></div>
+        <div class="calc-field"><label>Risk-free Rate r (% p.a.)</label><input type="number" id="iv_r" value="6.5" step="0.1" /></div>
+        <div class="calc-field"><label>Dividend Yield q (% p.a.)</label><input type="number" id="iv_q" value="1.2" step="0.1" /></div>
+        <div class="calc-field"><label>Time T (months)</label><input type="number" id="iv_T" value="1" step="0.5" /></div>
+        <div class="calc-field"><label>Market Call Price C (₹)</label><input type="number" id="iv_C" value="88" /></div>
+        <button class="calc-btn" onclick="calcIV()">Solve for IV</button>
+      </div>
+      <div class="calc-output">
+        <div class="calc-formula">Find σ such that BSM(σ) = C_market</div>
+        <div class="calc-result-label">Implied Volatility</div>
+        <div class="calc-result-val" id="iv_result">—</div>
+        <div class="calc-result-sub" id="iv_sub">Enter observed option price and click Solve.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 9. Payoff Builder ── -->
+  <div class="calc-card" id="payoff-builder">
+    <div class="calc-header">
+      <div><h2>Option Payoff Builder</h2><p>Visualise the payoff and P&amp;L of up to 2 combined option legs.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div style="font-size:.8125rem;font-weight:700;color:var(--navy);margin-bottom:10px">Leg 1</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="calc-field"><label>Type</label>
+            <select id="pb_t1"><option>Long Call</option><option>Short Call</option><option>Long Put</option><option>Short Put</option></select>
+          </div>
+          <div class="calc-field"><label>Strike K₁</label><input type="number" id="pb_k1" value="22000" /></div>
+          <div class="calc-field"><label>Premium</label><input type="number" id="pb_p1" value="200" /></div>
+        </div>
+        <div style="font-size:.8125rem;font-weight:700;color:var(--navy);margin:12px 0 10px">Leg 2 (optional)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="calc-field"><label>Type</label>
+            <select id="pb_t2"><option>None</option><option>Long Call</option><option>Short Call</option><option>Long Put</option><option>Short Put</option></select>
+          </div>
+          <div class="calc-field"><label>Strike K₂</label><input type="number" id="pb_k2" value="22400" /></div>
+          <div class="calc-field"><label>Premium</label><input type="number" id="pb_p2" value="80" /></div>
+        </div>
+        <button class="calc-btn" onclick="calcPB()">Draw Payoff</button>
+      </div>
+      <div class="calc-output" style="background:var(--card);padding:0;border-radius:10px;overflow:hidden">
+        <canvas id="pbCanvas" style="width:100%;height:100%;min-height:260px;background:#0f172a;border-radius:10px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 10. Greeks Dashboard ── -->
+  <div class="calc-card" id="greeks-dashboard">
+    <div class="calc-header">
+      <div><h2>Greeks Dashboard</h2><p>All five Greeks computed from BSM for calls and puts simultaneously.</p></div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-inputs">
+        <div class="calc-field"><label>Spot S (₹)</label><input type="number" id="gd_S" value="22150" /></div>
+        <div class="calc-field"><label>Strike K (₹)</label><input type="number" id="gd_K" value="22200" /></div>
+        <div class="calc-field"><label>Risk-free Rate r (% p.a.)</label><input type="number" id="gd_r" value="6.5" step="0.1" /></div>
+        <div class="calc-field"><label>Dividend Yield q (% p.a.)</label><input type="number" id="gd_q" value="1.2" step="0.1" /></div>
+        <div class="calc-field"><label>Volatility σ (% p.a.)</label><input type="number" id="gd_sigma" value="18" step="0.5" /></div>
+        <div class="calc-field"><label>Time T (months)</label><input type="number" id="gd_T" value="1" step="0.5" /></div>
+        <button class="calc-btn" onclick="calcGD()">Compute Greeks</button>
+      </div>
+      <div class="calc-output">
+        <table style="width:100%;border-collapse:collapse;color:#fff;font-size:.875rem">
+          <thead><tr>
+            <th style="text-align:left;padding:6px 0;opacity:.6;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em">Greek</th>
+            <th style="text-align:right;opacity:.6;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em">Call</th>
+            <th style="text-align:right;opacity:.6;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em">Put</th>
+          </tr></thead>
+          <tbody id="gd_tbody">
+            <tr><td colspan="3" style="text-align:center;opacity:.5;padding:20px 0">Enter values and click Compute Greeks.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tools-page -->
+
+<script src="app.js"></script>
+<script>
+/* ── Math helpers ── */
+function norm_cdf(x) {
+  const t = 1/(1+0.2316419*Math.abs(x));
+  const poly = t*(0.319381530 + t*(-0.356563782 + t*(1.781477937 + t*(-1.821255978 + t*1.330274429))));
+  const p = 1 - 0.3989422803*Math.exp(-x*x/2)*poly;
+  return x >= 0 ? p : 1-p;
+}
+function norm_pdf(x) { return Math.exp(-x*x/2)/Math.sqrt(2*Math.PI); }
+
+function bsm(S, K, r, q, sigma, T) {
+  if (T <= 0 || sigma <= 0) return null;
+  const d1 = (Math.log(S/K) + (r - q + sigma*sigma/2)*T) / (sigma*Math.sqrt(T));
+  const d2 = d1 - sigma*Math.sqrt(T);
+  const eqT = Math.exp(-q*T), erT = Math.exp(-r*T);
+  const call = S*eqT*norm_cdf(d1) - K*erT*norm_cdf(d2);
+  const put  = K*erT*norm_cdf(-d2) - S*eqT*norm_cdf(-d1);
+  const gamma = eqT*norm_pdf(d1)/(S*sigma*Math.sqrt(T));
+  const vega  = S*eqT*norm_pdf(d1)*Math.sqrt(T)/100;
+  const thetaC = (-S*sigma*eqT*norm_pdf(d1)/(2*Math.sqrt(T)) - r*K*erT*norm_cdf(d2) + q*S*eqT*norm_cdf(d1))/365;
+  const thetaP = (-S*sigma*eqT*norm_pdf(d1)/(2*Math.sqrt(T)) + r*K*erT*norm_cdf(-d2) - q*S*eqT*norm_cdf(-d1))/365;
+  const rhoC   =  K*T*erT*norm_cdf(d2)/100;
+  const rhoP   = -K*T*erT*norm_cdf(-d2)/100;
+  return { call, put, d1, d2, deltaC: eqT*norm_cdf(d1), deltaP: -eqT*norm_cdf(-d1), gamma, vega, thetaC, thetaP, rhoC, rhoP };
+}
+
+function showTool(id, btn) {
+  document.querySelectorAll('.calc-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+/* ── 1. Futures Pricer ── */
+function calcFP() {
+  const S=+document.getElementById('fp_S').value, r=(+document.getElementById('fp_r').value)/100,
+        q=(+document.getElementById('fp_q').value)/100, T=(+document.getElementById('fp_T').value)/12,
+        F=+document.getElementById('fp_F').value;
+  const Fstar = S * Math.exp((r-q)*T);
+  const diff = F - Fstar;
+  document.getElementById('fp_result').textContent = '₹' + Fstar.toFixed(2);
+  const market = `Basis = S − F = ${(S-F).toFixed(2)} | `;
+  const arb = Math.abs(diff) < 0.5 ? 'No significant arbitrage.' : (diff > 0 ? `F OVERPRICED by ₹${diff.toFixed(2)} → Sell futures, buy spot.` : `F UNDERPRICED by ₹${Math.abs(diff).toFixed(2)} → Buy futures, short spot.`);
+  document.getElementById('fp_sub').textContent = market + arb;
+}
+
+/* ── 2. Basis Tracker ── */
+function calcBT() {
+  const S=+document.getElementById('bt_S').value, F=+document.getElementById('bt_F').value,
+        d=+document.getElementById('bt_days').value;
+  const basis = S - F;
+  document.getElementById('bt_result').textContent = '₹' + basis.toFixed(2);
+  const type = basis < 0 ? 'Contango (F > S)' : basis > 0 ? 'Backwardation (F < S)' : 'Flat (no carry)';
+  document.getElementById('bt_sub').textContent = `${type} | ${d} days to expiry | Basis per day = ${(basis/d).toFixed(2)}`;
+}
+
+/* ── 3. Arbitrage Checker ── */
+function calcARB() {
+  const S=+document.getElementById('arb_S').value, F=+document.getElementById('arb_F').value,
+        r=(+document.getElementById('arb_r').value)/100, q=(+document.getElementById('arb_q').value)/100,
+        T=(+document.getElementById('arb_T').value)/12;
+  const Fstar = S*Math.exp((r-q)*T), diff = F - Fstar;
+  if (Math.abs(diff) < 0.5) {
+    document.getElementById('arb_result').textContent = 'None';
+    document.getElementById('arb_sub').textContent = `F* = ₹${Fstar.toFixed(2)}. Market price ₹${F} is within ₹0.50 of fair value — no practical arbitrage.`;
+  } else {
+    document.getElementById('arb_result').textContent = '₹' + Math.abs(diff).toFixed(2) + ' profit';
+    const strat = diff > 0 ? 'Sell futures at ' + F + ', buy spot at ' + S + ', borrow at r.' : 'Buy futures at ' + F + ', short spot at ' + S + ', lend proceeds at r.';
+    document.getElementById('arb_sub').textContent = `F* = ₹${Fstar.toFixed(2)}. Strategy: ${strat}`;
+  }
+}
+
+/* ── 4. Forward Rate ── */
+function calcFX() {
+  const S=+document.getElementById('fx_S').value, rd=(+document.getElementById('fx_rd').value)/100,
+        rf=(+document.getElementById('fx_rf').value)/100, T=(+document.getElementById('fx_T').value)/12;
+  const Ffx = S*Math.exp((rd-rf)*T);
+  document.getElementById('fx_result').textContent = '₹' + Ffx.toFixed(4);
+  const premium = (Ffx - S).toFixed(4);
+  const dir = rd > rf ? 'INR at forward premium (r_d > r_f)' : 'INR at forward discount (r_d < r_f)';
+  document.getElementById('fx_sub').textContent = `Forward premium = ₹${premium} per USD | ${dir}`;
+}
+
+/* ── 5. Hedge Ratio ── */
+function calcHR() {
+  const rho=+document.getElementById('hr_rho').value, sigS=+document.getElementById('hr_sigS').value,
+        sigF=+document.getElementById('hr_sigF').value, QA=+document.getElementById('hr_QA').value,
+        QF=+document.getElementById('hr_QF').value;
+  const h = rho * sigS / sigF;
+  const N = h * QA / QF;
+  document.getElementById('hr_result').textContent = Math.round(N) + ' contracts';
+  document.getElementById('hr_sub').textContent = `MVHR h* = ${h.toFixed(4)} | Exact N* = ${N.toFixed(2)} → Round to ${Math.round(N)} contracts | Hedge effectiveness R² ≈ ${(rho*rho*100).toFixed(1)}%`;
+}
+
+/* ── 6. Binomial Pricer ── */
+function calcBN() {
+  const S=+document.getElementById('bn_S').value, K=+document.getElementById('bn_K').value,
+        u=+document.getElementById('bn_u').value, d=+document.getElementById('bn_d').value,
+        r=(+document.getElementById('bn_r').value)/100, n=+document.getElementById('bn_n').value,
+        type=document.getElementById('bn_type').value;
+  const dt = 1/n;
+  const p = (Math.exp(r*dt) - d)/(u - d);
+  if (p <= 0 || p >= 1) { document.getElementById('bn_result').textContent = 'Error'; document.getElementById('bn_sub').textContent = 'u/d parameters invalid (check u > e^r > d).'; return; }
+  // Build terminal values
+  let prices = [];
+  for (let j = 0; j <= n; j++) prices.push(S * Math.pow(u, n-j) * Math.pow(d, j));
+  let values = prices.map(sp => type === 'call' ? Math.max(sp-K, 0) : Math.max(K-sp, 0));
+  const disc = Math.exp(-r*dt);
+  for (let step = n-1; step >= 0; step--) {
+    for (let j = 0; j <= step; j++) {
+      values[j] = disc * (p * values[j] + (1-p) * values[j+1]);
+    }
+  }
+  document.getElementById('bn_result').textContent = '₹' + values[0].toFixed(4);
+  document.getElementById('bn_sub').textContent = `p (risk-neutral) = ${p.toFixed(4)} | Steps: ${n} | Δt = ${dt.toFixed(4)} yr`;
+}
+
+/* ── 7. Black-Scholes ── */
+function calcBS() {
+  const S=+document.getElementById('bs_S').value, K=+document.getElementById('bs_K').value,
+        r=(+document.getElementById('bs_r').value)/100, q=(+document.getElementById('bs_q').value)/100,
+        sigma=(+document.getElementById('bs_sigma').value)/100, T=(+document.getElementById('bs_T').value)/12;
+  const res = bsm(S, K, r, q, sigma, T);
+  if (!res) { document.getElementById('bs_call').textContent = 'Error'; return; }
+  document.getElementById('bs_call').textContent = '₹' + res.call.toFixed(4);
+  document.getElementById('bs_sub').textContent =
+    `Put = ₹${res.put.toFixed(4)} | d₁ = ${res.d1.toFixed(4)} | d₂ = ${res.d2.toFixed(4)}\n` +
+    `Call Δ = ${res.deltaC.toFixed(4)} | Put Δ = ${res.deltaP.toFixed(4)} | Γ = ${res.gamma.toFixed(6)}\n` +
+    `Vega = ₹${res.vega.toFixed(4)}/1% | Call Θ/day = ₹${res.thetaC.toFixed(4)}`;
+}
+
+/* ── 8. Implied Vol (bisection) ── */
+function calcIV() {
+  const S=+document.getElementById('iv_S').value, K=+document.getElementById('iv_K').value,
+        r=(+document.getElementById('iv_r').value)/100, q=(+document.getElementById('iv_q').value)/100,
+        T=(+document.getElementById('iv_T').value)/12, Cmkt=+document.getElementById('iv_C').value;
+  let lo=0.001, hi=5, mid, price, iters=0;
+  do {
+    mid = (lo+hi)/2;
+    const res = bsm(S, K, r, q, mid, T);
+    price = res ? res.call : 0;
+    if (price < Cmkt) lo = mid; else hi = mid;
+    iters++;
+  } while (Math.abs(price - Cmkt) > 0.001 && iters < 200);
+  document.getElementById('iv_result').textContent = (mid*100).toFixed(2) + '%';
+  const res = bsm(S, K, r, q, mid, T);
+  document.getElementById('iv_sub').textContent = `Solved in ${iters} iterations | BSM price at IV = ₹${res.call.toFixed(4)} | IV = ${(mid*100).toFixed(4)}%`;
+}
+
+/* ── 9. Payoff Builder ── */
+function legPayoff(type, K, prem, S) {
+  switch(type) {
+    case 'Long Call':  return Math.max(S-K, 0) - prem;
+    case 'Short Call': return prem - Math.max(S-K, 0);
+    case 'Long Put':   return Math.max(K-S, 0) - prem;
+    case 'Short Put':  return prem - Math.max(K-S, 0);
+    default: return 0;
+  }
+}
+function calcPB() {
+  const t1=document.getElementById('pb_t1').value, k1=+document.getElementById('pb_k1').value,
+        p1=+document.getElementById('pb_p1').value, t2=document.getElementById('pb_t2').value,
+        k2=+document.getElementById('pb_k2').value, p2=+document.getElementById('pb_p2').value;
+  const canvas = document.getElementById('pbCanvas');
+  const W = canvas.width = canvas.offsetWidth || 400;
+  const H = canvas.height = Math.max(canvas.offsetHeight, 260);
+  const ctx = canvas.getContext('2d');
+  const midK = (k1 + (t2!=='None' ? k2 : k1))/2;
+  const range = Math.max(midK*0.15, 500);
+  const Smin = midK - range, Smax = midK + range;
+  const steps = 100;
+  const payoffs = [];
+  for (let i = 0; i <= steps; i++) {
+    const S = Smin + (Smax-Smin)*i/steps;
+    let pnl = legPayoff(t1, k1, p1, S);
+    if (t2 !== 'None') pnl += legPayoff(t2, k2, p2, S);
+    payoffs.push({ S, pnl });
+  }
+  const maxPnl = Math.max(...payoffs.map(p=>p.pnl));
+  const minPnl = Math.min(...payoffs.map(p=>p.pnl));
+  const pad = (maxPnl - minPnl)*0.15 || 50;
+  const toX = S => (S - Smin)/(Smax-Smin)*(W-60)+30;
+  const toY = v => H-30 - (v - minPnl + pad)/((maxPnl - minPnl + 2*pad))*(H-50);
+
+  ctx.fillStyle='#0f172a'; ctx.fillRect(0,0,W,H);
+  // Zero line
+  const zy = toY(0);
+  ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(30,zy); ctx.lineTo(W-30,zy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px Inter'; ctx.fillText('₹0',32,zy-4);
+  // Payoff line
+  ctx.strokeStyle='#7eb8e0'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  payoffs.forEach((p,i) => i===0 ? ctx.moveTo(toX(p.S),toY(p.pnl)) : ctx.lineTo(toX(p.S),toY(p.pnl)));
+  ctx.stroke();
+  // Gradient fill
+  const gy = ctx.createLinearGradient(0,toY(maxPnl),0,toY(minPnl));
+  gy.addColorStop(0,'rgba(46,160,67,.35)'); gy.addColorStop(0.5,'rgba(126,184,224,.1)'); gy.addColorStop(1,'rgba(192,57,43,.3)');
+  ctx.fillStyle=gy;
+  ctx.beginPath();
+  ctx.moveTo(toX(payoffs[0].S), zy);
+  payoffs.forEach(p => ctx.lineTo(toX(p.S), toY(p.pnl)));
+  ctx.lineTo(toX(payoffs[payoffs.length-1].S), zy); ctx.closePath(); ctx.fill();
+  // Labels
+  ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font='10px Inter';
+  ctx.fillText('S_T →', W-55, zy+14);
+}
+
+/* ── 10. Greeks Dashboard ── */
+function calcGD() {
+  const S=+document.getElementById('gd_S').value, K=+document.getElementById('gd_K').value,
+        r=(+document.getElementById('gd_r').value)/100, q=(+document.getElementById('gd_q').value)/100,
+        sigma=(+document.getElementById('gd_sigma').value)/100, T=(+document.getElementById('gd_T').value)/12;
+  const res = bsm(S, K, r, q, sigma, T);
+  if (!res) return;
+  const rows = [
+    ['Price', '₹' + res.call.toFixed(2), '₹' + res.put.toFixed(2)],
+    ['Δ Delta', res.deltaC.toFixed(4), res.deltaP.toFixed(4)],
+    ['Γ Gamma', res.gamma.toFixed(6), res.gamma.toFixed(6)],
+    ['Θ Theta/day', '₹' + res.thetaC.toFixed(4), '₹' + res.thetaP.toFixed(4)],
+    ['ν Vega/1%', '₹' + res.vega.toFixed(4), '₹' + res.vega.toFixed(4)],
+    ['ρ Rho/1%', '₹' + res.rhoC.toFixed(4), '₹' + res.rhoP.toFixed(4)],
+  ];
+  const tbody = document.getElementById('gd_tbody');
+  tbody.innerHTML = rows.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,.08)">
+      <td style="padding:7px 0;font-weight:600;color:rgba(255,255,255,.8)">${r[0]}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:#7eb8e0">${r[1]}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:#f9a8d4">${r[2]}</td>
+    </tr>`).join('');
+}
+
+/* ── Anchor support from course.html links ── */
+window.addEventListener('DOMContentLoaded', () => {
+  DLab.requireSession();
+  DLab.renderNav('tools.html');
+
+  const hash = window.location.hash.replace('#','');
+  if (hash) {
+    const btn = [...document.querySelectorAll('.tool-nav-btn')].find(b => b.getAttribute('onclick').includes(hash));
+    showTool(hash, btn);
+  }
+  // Auto-run default calcs
+  calcFP(); calcBS(); calcGD();
+});
+</script>
+</body>
+</html>
