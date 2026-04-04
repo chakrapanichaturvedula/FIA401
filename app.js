@@ -152,7 +152,6 @@ const DLab = {
       { href: 'course.html',      label: 'Home'        },
       { href: 'tools.html',       label: 'Calculators' },
       { href: 'assignments.html', label: 'Assignments'  },
-      { href: 'project.html',     label: 'Project'      },
     ];
     const linksHtml = links.map(l => {
       const active = l.href === activeHref ? ' active' : '';
@@ -163,14 +162,13 @@ const DLab = {
          <button class="nav-btn" onclick="DLab.logout()">Sign out</button>`
       : `<button class="nav-btn" onclick="DLab.logout()">Sign out</button>`;
     const html = `
-      <nav class="site-nav">
-        <div class="nav-inner">
-          <a href="course.html" class="nav-brand">
-            <span class="nav-brand-icon">◈</span> DerivativesLab
-          </a>
-          <div class="nav-links">${linksHtml}</div>
-          <div class="nav-actions">${studentHtml}</div>
-        </div>
+      <nav class="dl-nav">
+        <a href="course.html" class="nav-logo">
+          <span class="nav-logo-icon">◈</span>
+          <span class="nav-logo-text">Derivatives<span>Lab</span></span>
+        </a>
+        <div class="nav-links">${linksHtml}</div>
+        <div class="nav-right">${studentHtml}</div>
       </nav>`;
     const el = document.getElementById(containerId);
     if (el) el.innerHTML = html;
