@@ -94,7 +94,19 @@ img { max-width: 100%; height: auto; }
   content: ''; display: block; height: 2px;
   background: #7BB3D3; border-radius: 1px; margin-top: 2px;
 }
-.nav-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+.nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.nav-student {
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.12); border-radius: 20px;
+  padding: 4px 12px; white-space: nowrap;
+}
+.nav-btn {
+  font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.75);
+  background: none; border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px; padding: 5px 12px; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.nav-btn:hover { color: #fff; border-color: rgba(255,255,255,0.6); }
 .nav-badge {
   font-size: 11px; font-weight: 600; padding: 4px 10px;
   border-radius: 20px; background: rgba(255,255,255,0.12);
