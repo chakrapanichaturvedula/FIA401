@@ -419,22 +419,20 @@
             <span class="assign-pts-chip">5 pts</span>
           </div>
           <p class="assign-problem-q">
-            <strong>Taylor approximation:</strong> A Reliance put option has Δ = −0.38, Γ = 0.009. Reliance rises by ₹45. Estimate the change in the put's value using the second-order Taylor approximation (positive = gain, negative = loss).
+            <strong>Delta estimate:</strong> A Reliance put option has Δ = −0.38. Reliance rises by ₹45. Using delta alone, estimate the change in the put's value (positive = gain, negative = loss).
           </p>
-          <div class="practice-block" data-answer="-8.0" data-tol="0.5" data-section="A4.1" data-problem-id="a4-1">
+          <div class="practice-block" data-answer="-17.1" data-tol="0.5" data-section="A4.1" data-problem-id="a4-1">
             <div class="input-row">
               <span class="input-label">ΔP (₹)</span>
-              <input class="answer-input" type="number" step="0.1" placeholder="e.g. -8.8" />
+              <input class="answer-input" type="number" step="0.1" placeholder="e.g. -17.1" />
               <button class="check-btn">Check answer</button>
             </div>
             <div class="feedback-box" style="display:none"></div>
             <div class="steps-panel" style="display:none">
               <strong>Step-by-step:</strong><br/>
-              ΔP ≈ Δ·ΔS + ½·Γ·(ΔS)²<br/>
-              Delta component: −0.38 × 45 = −₹17.10<br/>
-              Gamma component: ½ × 0.009 × 45² = 0.0045 × 2025 = +₹9.11<br/>
-              Net ΔP ≈ −17.10 + 9.11 ≈ <strong>−₹7.99 ≈ −₹8.0</strong><br/><br/>
-              The put loses value as stock rises (negative delta), but convexity (gamma) partially offsets the loss.
+              ΔP ≈ Δ × ΔS<br/>
+              ΔP ≈ −0.38 × 45 = <strong>−₹17.10</strong><br/><br/>
+              The put loses ₹17.10 in value as the stock rises — the negative delta tells us the put moves in the opposite direction to the underlying.
             </div>
             <button class="steps-btn" style="margin-top:10px">Show steps</button>
           </div>
