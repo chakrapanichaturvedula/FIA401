@@ -13,17 +13,13 @@
     .hero {
       background: var(--navy);
       color: #fff;
-      padding: 56px 0 52px;
+      padding: 36px 0 32px;
     }
     .hero-inner {
       max-width: 1140px;
       margin: 0 auto;
       padding: 0 32px;
-      display: flex;
-      align-items: center;
-      gap: 48px;
     }
-    .hero-text { flex: 1; }
     .hero-tag {
       display: inline-flex;
       align-items: center;
@@ -32,75 +28,60 @@
       border: 1px solid rgba(255,255,255,.18);
       border-radius: 100px;
       padding: 4px 12px;
-      font-size: .75rem;
+      font-size: .72rem;
       font-weight: 600;
       letter-spacing: .06em;
       text-transform: uppercase;
-      color: rgba(255,255,255,.85);
-      margin-bottom: 18px;
+      color: rgba(255,255,255,.80);
+      margin-bottom: 14px;
     }
     .hero-title {
-      font-size: 2.5rem;
+      font-size: 2rem;
       font-weight: 800;
-      line-height: 1.15;
-      letter-spacing: -1px;
-      margin-bottom: 14px;
+      line-height: 1.2;
+      letter-spacing: -.5px;
+      margin-bottom: 8px;
     }
     .hero-title span { color: #7eb8e0; }
     .hero-desc {
-      font-size: 1rem;
-      color: rgba(255,255,255,.72);
-      line-height: 1.7;
-      max-width: 520px;
-      margin-bottom: 28px;
+      font-size: .9375rem;
+      color: rgba(255,255,255,.68);
+      line-height: 1.6;
+      max-width: 640px;
+      margin-bottom: 22px;
     }
     .hero-stats {
       display: flex;
-      gap: 32px;
+      gap: 28px;
     }
     .hero-stat-num {
-      font-size: 1.75rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: #fff;
+      line-height: 1;
     }
     .hero-stat-label {
-      font-size: .75rem;
-      color: rgba(255,255,255,.55);
+      font-size: .7rem;
+      color: rgba(255,255,255,.50);
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: .06em;
+      margin-top: 2px;
     }
-    .hero-visual {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .hero-pill {
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-family: var(--font-mono);
-      font-size: .8125rem;
-      color: rgba(255,255,255,.7);
-      white-space: nowrap;
-    }
-    .hero-pill b { color: #7eb8e0; }
 
     /* ── Page container ── */
     .page-body {
       max-width: 1140px;
       margin: 0 auto;
-      padding: 40px 32px 80px;
+      padding: 24px 32px 60px;
     }
 
     /* ── Quick-access toolbar ── */
     .quick-bar {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 44px;
+      margin-bottom: 20px;
     }
     .quick-btn {
       display: inline-flex;
@@ -141,7 +122,7 @@
     }
 
     /* ── Module section rows ── */
-    .module-section { margin-bottom: 48px; }
+    .module-section { margin-bottom: 32px; }
     .module-section-header {
       display: flex;
       align-items: center;
@@ -265,24 +246,24 @@
     /* ── Progress row ── */
     .progress-row {
       display: flex;
-      gap: 20px;
-      margin-bottom: 44px;
+      gap: 14px;
+      margin-bottom: 28px;
       flex-wrap: wrap;
     }
     .progress-card {
       flex: 1;
-      min-width: 160px;
+      min-width: 140px;
       background: var(--card);
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      padding: 18px 20px;
+      padding: 14px 18px;
     }
     .progress-card .pc-num {
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: var(--navy);
       line-height: 1;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     .progress-card .pc-label {
       font-size: .75rem;
@@ -301,40 +282,19 @@
 <!-- Hero -->
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-text">
-      <div class="hero-tag">📈 FIA 401 · Financial Derivatives</div>
-      <h1 class="hero-title">
-        Learn derivatives<br />
-        <span>by doing them.</span>
-      </h1>
-      <p class="hero-desc">
-        Simulations, live calculators, and interactive exercises built around
-        Hull's <em>Options, Futures, and Other Derivatives</em> (Chapters 3–6).
-      </p>
-      <div class="hero-stats">
-        <div>
-          <div class="hero-stat-num">5</div>
-          <div class="hero-stat-label">Sections</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">13</div>
-          <div class="hero-stat-label">Modules</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">10</div>
-          <div class="hero-stat-label">Calculators</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">7</div>
-          <div class="hero-stat-label">Simulations</div>
-        </div>
-      </div>
-    </div>
-    <div class="hero-visual">
-      <div class="hero-pill"><b>F*</b> = S · e<sup>(r−q)T</sup></div>
-      <div class="hero-pill"><b>BSM</b>: C = S·N(d₁) − K·e<sup>−rT</sup>·N(d₂)</div>
-      <div class="hero-pill"><b>MVH</b>: N* = β · (P/I) · (1/multiplier)</div>
-      <div class="hero-pill"><b>Δ</b> = ∂C/∂S · · · <b>Γ</b> = ∂²C/∂S²</div>
+    <div class="hero-tag">📈 FIA 401 · Financial Derivatives · IMT Hyderabad</div>
+    <h1 class="hero-title">
+      Learn derivatives <span>by doing them.</span>
+    </h1>
+    <p class="hero-desc">
+      Simulations, live calculators, and interactive exercises built around
+      Hull's <em>Options, Futures, and Other Derivatives</em> (Chapters 3–6).
+    </p>
+    <div class="hero-stats">
+      <div><div class="hero-stat-num">5</div><div class="hero-stat-label">Sections</div></div>
+      <div><div class="hero-stat-num">14</div><div class="hero-stat-label">Modules</div></div>
+      <div><div class="hero-stat-num">10</div><div class="hero-stat-label">Calculators</div></div>
+      <div><div class="hero-stat-num">12</div><div class="hero-stat-label">Assignments</div></div>
     </div>
   </div>
 </div>
