@@ -109,48 +109,22 @@
       </div>
     </section>
 
-    <!-- Taylor Approximation -->
-    <section class="content-section">
-      <h2 class="cs-title">Taylor Approximation: Δ and Γ Together</h2>
-      <p>Using a second-order Taylor expansion, the change in option price for a change in spot can be approximated as:</p>
-
-      <div class="formula-box">
-        ΔC ≈ Δ · ΔS + ½ · Γ · (ΔS)²<br/><br/>
-        The <strong>Δ · ΔS</strong> term = first-order (linear) approximation<br/>
-        The <strong>½ · Γ · (ΔS)²</strong> term = convexity correction (always positive for long options)
-      </div>
-
-      <h3 style="font-size:.9375rem;margin:16px 0 10px;color:var(--navy)">Worked Example</h3>
-      <p><strong>Given:</strong> Long call with Δ = 0.45, Γ = 0.008. Underlying moves from ₹2,460 to ₹2,510 (ΔS = +₹50).</p>
-      <table class="example-table" style="margin-top:12px">
-        <thead><tr><th>Component</th><th>Calculation</th><th>Value</th></tr></thead>
-        <tbody>
-          <tr><td>Delta component</td><td>0.45 × 50</td><td>₹22.50</td></tr>
-          <tr><td>Gamma component</td><td>½ × 0.008 × 50²</td><td>₹10.00</td></tr>
-          <tr><td>Total estimated ΔC</td><td>22.50 + 10.00</td><td><strong>₹32.50</strong></td></tr>
-        </tbody>
-      </table>
-      <p style="font-size:.875rem;color:var(--text-2);margin-top:10px">The gamma adds ₹10 of extra gain compared to the linear delta estimate. This is the benefit of long convexity — as the option moves ITM, delta increases, amplifying further gains.</p>
-    </section>
-
     <!-- Practice -->
     <section class="content-section">
       <h2 class="cs-title">Practice Problem</h2>
-      <p><strong>Problem 4.1:</strong> A call option has Δ = <strong>0.60</strong> and Γ = <strong>0.012</strong>. The underlying drops by ₹<strong>30</strong>. Using the Taylor approximation, estimate the change in call price (in ₹). Positive = gain, negative = loss.</p>
-      <div class="practice-block" data-answer="-12.6" data-tol="0.5" data-section="4.1" data-problem-id="p4-1">
+      <p><strong>Problem 4.1:</strong> A Nifty call option has Δ = <strong>0.55</strong>. Nifty rises by <strong>₹40</strong>. Using delta alone, estimate the change in the call's value (in ₹). Positive = gain, negative = loss.</p>
+      <div class="practice-block" data-answer="22" data-tol="0.5" data-section="4.1" data-problem-id="p4-1">
         <div class="input-row">
           <span class="input-label">ΔC (₹)</span>
-          <input class="answer-input" type="number" step="0.1" placeholder="e.g. -12.6" />
+          <input class="answer-input" type="number" step="0.1" placeholder="e.g. 22" />
           <button class="check-btn">Check answer</button>
         </div>
         <div class="feedback-box" style="display:none"></div>
         <div class="steps-panel" style="display:none">
           <strong>Step-by-step:</strong><br/>
-          ΔS = −30 (price fell)<br/>
-          Delta component: 0.60 × (−30) = −18.00<br/>
-          Gamma component: ½ × 0.012 × (−30)² = 0.006 × 900 = +5.40<br/>
-          Total ΔC ≈ −18.00 + 5.40 = <strong>−₹12.60</strong><br/><br/>
-          Note: gamma always adds a positive convexity correction (½·Γ·ΔS² is positive regardless of direction). The call lost ₹12.60 in value, not the ₹18 a naive delta estimate would suggest.
+          ΔC ≈ Δ × ΔS<br/>
+          ΔC ≈ 0.55 × 40 = <strong>+₹22</strong><br/><br/>
+          The call gains ₹22 in value. Because Δ = 0.55, the option moves 55 paise for every ₹1 move in Nifty — a useful rule of thumb for quick P&amp;L estimates.
         </div>
         <button class="steps-btn" style="margin-top:10px">Show steps</button>
       </div>
@@ -187,14 +161,14 @@
       </div>
 
       <div class="quiz-block" data-quiz-id="q11-3"
-           data-feedback-correct="Correct! The gamma term (½·Γ·ΔS²) is always positive for long option positions — this is the benefit of convexity, regardless of direction."
+           data-feedback-correct="Correct! A delta-neutral portfolio has no exposure to small moves in the underlying — it neither gains nor loses from a tiny price change."
            data-feedback-wrong="Not quite — see the highlighted answer.">
-        <p class="quiz-q">3. In the Taylor approximation ΔC ≈ Δ·ΔS + ½·Γ·(ΔS)², the gamma term:</p>
+        <p class="quiz-q">3. A portfolio has been made delta-neutral. If the underlying moves by a very small amount, the portfolio value will:</p>
         <ul class="quiz-opts">
-          <li>Is negative when the stock falls</li>
-          <li>Cancels out the delta term exactly</li>
-          <li data-correct="true">Is always positive for a long option position, regardless of direction</li>
-          <li>Only matters for very large price moves</li>
+          <li>Increase — delta-neutral means long exposure</li>
+          <li>Decrease — any move hurts a hedged book</li>
+          <li data-correct="true">Remain approximately unchanged</li>
+          <li>Move in proportion to gamma only</li>
         </ul>
         <div class="quiz-feedback" style="display:none"></div>
       </div>
