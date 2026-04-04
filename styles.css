@@ -314,6 +314,68 @@ img { max-width: 100%; height: auto; }
   border: 1.5px solid; margin-bottom: 12px;
 }
 
+/* ── LESSON PAGE BADGE PILL ──────────────────────────────────── */
+/* Used above page title: <span class="badge badge-c3">Options</span> */
+.badge {
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
+  border: 1.5px solid; margin-bottom: 12px;
+}
+.badge-c1 { color: var(--c1); border-color: var(--c1-border); background: var(--c1-bg); }
+.badge-c2 { color: var(--c2); border-color: var(--c2-border); background: var(--c2-bg); }
+.badge-c3 { color: var(--c3); border-color: var(--c3-border); background: var(--c3-bg); }
+.badge-c4 { color: var(--c4); border-color: var(--c4-border); background: var(--c4-bg); }
+.badge-c5 { color: var(--c5); border-color: var(--c5-border); background: var(--c5-bg); }
+
+/* ── LESSON CONTENT STRUCTURE ────────────────────────────────── */
+.page-header    { margin-bottom: 28px; }
+.content-section { margin-bottom: 36px; }
+
+/* Section heading inside lesson body */
+.cs-title {
+  font-size: 20px; font-weight: 700; color: var(--navy);
+  margin-bottom: 14px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* ── CONCEPT CARDS (Call/Put, Long/Short side-by-side blocks) ── */
+.concept-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+.cc-title {
+  font-size: 13px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.cc-body { font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+
+/* ── CALLOUT VARIANTS ────────────────────────────────────────── */
+.callout-gold { border-color: var(--c5); background: var(--c5-bg); color: #7a5800; }
+
+/* ── EXAMPLE / DATA TABLE ────────────────────────────────────── */
+.example-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13.5px; margin: 16px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.example-table thead th {
+  background: var(--navy); color: #fff;
+  padding: 10px 14px; text-align: left;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+  border-bottom: none;
+}
+.example-table tbody td {
+  padding: 9px 14px; border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+}
+.example-table tbody tr:last-child td { border-bottom: none; }
+.example-table tbody tr:nth-child(even) { background: var(--bg); }
+.example-table tbody tr:hover td { background: #f1f5f9; }
+
 .page-title    { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
 .page-subtitle { font-size: 15px; color: var(--text-2); margin-bottom: 20px; }
 .page-tags     { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
