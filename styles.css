@@ -246,7 +246,7 @@ img { max-width: 100%; height: auto; }
 .tool-chip-icon { font-size: 15px; }
 
 /* ── THREE-COLUMN INNER LAYOUT ───────────────────────────────── */
-.inner-layout {
+.inner-layout, .page-inner {
   display: grid;
   grid-template-columns: 240px 1fr 272px;
   min-height: calc(100vh - var(--nav-h));
@@ -658,7 +658,7 @@ img { max-width: 100%; height: auto; }
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .inner-layout { grid-template-columns: 0 1fr 0; }
+  .inner-layout, .page-inner { grid-template-columns: 0 1fr 0; }
   .sidebar-left, .sidebar-right { display: none; }
   .main-content { padding: 24px 20px; max-width: 100%; }
 }
