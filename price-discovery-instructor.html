@@ -126,6 +126,15 @@
   .ob-clearing-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; }
   .ob-clearing-val { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 800; color: var(--navy); }
 
+  /* TRADE LOG */
+  .ob-view-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
+  .ob-view-btn { padding: 5px 14px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); color: var(--muted); background: #fff; transition: all 0.15s; }
+  .ob-view-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .trade-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-radius: 6px; background: #f0fdf4; border-left: 3px solid var(--green); margin-bottom: 5px; font-size: 0.78rem; }
+  .trade-row-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--green); }
+  .trade-row-detail { color: var(--muted); font-size: 0.72rem; }
+  .trade-row-time { color: var(--muted); font-size: 0.65rem; }
+
   /* INSTRUMENT TABS */
   .inst-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
   .inst-tab { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); font-size: 0.72rem; font-weight: 600; cursor: pointer; color: var(--muted); background: #fff; }
@@ -341,29 +350,43 @@
         </div>
       </div>
 
-      <!-- LIVE ORDER BOOK -->
+      <!-- LIVE ORDER BOOK + TRADE LOG -->
       <div class="card">
-        <div class="card-title"><span class="card-title-icon">📋</span> Live Order Book</div>
-        <div class="inst-tabs" id="obInstrumentTabs">
-          <div class="inst-tab active" data-inst="spot" onclick="selectObInst(this,'spot')">Spot</div>
-          <div class="inst-tab" data-inst="futures" onclick="selectObInst(this,'futures')">Futures</div>
-          <div class="inst-tab" data-inst="call" onclick="selectObInst(this,'call')">Call Options</div>
-          <div class="inst-tab" data-inst="put" onclick="selectObInst(this,'put')">Put Options</div>
+        <div class="card-title"><span class="card-title-icon">📋</span> Order Book &amp; Trade Log</div>
+
+        <div class="ob-view-toggle">
+          <button class="ob-view-btn active" id="viewBtnOB" onclick="setObView('ob')">Order Book</button>
+          <button class="ob-view-btn"        id="viewBtnTL" onclick="setObView('tl')">Trade Log</button>
         </div>
-        <div class="ob-split">
-          <div class="ob-col">
-            <div class="ob-col-hdr bid">Bids (Buy Orders)</div>
-            <div id="instrBids"></div>
+
+        <!-- ORDER BOOK VIEW -->
+        <div id="obView">
+          <div class="inst-tabs" id="obInstrumentTabs">
+            <div class="inst-tab active" data-inst="spot" onclick="selectObInst(this,'spot')">Spot</div>
+            <div class="inst-tab" data-inst="futures" onclick="selectObInst(this,'futures')">Futures</div>
+            <div class="inst-tab" data-inst="call" onclick="selectObInst(this,'call')">Call Options</div>
+            <div class="inst-tab" data-inst="put" onclick="selectObInst(this,'put')">Put Options</div>
           </div>
-          <div class="ob-divider"></div>
-          <div class="ob-col">
-            <div class="ob-col-hdr ask">Asks (Sell Orders)</div>
-            <div id="instrAsks"></div>
+          <div class="ob-split">
+            <div class="ob-col">
+              <div class="ob-col-hdr bid">Open Bids</div>
+              <div id="instrBids"></div>
+            </div>
+            <div class="ob-divider"></div>
+            <div class="ob-col">
+              <div class="ob-col-hdr ask">Open Asks</div>
+              <div id="instrAsks"></div>
+            </div>
+          </div>
+          <div class="ob-clearing-row">
+            <div class="ob-clearing-label">Last Trade Price (Price Discovery)</div>
+            <div class="ob-clearing-val" id="instrClearing">—</div>
           </div>
         </div>
-        <div class="ob-clearing-row">
-          <div class="ob-clearing-label">Clearing Price</div>
-          <div class="ob-clearing-val" id="instrClearing">—</div>
+
+        <!-- TRADE LOG VIEW -->
+        <div id="tlView" style="display:none;">
+          <div id="tradeLogList"><div class="ob-empty">No trades yet this round</div></div>
         </div>
       </div>
 
@@ -458,12 +481,9 @@ function openRound() {
 }
 
 function closeRound() {
-  // Compute clearing prices locally from gameState.orders
-  if (!gameState) return;
-  const cp = computeAllClearingPrices(gameState.orders||[], gameState.currentRound);
-  const cpJson = JSON.stringify(cp);
-  sendToApps({ action:'pd_close_round', clearingPrices: cpJson });
-  toast('Round closed — prices revealed');
+  // GAS computes discovery prices from actual trades — just send close signal
+  sendToApps({ action:'closeRound' });
+  toast('Round closed — last trade prices saved');
   setTimeout(fetchState, 1500);
 }
 
@@ -489,30 +509,14 @@ function showSetup() {
   document.getElementById('controlPanel').style.display = 'none';
 }
 
-// ────────────────────────────────────────────────
-//  CLEARING PRICE COMPUTATION
-// ────────────────────────────────────────────────
-function computeClearing(orders, inst) {
-  const bids = orders.filter(o=>o.inst===inst&&o.side==='buy').sort((a,b)=>b.price-a.price);
-  const asks = orders.filter(o=>o.inst===inst&&o.side==='sell').sort((a,b)=>a.price-b.price);
-  if (!bids.length || !asks.length) return null;
-  if (bids[0].price >= asks[0].price) return (bids[0].price + asks[0].price)/2;
-  return null;
-}
-
-function computeAllClearingPrices(orders, round) {
-  const insts = ['spot','futures','call','put'];
-  return insts.map(inst => {
-    const cp = computeClearing(orders.filter(o=>o.round==round), inst);
-    return { round, inst, price: cp };
-  }).filter(x=>x.price!==null);
-}
+// NOTE: Clearing / discovery prices are now computed server-side (GAS matchOrders + computeDiscoveryPrices)
+// Price discovery = last executed trade price per instrument, not a midpoint formula.
 
 // ────────────────────────────────────────────────
 //  FETCH STATE
 // ────────────────────────────────────────────────
 function fetchState() {
-  callApps({ action:'pd_get_state' }, data => {
+  callApps({ action:'getState' }, data => {
     // Don't override the form if instructor is actively setting up a new game
     if (userWantsSetup) return;
     if (!data || data.status==='no_game') { showSetupPanel(); return; }
@@ -527,132 +531,186 @@ function showSetupPanel() {
 }
 
 function applyState(data) {
-  userWantsSetup = false;  // clear flag once real state is applied
-  document.getElementById('setupPanel').style.display = 'none';
+  userWantsSetup = false;
+  document.getElementById('setupPanel').style.display  = 'none';
   document.getElementById('controlPanel').style.display = 'block';
 
-  const r = parseInt(data.currentRound)||0;
-  const n = parseInt(data.numRounds)||0;
-  document.getElementById('ctrlAssetName').textContent = data.assetName + (data.assetSymbol?' ('+data.assetSymbol+')':'');
+  const r = parseInt(data.currentRound) || 0;
+  const n = parseInt(data.numRounds)    || 0;
+  document.getElementById('ctrlAssetName').textContent = data.assetName + (data.assetSymbol ? ' (' + data.assetSymbol + ')' : '');
   document.getElementById('ctrlMeta').textContent = 'Spot: ₹' + fmtNum(data.spotPrice||0) + ' · Lot: ' + (data.lotSize||1) + ' shares · Round ' + r + ' of ' + n;
   document.getElementById('ctrlCueTxt').textContent = data.roundCue || '—';
 
-  const pill = document.getElementById('ctrlStatus');
-  const stMap = { waiting:'status-waiting', open:'status-open', closed:'status-closed', ended:'status-ended' };
+  const stMap  = { waiting:'status-waiting', open:'status-open', closed:'status-closed', ended:'status-ended' };
   const stText = { waiting:'Waiting', open:'Trading Open', closed:'Round Closed', ended:'Ended' };
-  pill.className = 'status-pill ' + (stMap[data.status]||'status-waiting');
-  document.getElementById('ctrlStatusText').textContent = stText[data.status]||data.status;
+  document.getElementById('ctrlStatus').className     = 'status-pill ' + (stMap[data.status]||'status-waiting');
+  document.getElementById('ctrlStatusText').textContent = stText[data.status] || data.status;
 
   // Progress bar
   const prog = document.getElementById('rcProgress');
   prog.innerHTML = '';
-  for (let i=1;i<=n;i++) {
+  for (let i = 1; i <= n; i++) {
     const d = document.createElement('div');
-    d.className = 'rc-step ' + (i<r?'done':i===r?'active':'');
+    d.className = 'rc-step ' + (i < r ? 'done' : i === r ? 'active' : '');
     prog.appendChild(d);
   }
 
-  // Stats
-  const orders = (data.orders||[]).map(o=>({...o,price:parseFloat(o.price),qty:parseInt(o.qty)}));
-  const thisRoundOrders = orders.filter(o=>o.round==r);
-  const participants = [...new Set(thisRoundOrders.map(o=>o.enrollId))];
-  document.getElementById('statOrders').textContent = thisRoundOrders.length;
-  document.getElementById('statStudents').textContent = participants.length;
-  document.getElementById('statRound').textContent = r + ' / ' + n;
+  // Stats from order book + trades
+  const ob     = data.orderBook || { bids: [], asks: [] };
+  const trades = data.trades    || [];
+  const allOpen = ob.bids.length + ob.asks.length;
 
-  // Best spread
-  const bids = thisRoundOrders.filter(o=>o.side==='buy');
-  const asks = thisRoundOrders.filter(o=>o.side==='sell');
-  if (bids.length&&asks.length) {
-    const topBid = Math.max(...bids.map(o=>o.price));
-    const topAsk = Math.min(...asks.map(o=>o.price));
-    const sp = topAsk-topBid;
-    document.getElementById('statSpread').textContent = sp>0?'₹'+fmtNum(sp.toFixed(1)):'Crossed';
-  } else document.getElementById('statSpread').textContent='—';
+  // Count unique participants from myOrders not available here — use orderBook participants as proxy
+  // We can count by looking at orderBook entries (no student name at this endpoint without studentId)
+  document.getElementById('statOrders').textContent   = allOpen;
+  document.getElementById('statStudents').textContent = trades.length;  // trades count in students stat box
+  document.getElementById('statRound').textContent    = r + ' / ' + n;
 
-  // Buttons
-  document.getElementById('btnOpenRound').style.display  = data.status==='waiting'||data.status==='closed' ? 'inline-flex' : 'none';
-  document.getElementById('btnCloseRound').style.display = data.status==='open' ? 'inline-flex' : 'none';
+  // Best spread (open orders)
+  const openBids = ob.bids, openAsks = ob.asks;
+  if (openBids.length && openAsks.length) {
+    const topBid = Math.max(...openBids.map(b => b.price));
+    const topAsk = Math.min(...openAsks.map(a => a.price));
+    const sp = topAsk - topBid;
+    document.getElementById('statSpread').textContent = sp > 0 ? '₹' + fmtNum(sp.toFixed(1)) : 'Crossed';
+  } else {
+    document.getElementById('statSpread').textContent = '—';
+  }
+
+  // Update stat labels: second box now shows trades
+  const statLabels = document.querySelectorAll('.stat-label');
+  if (statLabels[0]) statLabels[0].textContent = 'Open Orders';
+  if (statLabels[1]) statLabels[1].textContent = 'Trades Done';
+
+  // Round control buttons
+  document.getElementById('btnOpenRound').style.display  = (data.status==='waiting'||data.status==='closed') ? 'inline-flex' : 'none';
+  document.getElementById('btnCloseRound').style.display = data.status==='open'   ? 'inline-flex' : 'none';
   document.getElementById('btnOpenRound').textContent    = data.status==='closed' ? '▶ Reopen Round' : '▶ Open Round for Trading';
 
-  // Next round form
-  const showNext = data.status==='closed' && r < n;
+  const showNext = data.status === 'closed' && r < n;
   document.getElementById('nextRoundForm').style.display = showNext ? 'block' : 'none';
-  document.getElementById('endedMsg').style.display = data.status==='ended' ? 'block' : 'none';
+  document.getElementById('endedMsg').style.display      = data.status === 'ended' ? 'block' : 'none';
 
-  // Clearing summary
-  const cp = computeAllClearingPrices(thisRoundOrders, r);
-  if (cp.length && data.status==='closed') {
-    document.getElementById('clearingSummary').style.display='block';
-    const colors={spot:'#0077B6',futures:'#D4622A',call:'#198754',put:'#DC3545'};
-    document.getElementById('clearingGrid').innerHTML = ['spot','futures','call','put'].map(inst=>{
-      const found=cp.find(p=>p.inst===inst);
+  // Clearing / discovery summary (last trade prices after round closes)
+  const dp = (data.discoveryPrices || []).filter(p => p.round == r);
+  if (dp.length && data.status === 'closed') {
+    document.getElementById('clearingSummary').style.display = 'block';
+    const colors = { spot:'#0077B6', futures:'#D4622A', call:'#198754', put:'#DC3545' };
+    document.getElementById('clearingGrid').innerHTML = ['spot','futures','call','put'].map(inst => {
+      const found = dp.find(p => p.instrument === inst || p.inst === inst);
       return `<div class="cs-item">
         <div class="cs-inst" style="color:${colors[inst]}">${inst.toUpperCase()}</div>
-        <div class="cs-price">${found?fmtPrice(found.price.toFixed(0)):'—'}</div>
+        <div class="cs-price">${found ? fmtPrice(found.price.toFixed(0)) : '—'}</div>
       </div>`;
     }).join('');
-  } else document.getElementById('clearingSummary').style.display='none';
+  } else {
+    document.getElementById('clearingSummary').style.display = 'none';
+  }
 
-  // Participants
+  // Participants: derive from open order book (unique student IDs not available without studentId param)
+  // Show trade log summary instead
   const partEl = document.getElementById('participantList');
-  if (!participants.length) { partEl.innerHTML='<div style="color:var(--muted);font-size:0.82rem;font-style:italic;">No orders yet</div>'; }
-  else {
-    partEl.innerHTML = participants.map(id=>{
-      const cnt=thisRoundOrders.filter(o=>o.enrollId===id).length;
-      return `<div class="participant-row"><span class="participant-id">${id}</span><span class="participant-count">${cnt} order${cnt>1?'s':''}</span></div>`;
+  if (!trades.length) {
+    partEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;font-style:italic;">No trades executed yet</div>';
+  } else {
+    const recent = trades.slice(0,5);
+    partEl.innerHTML = recent.map(t => {
+      const instLabel = t.instrument === 'spot' ? 'Spot' : (t.instrument.toUpperCase() + (t.strike ? ' ' + fmtNum(t.strike) : ''));
+      const qtyLabel  = t.instrument === 'spot' ? fmtNum(t.qty) + ' sh' : t.qty + (t.qty===1?' lot':' lots');
+      const time      = new Date(t.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      return `<div class="participant-row">
+        <span class="participant-id" style="color:var(--green);">₹${fmtNum(t.price)}</span>
+        <span class="participant-count">${instLabel} · ${qtyLabel} · ${time}</span>
+      </div>`;
     }).join('');
   }
 
-  // Order book
-  gameState.ordersFormatted = orders;
-  renderInstOrderBook(orders, r);
+  // Order book + trade log
+  renderInstOrderBook(ob);
+  renderTradeLog(trades);
 
-  // Chart
-  drawInstChart(data.clearingPrices||[], n);
+  // Chart (uses discovery prices — last trade per instrument per round)
+  const allDp = (data.discoveryPrices || []).map(p => ({ round: p.round, inst: p.instrument||p.inst, price: p.price }));
+  drawInstChart(allDp, n);
 }
 
 // ────────────────────────────────────────────────
-//  ORDER BOOK RENDER
+//  VIEW TOGGLE: Order Book ↔ Trade Log
+// ────────────────────────────────────────────────
+function setObView(view) {
+  document.getElementById('obView').style.display   = view === 'ob' ? 'block' : 'none';
+  document.getElementById('tlView').style.display   = view === 'tl' ? 'block' : 'none';
+  document.getElementById('viewBtnOB').classList.toggle('active', view === 'ob');
+  document.getElementById('viewBtnTL').classList.toggle('active', view === 'tl');
+}
+
+// ────────────────────────────────────────────────
+//  ORDER BOOK RENDER  (uses open order book from server)
 // ────────────────────────────────────────────────
 function selectObInst(el, inst) {
   obInst = inst;
-  document.querySelectorAll('.inst-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.inst-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  if (gameState) {
-    const orders=(gameState.ordersFormatted||[]);
-    const r=parseInt(gameState.currentRound)||0;
-    renderInstOrderBook(orders,r);
-  }
+  if (gameState) renderInstOrderBook(gameState.orderBook || { bids:[], asks:[] });
 }
 
-function renderInstOrderBook(orders, round) {
-  const inst = obInst;
-  const ro = orders.filter(o=>o.inst===inst&&o.round==round);
-  const bids=ro.filter(o=>o.side==='buy').sort((a,b)=>b.price-a.price);
-  const asks=ro.filter(o=>o.side==='sell').sort((a,b)=>a.price-b.price);
+function renderInstOrderBook(ob) {
+  const inst     = obInst;
+  const isSpot   = inst === 'spot';
+  const bids     = (ob.bids || []).filter(o => o.instrument === inst);
+  const asks     = (ob.asks || []).filter(o => o.instrument === inst);
 
-  function agg(arr){const m={};arr.forEach(o=>{if(!m[o.price])m[o.price]={price:o.price,qty:0,ids:[]};m[o.price].qty+=o.qty;m[o.price].ids.push(o.enrollId);});return Object.values(m);}
-  const aBids=agg(bids).sort((a,b)=>b.price-a.price).slice(0,8);
-  const aAsks=agg(asks).sort((a,b)=>a.price-b.price).slice(0,8);
-  const maxQ=Math.max(...aBids.map(b=>b.qty),...aAsks.map(a=>a.qty),1);
+  function agg(arr) {
+    const m = {};
+    arr.forEach(o => { if(!m[o.price]) m[o.price]={price:o.price,qty:0}; m[o.price].qty+=o.qty; });
+    return Object.values(m);
+  }
+  const aBids = agg(bids).sort((a,b)=>b.price-a.price).slice(0,8);
+  const aAsks = agg(asks).sort((a,b)=>a.price-b.price).slice(0,8);
+  const maxQ  = Math.max(...aBids.map(b=>b.qty), ...aAsks.map(a=>a.qty), 1);
 
-  function rows(arr,type){
-    if(!arr.length) return '<div class="ob-empty">No '+(type==='bid'?'bids':'asks')+'</div>';
-    return arr.map(r=>{
-      const w=Math.round((r.qty/maxQ)*75);
-      const cls=type==='bid'?'ob-price-bid':'ob-price-ask';
-      const bgcls=type==='bid'?'bid-bg':'ask-bg';
+  function rows(arr, type) {
+    if (!arr.length) return '<div class="ob-empty">No ' + (type==='bid'?'open bids':'open asks') + '</div>';
+    return arr.map(r => {
+      const w       = Math.round((r.qty/maxQ)*75);
+      const cls     = type==='bid' ? 'ob-price-bid' : 'ob-price-ask';
+      const bgcls   = type==='bid' ? 'bid-bg'       : 'ask-bg';
+      const qtyLbl  = isSpot ? fmtNum(r.qty) + ' sh' : r.qty + (r.qty===1?' lot':' lots');
       return `<div class="ob-row"><div class="ob-bg ${bgcls}" style="width:${w}%"></div>
         <span class="${cls}">₹${fmtNum(r.price)}</span>
-        <span class="ob-qty-txt">${r.qty} · ${r.ids.length}p</span></div>`;
+        <span class="ob-qty-txt">${qtyLbl}</span></div>`;
     }).join('');
   }
-  document.getElementById('instrBids').innerHTML=rows(aBids,'bid');
-  document.getElementById('instrAsks').innerHTML=rows(aAsks,'ask');
+  document.getElementById('instrBids').innerHTML = rows(aBids, 'bid');
+  document.getElementById('instrAsks').innerHTML = rows(aAsks, 'ask');
 
-  const cp=computeClearing(ro,inst);
-  document.getElementById('instrClearing').textContent=cp?fmtPrice(cp.toFixed(2)):'—';
+  // Last trade price for this instrument
+  const instTrades = (gameState.trades || []).filter(t => t.instrument === inst);
+  const lastTrade  = instTrades[0];
+  const n = instTrades.length;
+  document.getElementById('instrClearing').textContent =
+    lastTrade ? fmtPrice(lastTrade.price.toFixed(2)) + (n>1 ? ' (' + n + ' trades)' : '') : '—';
+}
+
+// ────────────────────────────────────────────────
+//  TRADE LOG RENDER
+// ────────────────────────────────────────────────
+function renderTradeLog(trades) {
+  const el = document.getElementById('tradeLogList');
+  if (!trades || !trades.length) {
+    el.innerHTML = '<div class="ob-empty">No trades executed this round yet</div>';
+    return;
+  }
+  el.innerHTML = trades.map(t => {
+    const instLabel = t.instrument === 'spot' ? 'Spot' : (t.instrument.toUpperCase() + (t.strike ? ' ' + fmtNum(t.strike) : '') + (t.expiry ? ' · ' + t.expiry + 'd' : ''));
+    const qtyLabel  = t.instrument === 'spot' ? fmtNum(t.qty) + ' sh' : t.qty + (t.qty===1?' lot':' lots');
+    const time      = new Date(t.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    return `<div class="trade-row">
+      <span class="trade-row-price">₹${fmtNum(t.price)}</span>
+      <span class="trade-row-detail">${instLabel} · ${qtyLabel}</span>
+      <span class="trade-row-time">${time}</span>
+    </div>`;
+  }).join('');
 }
 
 // ────────────────────────────────────────────────

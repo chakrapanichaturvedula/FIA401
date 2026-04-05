@@ -110,6 +110,8 @@
   .order-item:last-child { margin-bottom: 0; }
   .order-item.buy { background: var(--green-light); }
   .order-item.sell { background: var(--red-light); }
+  .order-item.filled { background: #f0fdf4; opacity: 0.7; }
+  .order-item.cancelled { background: #f8f9fa; opacity: 0.55; }
   .order-item-left { display: flex; align-items: center; gap: 8px; }
   .order-badge { font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
   .order-badge.buy { background: var(--green); color: #fff; }
@@ -117,7 +119,23 @@
   .order-inst { font-weight: 600; color: var(--navy); }
   .order-price { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--navy); }
   .order-qty { color: var(--muted); font-size: 0.72rem; }
+  .order-status { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-left: 5px; }
+  .order-status.open     { color: var(--gold); }
+  .order-status.partial  { color: var(--blue); }
+  .order-status.filled   { color: var(--green); }
+  .order-status.cancelled{ color: var(--muted); }
+  .cancel-btn { background: rgba(220,53,69,0.1); border: 1px solid var(--red); color: var(--red); border-radius: 4px; padding: 2px 8px; font-size: 0.65rem; cursor: pointer; font-weight: 700; line-height: 1.4; }
+  .cancel-btn:active { background: var(--red); color: #fff; }
   .no-orders { color: var(--muted); font-size: 0.8rem; text-align: center; padding: 10px; font-style: italic; }
+
+  /* TRADE TAPE */
+  .trade-tape-section { border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px; }
+  .trade-tape-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
+  .trade-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: #f0fdf4; border-radius: 5px; margin-bottom: 3px; font-size: 0.75rem; border-left: 3px solid var(--green); }
+  .trade-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--green); }
+  .trade-qty   { color: var(--muted); }
+  .trade-time  { color: var(--muted); font-size: 0.65rem; }
+  .no-trades   { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 8px; font-style: italic; }
 
   /* ORDER BOOK */
   .ob-card { background: var(--card); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
@@ -321,8 +339,14 @@
         <div id="askList"></div>
       </div>
     </div>
+    <!-- TRADE TAPE -->
+    <div class="trade-tape-section">
+      <div class="trade-tape-label">⚡ Executed Trades</div>
+      <div id="tradeTape"><div class="no-trades">No trades yet — a trade executes only when bid ≥ ask</div></div>
+    </div>
+
     <div class="ob-clearing">
-      <div class="ob-clearing-label">Discovered Price</div>
+      <div class="ob-clearing-label">Last Trade Price (Price Discovery)</div>
       <div class="ob-clearing-price" id="clearingPrice">—</div>
       <div class="ob-spread" id="spreadDisplay"></div>
     </div>
@@ -371,10 +395,11 @@ let state = {
   roundStatus: 'waiting',  // waiting | open | closed | ended
   roundCue: '',
   spotPrice: 0,
-  lotSize: 1,         // shares per lot (1 = no lot structure, used for spot quantity labeling)
-  myOrders: [],       // all my orders this game
-  clearingPrices: [], // { round, inst, price } per round per inst
-  allOrders: []       // all orders from server (current round)
+  lotSize: 1,
+  orderBook: { bids: [], asks: [] }, // open orders from server
+  trades: [],                        // executed trades this round (newest first)
+  myOrders: [],                      // student's own orders (with orderId + status)
+  discoveryPrices: []                // last trade price per instrument per completed round
 };
 
 // ────────────────────────────────────────────────
@@ -512,136 +537,177 @@ function submitOrder() {
   if (!price || price <= 0) { toast('Enter a valid price'); return; }
   if (qty <= 0) { toast('Enter a valid quantity'); return; }
 
-  const isOpt = state.inst==='call'||state.inst==='put';
-  const strike = isOpt ? parseFloat(document.getElementById('optStrike').value) : null;
-  const expiry = isOpt ? parseInt(document.getElementById('optExpiry').value) : null;
+  const isOpt = state.inst === 'call' || state.inst === 'put';
+  const isFut = state.inst === 'futures';
+  const strike = (isOpt || isFut) ? parseFloat(document.getElementById('optStrike')?.value || 0) : 0;
+  const expiry = (isOpt || isFut) ? (document.getElementById('optExpiry')?.value || '') : '';
 
-  const order = {
-    gameId: state.gameId,
-    round: state.currentRound,
-    enrollId: session.enrollId,
-    studentName: session.name || session.enrollId,
-    inst: state.inst,
-    side: state.dir,
-    price,
-    qty,
-    strike,
-    expiry,
-    ts: Date.now()
-  };
-
-  // Fire-and-forget to Apps Script
+  // Fire-and-forget (JSONP not needed — state will refresh in 2s)
   const params = new URLSearchParams({
-    action: 'pd_submit_order',
-    ...order,
-    strike: order.strike||'',
-    expiry: order.expiry||''
+    action:      'placeOrder',
+    gameId:      state.gameId,
+    studentId:   session.enrollId,
+    studentName: session.name || session.enrollId,
+    side:        state.dir,
+    instrument:  state.inst,
+    price:       price,
+    qty:         qty,
+    strike:      strike || '',
+    expiry:      expiry || ''
   });
   new Image().src = APPS_URL + '?' + params.toString();
 
-  // Add to local display immediately
-  state.myOrders.push(order);
-  renderMyOrders();
   document.getElementById('orderPrice').value = '';
   document.getElementById('orderQty').value = '1';
-  toast('Order submitted ✓');
+  toast('Order submitted — matching engine running…');
 
-  // Refresh order book
-  fetchGameState();
+  // Refresh quickly to pick up orderId + any trades
+  setTimeout(fetchGameState, 1800);
 }
 
 // ────────────────────────────────────────────────
-//  RENDER MY ORDERS
+//  CANCEL ORDER
+// ────────────────────────────────────────────────
+function cancelOrder(orderId) {
+  if (!orderId) return;
+  toast('Cancelling…');
+  const cbName = 'cancel_cb_' + Date.now();
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (data && data.success) { toast('Order cancelled ✓'); fetchGameState(); }
+    else toast('Cancel failed: ' + ((data && data.error) || 'unknown'));
+  };
+  const s = document.createElement('script');
+  s.src = APPS_URL + '?' + new URLSearchParams({
+    action:    'cancelOrder',
+    orderId:   orderId,
+    studentId: session.enrollId,
+    callback:  cbName
+  }).toString();
+  s.onerror = () => { delete window[cbName]; toast('Cancel request failed'); };
+  document.head.appendChild(s);
+}
+
+// ────────────────────────────────────────────────
+//  RENDER MY ORDERS  (uses server state.myOrders)
 // ────────────────────────────────────────────────
 function renderMyOrders() {
   const el = document.getElementById('myOrdersList');
-  const thisRound = state.myOrders.filter(o => o.round === state.currentRound);
-  if (!thisRound.length) { el.innerHTML = '<div class="no-orders">No orders submitted yet</div>'; return; }
-  el.innerHTML = thisRound.map(o => {
-    const instLabel = o.inst.toUpperCase() + (o.strike ? ` ${o.strike}` : '');
+  const orders = state.myOrders || [];
+  if (!orders.length) { el.innerHTML = '<div class="no-orders">No orders this round</div>'; return; }
+  el.innerHTML = orders.map(o => {
+    const instLabel   = o.instrument.toUpperCase() + (o.strike ? ` ${fmtNum(o.strike)}` : '');
     const expiryLabel = o.expiry ? ` · ${o.expiry}d` : '';
-    return `<div class="order-item ${o.side}">
+    const fillInfo    = o.filledQty > 0 ? ` (${o.filledQty}/${o.qty})` : '';
+    const canCancel   = o.status === 'open' || o.status === 'partial';
+    const itemClass   = (o.status === 'filled' || o.status === 'cancelled') ? o.status : o.side;
+    const qtyLabel    = o.instrument === 'spot' ? fmtNum(o.qty) + ' sh' : o.qty + (o.qty===1?' lot':' lots');
+    return `<div class="order-item ${itemClass}">
       <div class="order-item-left">
         <span class="order-badge ${o.side}">${o.side}</span>
-        <span class="order-inst">${instLabel}${expiryLabel}</span>
+        <div>
+          <span class="order-inst">${instLabel}${expiryLabel}</span>
+          <span class="order-status ${o.status}">${o.status}${fillInfo}</span>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;">
         <span class="order-price">₹${fmtNum(o.price)}</span>
-        <span class="order-qty">${o.inst === 'spot' ? fmtNum(o.qty) + ' sh' : o.qty + (o.qty===1?' lot':' lots')}</span>
+        <span class="order-qty">${qtyLabel}</span>
+        ${canCancel ? `<button class="cancel-btn" onclick="cancelOrder('${o.orderId}')">✕ Cancel</button>` : ''}
       </div>
     </div>`;
   }).join('');
 }
 
 // ────────────────────────────────────────────────
-//  RENDER ORDER BOOK
+//  RENDER ORDER BOOK  (open orders from server)
 // ────────────────────────────────────────────────
 function renderOrderBook() {
   const inst = state.obInst;
-  const orders = state.allOrders.filter(o => o.inst === inst && o.round == state.currentRound);
+  const ob   = state.orderBook || { bids: [], asks: [] };
 
-  const bids = orders.filter(o => o.side==='buy').sort((a,b)=>b.price-a.price);
-  const asks = orders.filter(o => o.side==='sell').sort((a,b)=>a.price-b.price);
+  // Filter by selected instrument tab
+  const bids = ob.bids.filter(o => o.instrument === inst);
+  const asks = ob.asks.filter(o => o.instrument === inst);
 
-  // Total count
-  document.getElementById('orderCount').textContent = state.allOrders.length + ' orders';
+  const totalOpen = ob.bids.length + ob.asks.length;
+  document.getElementById('orderCount').textContent = totalOpen + ' open order' + (totalOpen!==1?'s':'');
 
-  // Clearing price
-  let clearingPrice = null;
-  let spread = null;
-  if (bids.length && asks.length) {
-    const topBid = bids[0].price;
-    const topAsk = asks[0].price;
-    if (topBid >= topAsk) {
-      clearingPrice = (topBid + topAsk) / 2;
-    } else {
-      spread = topAsk - topBid;
-    }
-  }
-
-  // Aggregate by price
+  // Aggregate remaining qty by price level
   function aggregate(arr) {
     const map = {};
     arr.forEach(o => { map[o.price] = (map[o.price]||0) + o.qty; });
-    return Object.entries(map).map(([price, qty]) => ({ price: parseFloat(price), qty }));
+    return Object.entries(map).map(([p, q]) => ({ price: parseFloat(p), qty: q }));
   }
   const aggBids = aggregate(bids).sort((a,b)=>b.price-a.price).slice(0,6);
   const aggAsks = aggregate(asks).sort((a,b)=>a.price-b.price).slice(0,6);
-
-  const maxQty = Math.max(...aggBids.map(b=>b.qty), ...aggAsks.map(a=>a.qty), 1);
-  const isObSpot = state.obInst === 'spot';
+  const maxQty  = Math.max(...aggBids.map(b=>b.qty), ...aggAsks.map(a=>a.qty), 1);
+  const isSpot  = inst === 'spot';
 
   function renderRows(rows, type) {
     if (!rows.length) return '<div class="ob-empty">No ' + (type==='bid'?'bids':'asks') + '</div>';
     return rows.map(r => {
-      const width = Math.round((r.qty/maxQty)*80);
-      const qtyTxt = isObSpot ? fmtNum(r.qty) + ' sh' : r.qty + (r.qty===1?' lot':' lots');
+      const w      = Math.round((r.qty/maxQty)*80);
+      const qtyTxt = isSpot ? fmtNum(r.qty) + ' sh' : r.qty + (r.qty===1?' lot':' lots');
       return `<div class="ob-row ${type}-row">
-        <div class="ob-row-bg" style="width:${width}%"></div>
+        <div class="ob-row-bg" style="width:${w}%"></div>
         <span class="ob-price ${type}-row">₹${fmtNum(r.price)}</span>
         <span class="ob-qty">${qtyTxt}</span>
       </div>`;
     }).join('');
   }
-
   document.getElementById('bidList').innerHTML = renderRows(aggBids, 'bid');
   document.getElementById('askList').innerHTML = renderRows(aggAsks, 'ask');
 
-  if (clearingPrice !== null) {
-    document.getElementById('clearingPrice').textContent = fmtPrice(clearingPrice.toFixed(2));
-    document.getElementById('spreadDisplay').textContent = '✓ Market crossed — trades executed';
-  } else if (bids.length && asks.length && spread !== null) {
-    const best = bids[0]?.price || '—';
-    const ask  = asks[0]?.price || '—';
-    document.getElementById('clearingPrice').textContent = '—';
-    document.getElementById('spreadDisplay').textContent = `Best bid ₹${fmtNum(best)} · Best ask ₹${fmtNum(ask)} · Spread ₹${fmtNum(spread.toFixed(1))}`;
-  } else if (!bids.length && !asks.length) {
-    document.getElementById('clearingPrice').textContent = '—';
-    document.getElementById('spreadDisplay').textContent = 'Waiting for orders…';
+  // Trade tape for this instrument
+  renderTradeTape(inst);
+
+  // Last trade price = price discovery (only from actual trades)
+  const instTrades = (state.trades || []).filter(t => t.instrument === inst);
+  const lastTrade  = instTrades[0]; // sorted newest first
+
+  if (lastTrade) {
+    document.getElementById('clearingPrice').textContent = fmtPrice(lastTrade.price.toFixed(2));
+    const n = instTrades.length;
+    document.getElementById('spreadDisplay').textContent = `✓ ${n} trade${n>1?'s':''} executed this round`;
   } else {
     document.getElementById('clearingPrice').textContent = '—';
-    document.getElementById('spreadDisplay').textContent = bids.length ? 'No sellers yet' : 'No buyers yet';
+    const topBid = bids.length ? Math.max(...bids.map(b=>b.price)) : null;
+    const topAsk = asks.length ? Math.min(...asks.map(a=>a.price)) : null;
+    if (topBid !== null && topAsk !== null) {
+      const spread = topAsk - topBid;
+      document.getElementById('spreadDisplay').textContent =
+        spread > 0
+          ? `No trade — Spread ₹${fmtNum(spread.toFixed(1))} · Bid ₹${fmtNum(topBid)} · Ask ₹${fmtNum(topAsk)}`
+          : 'Orders crossed — awaiting match…';
+    } else {
+      document.getElementById('spreadDisplay').textContent =
+        bids.length ? 'Waiting for sellers…' : asks.length ? 'Waiting for buyers…' : 'No orders yet';
+    }
   }
+}
+
+// ────────────────────────────────────────────────
+//  RENDER TRADE TAPE
+// ────────────────────────────────────────────────
+function renderTradeTape(inst) {
+  const el = document.getElementById('tradeTape');
+  if (!el) return;
+  const instTrades = (state.trades || []).filter(t => t.instrument === inst);
+  if (!instTrades.length) {
+    el.innerHTML = '<div class="no-trades">No trades yet — a trade executes only when bid ≥ ask</div>';
+    return;
+  }
+  const isSpot = inst === 'spot';
+  el.innerHTML = instTrades.slice(0, 5).map(t => {
+    const qtyLabel = isSpot ? fmtNum(t.qty) + ' sh' : t.qty + (t.qty===1?' lot':' lots');
+    const timeStr  = new Date(t.timestamp).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    return `<div class="trade-item">
+      <span class="trade-price">₹${fmtNum(t.price)}</span>
+      <span class="trade-qty">${qtyLabel}</span>
+      <span class="trade-time">${timeStr}</span>
+    </div>`;
+  }).join('');
 }
 
 // ────────────────────────────────────────────────
@@ -657,7 +723,9 @@ function drawDiscoveryChart() {
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   const W = canvas.offsetWidth, H = 140;
 
-  const cp = state.clearingPrices;
+  // Use discoveryPrices (last trade per instrument per round)
+  // Normalise to { round, inst, price } for backward compat with chart code
+  const cp = (state.discoveryPrices || []).map(p => ({ round: p.round, inst: p.instrument, price: p.price }));
   if (cp.length === 0) {
     ctx.fillStyle = '#adb5bd'; ctx.font = '12px Inter'; ctx.textAlign = 'center';
     ctx.fillText('Price discovery chart will appear as rounds complete', W/2, H/2);
@@ -736,7 +804,7 @@ function drawDiscoveryChart() {
 //  RENDER ROUND HISTORY
 // ────────────────────────────────────────────────
 function renderRoundHistory() {
-  const cp = state.clearingPrices;
+  const cp = (state.discoveryPrices || []).map(p => ({ round: p.round, inst: p.instrument, price: p.price }));
   const rounds = [...new Set(cp.map(p=>p.round))].sort((a,b)=>a-b);
   const colors = { spot:'#0077B6', futures:'#D4622A', call:'#198754', put:'#DC3545' };
   const el = document.getElementById('roundHistory');
@@ -761,8 +829,12 @@ function fetchGameState() {
     else showNoGame();
   };
   const s = document.createElement('script');
-  s.src = APPS_URL + '?action=pd_get_state&callback=' + cbName;
-  s.onerror = () => { delete window[cbName]; showNoGame(); };
+  s.src = APPS_URL + '?' + new URLSearchParams({
+    action:    'getState',
+    studentId: session.enrollId || '',
+    callback:  cbName
+  }).toString();
+  s.onerror = () => { delete window[cbName]; };
   document.head.appendChild(s);
 }
 
@@ -776,10 +848,10 @@ function applyGameState(data) {
   state.roundCue    = data.roundCue || '';
   state.spotPrice   = parseFloat(data.spotPrice) || 0;
   state.lotSize     = parseInt(data.lotSize) || 1;
-  state.allOrders   = (data.orders || []).map(o => ({
-    ...o, price: parseFloat(o.price), qty: parseInt(o.qty)
-  }));
-  state.clearingPrices = data.clearingPrices || [];
+  state.orderBook   = data.orderBook || { bids: [], asks: [] };
+  state.trades      = data.trades    || [];
+  state.myOrders    = data.myOrders  || [];
+  state.discoveryPrices = data.discoveryPrices || [];
 
   // Update UI
   document.getElementById('assetName').textContent = state.assetName + (state.assetSymbol ? ' (' + state.assetSymbol + ')' : '');
@@ -803,6 +875,7 @@ function applyGameState(data) {
   const activeTab = document.querySelector('.inst-tab.active');
   if (activeTab) selectInst(activeTab, state.inst);
 
+  renderMyOrders();
   renderOrderBook();
   drawDiscoveryChart();
   renderRoundHistory();
