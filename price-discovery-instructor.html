@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Price Discovery · Instructor · FIA 401</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #152744; --bg: #F0F4F8; --card: #FFFFFF;
+    --text: #152744; --muted: #6C757D; --border: #E9ECEF;
+    --gold: #D4A017; --gold-light: #FFF8E7; --gold-border: #F0C040;
+    --green: #198754; --green-light: #D1E7DD;
+    --red: #DC3545; --red-light: #F8D7DA;
+    --blue: #0D6EFD; --blue-light: #CFE2FF;
+    --shadow: 0 2px 12px rgba(21,39,68,0.08);
+    --shadow-lg: 0 4px 24px rgba(21,39,68,0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  .nav { background: var(--navy); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+  .nav-brand { color: #fff; font-weight: 700; font-size: 0.88rem; }
+  .nav-brand span { color: var(--gold); }
+  .nav-badge { background: rgba(212,160,23,0.2); color: var(--gold); border: 1px solid var(--gold); border-radius: 20px; padding: 4px 12px; font-size: 0.7rem; font-weight: 600; }
+  .nav-links { display: flex; gap: 16px; }
+  .nav-link { color: rgba(255,255,255,0.7); font-size: 0.78rem; text-decoration: none; }
+  .nav-link:hover { color: #fff; }
+
+  /* LAYOUT */
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  .page-title { font-size: 1.5rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+  .page-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* CARD */
+  .card { background: var(--card); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .card-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .card-title-icon { font-size: 1rem; }
+
+  /* AUTH SCREEN */
+  #authScreen { max-width: 420px; margin: 80px auto 0; }
+  .auth-logo { text-align: center; margin-bottom: 24px; }
+  .auth-logo-title { font-size: 1.3rem; font-weight: 800; color: var(--navy); }
+  .auth-logo-sub { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+
+  /* FORM ELEMENTS */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block; }
+  .form-input { width: 100%; padding: 11px 14px; border: 2px solid var(--border); border-radius: 9px; font-size: 0.88rem; font-family: 'Inter', sans-serif; color: var(--navy); background: #fff; transition: border-color 0.15s; }
+  .form-input:focus { outline: none; border-color: var(--gold); }
+  .form-textarea { width: 100%; padding: 11px 14px; border: 2px solid var(--border); border-radius: 9px; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: var(--navy); background: #fff; transition: border-color 0.15s; min-height: 80px; resize: vertical; line-height: 1.5; }
+  .form-textarea:focus { outline: none; border-color: var(--gold); }
+  .form-select { width: 100%; padding: 11px 14px; border: 2px solid var(--border); border-radius: 9px; font-size: 0.88rem; font-family: 'Inter', sans-serif; color: var(--navy); background: #fff; }
+
+  /* BUTTONS */
+  .btn { padding: 11px 20px; border-radius: 9px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; letter-spacing: 0.2px; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--gold); color: #fff; }
+  .btn-primary:hover { background: #b8880f; }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-success:hover { background: #146c43; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { background: #b02a37; }
+  .btn-secondary { background: #f8f9fa; color: var(--navy); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { background: #e9ecef; }
+  .btn-lg { padding: 14px 28px; font-size: 0.95rem; width: 100%; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* STATUS PILL */
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .status-open { background: var(--green-light); color: var(--green); }
+  .status-closed { background: #f8f9fa; color: var(--muted); border: 1px solid var(--border); }
+  .status-waiting { background: var(--blue-light); color: var(--blue); }
+  .status-ended { background: var(--navy); color: #fff; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+  /* CONTROL PANEL */
+  .ctrl-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .ctrl-asset { font-size: 1.4rem; font-weight: 800; color: var(--navy); }
+  .ctrl-meta { color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
+
+  /* ROUND CONTROLS */
+  .round-ctrl { background: var(--card); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .rc-progress { display: flex; gap: 6px; margin-bottom: 16px; }
+  .rc-step { flex: 1; height: 6px; border-radius: 3px; background: var(--border); }
+  .rc-step.done { background: var(--green); }
+  .rc-step.active { background: var(--gold); }
+
+  .rc-info { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; padding: 14px; background: var(--gold-light); border: 1.5px solid var(--gold-border); border-radius: 10px; }
+  .rc-info-icon { font-size: 1.4rem; }
+  .rc-info-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; margin-bottom: 4px; }
+  .rc-info-cue { font-size: 0.88rem; color: var(--navy); line-height: 1.5; }
+
+  .rc-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* STAT BOXES */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  @media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
+  .stat-box { background: var(--card); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); text-align: center; }
+  .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--navy); font-family: 'JetBrains Mono', monospace; }
+  .stat-label { font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* ORDER BOOK */
+  .ob-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .ob-col { padding: 8px; }
+  .ob-col-hdr { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; padding: 5px; border-radius: 6px; margin-bottom: 8px; }
+  .ob-col-hdr.bid { background: var(--green-light); color: var(--green); }
+  .ob-col-hdr.ask { background: var(--red-light); color: var(--red); }
+  .ob-divider { width: 1px; background: var(--border); }
+  .ob-row { display: flex; justify-content: space-between; padding: 6px 8px; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; border-radius: 5px; margin-bottom: 4px; position: relative; overflow: hidden; }
+  .ob-bg { position: absolute; top:0;bottom:0;border-radius:5px; }
+  .bid-bg { left:0; background: rgba(25,135,84,0.12); }
+  .ask-bg { right:0; background: rgba(220,53,69,0.12); }
+  .ob-price-bid { color: var(--green); font-weight: 600; position: relative; }
+  .ob-price-ask { color: var(--red); font-weight: 600; position: relative; }
+  .ob-qty-txt { color: var(--muted); position: relative; font-size: 0.72rem; }
+  .ob-participant { font-size: 0.65rem; color: var(--muted); position: relative; }
+  .ob-empty { text-align: center; padding: 24px; color: var(--muted); font-size: 0.82rem; font-style: italic; }
+  .ob-clearing-row { text-align: center; padding: 10px; border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); margin: 6px 0; }
+  .ob-clearing-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; }
+  .ob-clearing-val { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 800; color: var(--navy); }
+
+  /* INSTRUMENT TABS */
+  .inst-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .inst-tab { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); font-size: 0.72rem; font-weight: 600; cursor: pointer; color: var(--muted); background: #fff; }
+  .inst-tab.active { border-color: var(--navy); color: var(--navy); background: var(--bg); }
+
+  /* CHART */
+  .chart-canvas { width: 100%; height: 200px; }
+
+  /* NEXT ROUND FORM */
+  .nr-form { background: #f8f9fa; border-radius: 10px; padding: 16px; }
+
+  /* ALERTS */
+  .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 14px; }
+  .alert-info { background: var(--blue-light); color: var(--blue); border: 1px solid #b8daff; }
+  .alert-success { background: var(--green-light); color: var(--green); border: 1px solid #a3cfbb; }
+  .alert-warning { background: var(--gold-light); color: #856404; border: 1px solid var(--gold-border); }
+
+  /* PARTICIPANT LIST */
+  .participant-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 7px; background: #f8f9fa; margin-bottom: 5px; font-size: 0.78rem; }
+  .participant-id { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--navy); }
+  .participant-count { color: var(--muted); }
+
+  /* CLEARING SUMMARY */
+  .clearing-summary { background: var(--gold-light); border: 1.5px solid var(--gold-border); border-radius: 10px; padding: 14px 16px; margin-top: 12px; }
+  .cs-title { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; margin-bottom: 10px; }
+  .cs-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  @media(max-width:600px){.cs-grid{grid-template-columns:repeat(2,1fr);}}
+  .cs-item { text-align: center; }
+  .cs-inst { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+  .cs-price { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 700; color: var(--navy); }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 22px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
+  #toast.show { opacity: 1; }
+
+  /* PROJECTOR LINK */
+  .proj-link { display: inline-flex; align-items: center; gap: 6px; background: var(--navy); color: #fff; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.78rem; font-weight: 600; }
+  .proj-link:hover { background: #1e3a5f; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">FIA <span>401</span> · Derivatives Lab</div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a href="price-discovery-projector.html" target="_blank" class="proj-link">🖥 Open Projector</a>
+    <span class="nav-badge">Instructor Console</span>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ──────────── AUTH SCREEN ──────────── -->
+  <div id="authScreen">
+    <div class="auth-logo">
+      <div class="auth-logo-title">Price Discovery Game</div>
+      <div class="auth-logo-sub">Instructor Control Panel · FIA 401</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">🔐</span> Instructor Authentication</div>
+      <div class="form-group">
+        <label class="form-label">Instructor Secret</label>
+        <input type="password" class="form-input" id="secretInput" placeholder="Enter instructor secret" onkeydown="if(event.key==='Enter')doAuth()">
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="doAuth()">Enter Console</button>
+    </div>
+  </div>
+
+  <!-- ──────────── MAIN CONSOLE (hidden until auth) ──────────── -->
+  <div id="mainConsole" style="display:none;">
+
+    <div class="page-title">Price Discovery · Instructor Console</div>
+    <div class="page-sub">Control the classroom game. Students connect at <code>price-discovery.html</code>. Projector view at <code>price-discovery-projector.html</code>.</div>
+
+    <!-- GAME SETUP (shown when no active game) -->
+    <div id="setupPanel">
+      <div class="card">
+        <div class="card-title"><span class="card-title-icon">⚙️</span> Create New Game</div>
+
+        <div class="alert alert-info">A new game will replace any currently active game. Students will see the new game immediately.</div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Asset / Underlying Name</label>
+            <input type="text" class="form-input" id="assetName" placeholder="e.g. Reliance Industries" value="Reliance Industries">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Symbol (optional)</label>
+            <input type="text" class="form-input" id="assetSymbol" placeholder="e.g. RELIANCE" value="RELIANCE">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Reference Spot Price (₹)</label>
+            <input type="number" class="form-input" id="spotPrice" value="2450" placeholder="e.g. 2450" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Number of Rounds</label>
+            <select class="form-select" id="numRounds">
+              <option value="3">3 Rounds</option>
+              <option value="4">4 Rounds</option>
+              <option value="5" selected>5 Rounds</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Round 1 Information Cue <span style="color:var(--gold);font-weight:500;font-size:0.7rem;">(what students know at the start)</span></label>
+          <textarea class="form-textarea" id="round1Cue" placeholder="e.g. You are a market participant trading Reliance Industries. Analysts expect Q4 revenue around ₹2.1 trillion. No other information is available. What do you think is the fair price?">You are a market participant trading Reliance Industries (RELIANCE). Analysts' consensus estimate: Q4 revenue ~₹2.1T, EPS ~₹35. No results yet. The stock last closed at ₹2,450. What price would you buy or sell at?</textarea>
+        </div>
+
+        <button class="btn btn-primary btn-lg" onclick="createGame()" style="margin-top:6px;">🚀 Create &amp; Start Game</button>
+      </div>
+    </div>
+
+    <!-- GAME CONTROL (shown when game active) -->
+    <div id="controlPanel" style="display:none;">
+
+      <!-- Status bar -->
+      <div class="ctrl-header">
+        <div>
+          <div class="ctrl-asset" id="ctrlAssetName">—</div>
+          <div class="ctrl-meta" id="ctrlMeta">—</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="status-pill status-waiting" id="ctrlStatus"><span class="status-dot"></span><span id="ctrlStatusText">—</span></span>
+          <button class="btn btn-secondary" onclick="endGame()">End Game</button>
+          <button class="btn btn-secondary" onclick="showSetup()">New Game</button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="statOrders">0</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statStudents">0</div>
+          <div class="stat-label">Participants</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statRound">— / —</div>
+          <div class="stat-label">Round</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statSpread">—</div>
+          <div class="stat-label">Best Spread</div>
+        </div>
+      </div>
+
+      <!-- Round control -->
+      <div class="round-ctrl">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:0.85rem;font-weight:700;color:var(--navy);">Round Control</div>
+          <div class="rc-progress" id="rcProgress" style="flex:1;margin-left:16px;"></div>
+        </div>
+
+        <!-- Current cue -->
+        <div class="rc-info">
+          <div class="rc-info-icon">📰</div>
+          <div>
+            <div class="rc-info-label">Current Round Information</div>
+            <div class="rc-info-cue" id="ctrlCueTxt">—</div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="rc-actions">
+          <button class="btn btn-success" id="btnOpenRound" onclick="openRound()">▶ Open Round for Trading</button>
+          <button class="btn btn-danger" id="btnCloseRound" onclick="closeRound()" style="display:none;">⏹ Close Round &amp; Reveal Price</button>
+        </div>
+
+        <!-- Clearing summary (shown after close) -->
+        <div class="clearing-summary" id="clearingSummary" style="display:none;">
+          <div class="cs-title">Round Clearing Prices</div>
+          <div class="cs-grid" id="clearingGrid"></div>
+        </div>
+
+        <!-- Next round section -->
+        <div class="nr-form" id="nextRoundForm" style="display:none;margin-top:16px;">
+          <div class="form-label" style="margin-bottom:8px;">Next Round Information Cue</div>
+          <textarea class="form-textarea" id="nextCueInput" placeholder="Enter the new piece of information for the next round…" style="margin-bottom:10px;"></textarea>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-primary" onclick="nextRound()">→ Open Next Round</button>
+          </div>
+        </div>
+
+        <!-- End state -->
+        <div id="endedMsg" style="display:none;text-align:center;padding:20px;">
+          <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:8px;">Game Ended</div>
+          <div style="color:var(--muted);font-size:0.85rem;">Price discovery chart is shown on the projector. Create a new game to play again.</div>
+        </div>
+      </div>
+
+      <!-- PARTICIPANTS -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">👥</span> Participants This Round</div>
+          <div id="participantList"><div style="color:var(--muted);font-size:0.82rem;font-style:italic;">No orders yet</div></div>
+        </div>
+
+        <!-- Price Discovery Chart -->
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">📊</span> Price Discovery Chart</div>
+          <canvas class="chart-canvas" id="instrChart"></canvas>
+        </div>
+      </div>
+
+      <!-- LIVE ORDER BOOK -->
+      <div class="card">
+        <div class="card-title"><span class="card-title-icon">📋</span> Live Order Book</div>
+        <div class="inst-tabs" id="obInstrumentTabs">
+          <div class="inst-tab active" data-inst="spot" onclick="selectObInst(this,'spot')">Spot</div>
+          <div class="inst-tab" data-inst="futures" onclick="selectObInst(this,'futures')">Futures</div>
+          <div class="inst-tab" data-inst="call" onclick="selectObInst(this,'call')">Call Options</div>
+          <div class="inst-tab" data-inst="put" onclick="selectObInst(this,'put')">Put Options</div>
+        </div>
+        <div class="ob-split">
+          <div class="ob-col">
+            <div class="ob-col-hdr bid">Bids (Buy Orders)</div>
+            <div id="instrBids"></div>
+          </div>
+          <div class="ob-divider"></div>
+          <div class="ob-col">
+            <div class="ob-col-hdr ask">Asks (Sell Orders)</div>
+            <div id="instrAsks"></div>
+          </div>
+        </div>
+        <div class="ob-clearing-row">
+          <div class="ob-clearing-label">Clearing Price</div>
+          <div class="ob-clearing-val" id="instrClearing">—</div>
+        </div>
+      </div>
+
+    </div><!-- /controlPanel -->
+  </div><!-- /mainConsole -->
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ────────────────────────────────────────────────
+//  CONFIG
+// ────────────────────────────────────────────────
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
+const INSTRUCTOR_SECRET = 'IMTFD26_INSTRUCTOR';
+
+let instructorAuthed = false;
+let obInst = 'spot';
+let gameState = null;
+
+// ────────────────────────────────────────────────
+//  HELPERS
+// ────────────────────────────────────────────────
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+function fmtNum(n) {
+  if(!n&&n!==0)return'—';
+  return new Intl.NumberFormat('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2}).format(n);
+}
+function fmtPrice(n){return'₹'+fmtNum(n);}
+
+function sendToApps(params) {
+  const img = new Image();
+  img.src = APPS_URL + '?' + new URLSearchParams({...params, secret: INSTRUCTOR_SECRET}).toString();
+}
+
+function callApps(params, cb) {
+  const cbName = 'inst_cb_' + Date.now();
+  window[cbName] = d => { delete window[cbName]; if(cb) cb(d); };
+  const s = document.createElement('script');
+  s.src = APPS_URL + '?' + new URLSearchParams({...params, callback: cbName}).toString();
+  s.onerror = () => { delete window[cbName]; };
+  document.head.appendChild(s);
+}
+
+// ────────────────────────────────────────────────
+//  AUTH
+// ────────────────────────────────────────────────
+function doAuth() {
+  const val = document.getElementById('secretInput').value.trim();
+  if (val === INSTRUCTOR_SECRET) {
+    instructorAuthed = true;
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('mainConsole').style.display = 'block';
+    fetchState();
+    setInterval(fetchState, 5000);
+    toast('Access granted ✓');
+  } else {
+    toast('Incorrect secret');
+    document.getElementById('secretInput').value = '';
+  }
+}
+
+// ────────────────────────────────────────────────
+//  GAME CREATION
+// ────────────────────────────────────────────────
+function createGame() {
+  const assetName  = document.getElementById('assetName').value.trim();
+  const assetSymbol= document.getElementById('assetSymbol').value.trim();
+  const spotPrice  = parseFloat(document.getElementById('spotPrice').value)||0;
+  const numRounds  = parseInt(document.getElementById('numRounds').value)||4;
+  const round1Cue  = document.getElementById('round1Cue').value.trim();
+  if (!assetName || !round1Cue) { toast('Enter asset name and Round 1 information'); return; }
+  sendToApps({ action:'pd_create_game', assetName, assetSymbol, spotPrice, numRounds, roundCue: round1Cue });
+  toast('Game created! Fetching state…');
+  setTimeout(fetchState, 2000);
+}
+
+// ────────────────────────────────────────────────
+//  ROUND CONTROL
+// ────────────────────────────────────────────────
+function openRound() {
+  sendToApps({ action:'pd_open_round' });
+  toast('Round opened — students can now trade');
+  setTimeout(fetchState, 1500);
+}
+
+function closeRound() {
+  // Compute clearing prices locally from gameState.orders
+  if (!gameState) return;
+  const cp = computeAllClearingPrices(gameState.orders||[], gameState.currentRound);
+  const cpJson = JSON.stringify(cp);
+  sendToApps({ action:'pd_close_round', clearingPrices: cpJson });
+  toast('Round closed — prices revealed');
+  setTimeout(fetchState, 1500);
+}
+
+function nextRound() {
+  const cue = document.getElementById('nextCueInput').value.trim();
+  if (!cue) { toast('Enter information cue for next round'); return; }
+  sendToApps({ action:'pd_next_round', roundCue: cue });
+  document.getElementById('nextCueInput').value = '';
+  toast('Next round started');
+  setTimeout(fetchState, 1500);
+}
+
+function endGame() {
+  if (!confirm('End the game? This will show final results to all students.')) return;
+  sendToApps({ action:'pd_end_game' });
+  toast('Game ended');
+  setTimeout(fetchState, 1500);
+}
+
+function showSetup() {
+  document.getElementById('setupPanel').style.display = 'block';
+  document.getElementById('controlPanel').style.display = 'none';
+}
+
+// ────────────────────────────────────────────────
+//  CLEARING PRICE COMPUTATION
+// ────────────────────────────────────────────────
+function computeClearing(orders, inst) {
+  const bids = orders.filter(o=>o.inst===inst&&o.side==='buy').sort((a,b)=>b.price-a.price);
+  const asks = orders.filter(o=>o.inst===inst&&o.side==='sell').sort((a,b)=>a.price-b.price);
+  if (!bids.length || !asks.length) return null;
+  if (bids[0].price >= asks[0].price) return (bids[0].price + asks[0].price)/2;
+  return null;
+}
+
+function computeAllClearingPrices(orders, round) {
+  const insts = ['spot','futures','call','put'];
+  return insts.map(inst => {
+    const cp = computeClearing(orders.filter(o=>o.round==round), inst);
+    return { round, inst, price: cp };
+  }).filter(x=>x.price!==null);
+}
+
+// ────────────────────────────────────────────────
+//  FETCH STATE
+// ────────────────────────────────────────────────
+function fetchState() {
+  callApps({ action:'pd_get_state' }, data => {
+    if (!data || data.status==='no_game') { showSetupPanel(); return; }
+    gameState = data;
+    applyState(data);
+  });
+}
+
+function showSetupPanel() {
+  document.getElementById('setupPanel').style.display = 'block';
+  document.getElementById('controlPanel').style.display = 'none';
+}
+
+function applyState(data) {
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('controlPanel').style.display = 'block';
+
+  const r = parseInt(data.currentRound)||0;
+  const n = parseInt(data.numRounds)||0;
+  document.getElementById('ctrlAssetName').textContent = data.assetName + (data.assetSymbol?' ('+data.assetSymbol+')':'');
+  document.getElementById('ctrlMeta').textContent = 'Spot reference: ₹' + fmtNum(data.spotPrice||0) + ' · Round ' + r + ' of ' + n;
+  document.getElementById('ctrlCueTxt').textContent = data.roundCue || '—';
+
+  const pill = document.getElementById('ctrlStatus');
+  const stMap = { waiting:'status-waiting', open:'status-open', closed:'status-closed', ended:'status-ended' };
+  const stText = { waiting:'Waiting', open:'Trading Open', closed:'Round Closed', ended:'Ended' };
+  pill.className = 'status-pill ' + (stMap[data.status]||'status-waiting');
+  document.getElementById('ctrlStatusText').textContent = stText[data.status]||data.status;
+
+  // Progress bar
+  const prog = document.getElementById('rcProgress');
+  prog.innerHTML = '';
+  for (let i=1;i<=n;i++) {
+    const d = document.createElement('div');
+    d.className = 'rc-step ' + (i<r?'done':i===r?'active':'');
+    prog.appendChild(d);
+  }
+
+  // Stats
+  const orders = (data.orders||[]).map(o=>({...o,price:parseFloat(o.price),qty:parseInt(o.qty)}));
+  const thisRoundOrders = orders.filter(o=>o.round==r);
+  const participants = [...new Set(thisRoundOrders.map(o=>o.enrollId))];
+  document.getElementById('statOrders').textContent = thisRoundOrders.length;
+  document.getElementById('statStudents').textContent = participants.length;
+  document.getElementById('statRound').textContent = r + ' / ' + n;
+
+  // Best spread
+  const bids = thisRoundOrders.filter(o=>o.side==='buy');
+  const asks = thisRoundOrders.filter(o=>o.side==='sell');
+  if (bids.length&&asks.length) {
+    const topBid = Math.max(...bids.map(o=>o.price));
+    const topAsk = Math.min(...asks.map(o=>o.price));
+    const sp = topAsk-topBid;
+    document.getElementById('statSpread').textContent = sp>0?'₹'+fmtNum(sp.toFixed(1)):'Crossed';
+  } else document.getElementById('statSpread').textContent='—';
+
+  // Buttons
+  document.getElementById('btnOpenRound').style.display  = data.status==='waiting'||data.status==='closed' ? 'inline-flex' : 'none';
+  document.getElementById('btnCloseRound').style.display = data.status==='open' ? 'inline-flex' : 'none';
+  document.getElementById('btnOpenRound').textContent    = data.status==='closed' ? '▶ Reopen Round' : '▶ Open Round for Trading';
+
+  // Next round form
+  const showNext = data.status==='closed' && r < n;
+  document.getElementById('nextRoundForm').style.display = showNext ? 'block' : 'none';
+  document.getElementById('endedMsg').style.display = data.status==='ended' ? 'block' : 'none';
+
+  // Clearing summary
+  const cp = computeAllClearingPrices(thisRoundOrders, r);
+  if (cp.length && data.status==='closed') {
+    document.getElementById('clearingSummary').style.display='block';
+    const colors={spot:'#0077B6',futures:'#D4622A',call:'#198754',put:'#DC3545'};
+    document.getElementById('clearingGrid').innerHTML = ['spot','futures','call','put'].map(inst=>{
+      const found=cp.find(p=>p.inst===inst);
+      return `<div class="cs-item">
+        <div class="cs-inst" style="color:${colors[inst]}">${inst.toUpperCase()}</div>
+        <div class="cs-price">${found?fmtPrice(found.price.toFixed(0)):'—'}</div>
+      </div>`;
+    }).join('');
+  } else document.getElementById('clearingSummary').style.display='none';
+
+  // Participants
+  const partEl = document.getElementById('participantList');
+  if (!participants.length) { partEl.innerHTML='<div style="color:var(--muted);font-size:0.82rem;font-style:italic;">No orders yet</div>'; }
+  else {
+    partEl.innerHTML = participants.map(id=>{
+      const cnt=thisRoundOrders.filter(o=>o.enrollId===id).length;
+      return `<div class="participant-row"><span class="participant-id">${id}</span><span class="participant-count">${cnt} order${cnt>1?'s':''}</span></div>`;
+    }).join('');
+  }
+
+  // Order book
+  gameState.ordersFormatted = orders;
+  renderInstOrderBook(orders, r);
+
+  // Chart
+  drawInstChart(data.clearingPrices||[], n);
+}
+
+// ────────────────────────────────────────────────
+//  ORDER BOOK RENDER
+// ────────────────────────────────────────────────
+function selectObInst(el, inst) {
+  obInst = inst;
+  document.querySelectorAll('.inst-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if (gameState) {
+    const orders=(gameState.ordersFormatted||[]);
+    const r=parseInt(gameState.currentRound)||0;
+    renderInstOrderBook(orders,r);
+  }
+}
+
+function renderInstOrderBook(orders, round) {
+  const inst = obInst;
+  const ro = orders.filter(o=>o.inst===inst&&o.round==round);
+  const bids=ro.filter(o=>o.side==='buy').sort((a,b)=>b.price-a.price);
+  const asks=ro.filter(o=>o.side==='sell').sort((a,b)=>a.price-b.price);
+
+  function agg(arr){const m={};arr.forEach(o=>{if(!m[o.price])m[o.price]={price:o.price,qty:0,ids:[]};m[o.price].qty+=o.qty;m[o.price].ids.push(o.enrollId);});return Object.values(m);}
+  const aBids=agg(bids).sort((a,b)=>b.price-a.price).slice(0,8);
+  const aAsks=agg(asks).sort((a,b)=>a.price-b.price).slice(0,8);
+  const maxQ=Math.max(...aBids.map(b=>b.qty),...aAsks.map(a=>a.qty),1);
+
+  function rows(arr,type){
+    if(!arr.length) return '<div class="ob-empty">No '+(type==='bid'?'bids':'asks')+'</div>';
+    return arr.map(r=>{
+      const w=Math.round((r.qty/maxQ)*75);
+      const cls=type==='bid'?'ob-price-bid':'ob-price-ask';
+      const bgcls=type==='bid'?'bid-bg':'ask-bg';
+      return `<div class="ob-row"><div class="ob-bg ${bgcls}" style="width:${w}%"></div>
+        <span class="${cls}">₹${fmtNum(r.price)}</span>
+        <span class="ob-qty-txt">${r.qty} · ${r.ids.length}p</span></div>`;
+    }).join('');
+  }
+  document.getElementById('instrBids').innerHTML=rows(aBids,'bid');
+  document.getElementById('instrAsks').innerHTML=rows(aAsks,'ask');
+
+  const cp=computeClearing(ro,inst);
+  document.getElementById('instrClearing').textContent=cp?fmtPrice(cp.toFixed(2)):'—';
+}
+
+// ────────────────────────────────────────────────
+//  CHART
+// ────────────────────────────────────────────────
+function drawInstChart(clearingPrices, numRounds) {
+  const canvas=document.getElementById('instrChart');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=canvas.offsetWidth*dpr; canvas.height=200*dpr;
+  canvas.style.height='200px';
+  const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  const W=canvas.offsetWidth, H=200;
+
+  if(!clearingPrices||!clearingPrices.length){
+    ctx.fillStyle='#adb5bd'; ctx.font='12px Inter'; ctx.textAlign='center';
+    ctx.fillText('Clearing prices will appear here after each round closes',W/2,H/2); return;
+  }
+  const insts=[...new Set(clearingPrices.map(p=>p.inst))];
+  const rounds=[...new Set(clearingPrices.map(p=>parseInt(p.round)))].sort((a,b)=>a-b);
+  const colors={spot:'#0077B6',futures:'#D4622A',call:'#198754',put:'#DC3545'};
+  const allPrices=clearingPrices.map(p=>parseFloat(p.price));
+  const minP=Math.min(...allPrices)*0.99, maxP=Math.max(...allPrices)*1.01;
+  const range=maxP-minP||1;
+  const padL=50,padR=20,padT=20,padB=30;
+  const cW=W-padL-padR, cH=H-padT-padB;
+
+  // Grid
+  ctx.strokeStyle='#e9ecef'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=padT+cH*(1-i/4);
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle='#adb5bd'; ctx.font='10px JetBrains Mono'; ctx.textAlign='right';
+    ctx.fillText('₹'+fmtNum((minP+range*i/4).toFixed(0)),padL-6,y+4);
+  }
+
+  // X axis
+  ctx.fillStyle='#adb5bd'; ctx.font='10px Inter'; ctx.textAlign='center';
+  rounds.forEach((r,i)=>{
+    const x=padL+(i/(rounds.length-1||1))*cW;
+    ctx.fillText('R'+r,x,H-6);
+    ctx.strokeStyle='#e9ecef'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,padT); ctx.lineTo(x,H-padB); ctx.stroke();
+  });
+
+  insts.forEach(inst=>{
+    const pts=rounds.map(r=>{
+      const f=clearingPrices.find(p=>parseInt(p.round)===r&&p.inst===inst);
+      return f?parseFloat(f.price):null;
+    });
+    const color=colors[inst]||'#6C757D';
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.setLineDash([]);
+    let started=false;
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      if(p===null)return;
+      const x=padL+(i/(rounds.length-1||1))*cW;
+      const y=padT+cH*(1-(p-minP)/range);
+      if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    pts.forEach((p,i)=>{
+      if(p===null)return;
+      const x=padL+(i/(rounds.length-1||1))*cW;
+      const y=padT+cH*(1-(p-minP)/range);
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(x,y,5,0,2*Math.PI); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x,y,2.5,0,2*Math.PI); ctx.fill();
+    });
+  });
+
+  // Legend
+  let lx=padL; const ly=padT-6;
+  insts.forEach(inst=>{
+    const color=colors[inst]||'#6C757D';
+    ctx.fillStyle=color; ctx.fillRect(lx,ly-6,12,4);
+    ctx.fillStyle='#6C757D'; ctx.font='9px Inter'; ctx.textAlign='left';
+    ctx.fillText(inst.charAt(0).toUpperCase()+inst.slice(1),lx+15,ly);
+    lx+=56;
+  });
+}
+</script>
+</body>
+</html>

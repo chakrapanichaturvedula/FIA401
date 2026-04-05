@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Price Discovery · Projector · FIA 401</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1222; --surface: #141e33; --surface2: #1a2640;
+    --border: #243050; --gold: #f0c040; --gold2: #c9930a;
+    --green: #00e676; --green2: #1b5e20;
+    --red: #ff5252; --red2: #7f0000;
+    --text: #e8edf5; --muted: #7b93b8; --white: #ffffff;
+    --blue: #60a0ff; --teal: #4ecdc4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .h-left { display: flex; align-items: center; gap: 20px; }
+  .h-asset { font-size: 2rem; font-weight: 900; color: var(--white); letter-spacing: -0.5px; }
+  .h-symbol { font-size: 1rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+  .h-badge { background: var(--gold2); border: 1.5px solid var(--gold); color: var(--gold); border-radius: 8px; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .h-right { display: flex; align-items: center; gap: 20px; }
+  .h-stat { text-align: right; }
+  .h-stat-value { font-size: 1.4rem; font-weight: 800; color: var(--white); font-family: 'JetBrains Mono', monospace; }
+  .h-stat-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px; }
+  .status-badge { display: flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .status-open   { background: rgba(0,230,118,0.15); border: 1.5px solid var(--green); color: var(--green); }
+  .status-closed { background: rgba(123,147,184,0.1); border: 1.5px solid var(--border); color: var(--muted); }
+  .status-waiting{ background: rgba(96,160,255,0.1); border: 1.5px solid var(--blue); color: var(--blue); }
+  .status-ended  { background: rgba(240,192,64,0.1); border: 1.5px solid var(--gold); color: var(--gold); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+
+  /* CUE BANNER */
+  .cue-banner { background: linear-gradient(135deg, rgba(240,192,64,0.12), rgba(192,147,10,0.08)); border-bottom: 1px solid rgba(240,192,64,0.25); padding: 16px 32px; flex-shrink: 0; display: flex; align-items: flex-start; gap: 16px; }
+  .cue-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 1px; }
+  .cue-inner { flex: 1; }
+  .cue-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gold); margin-bottom: 4px; }
+  .cue-text { font-size: 1.05rem; color: var(--white); line-height: 1.5; font-weight: 500; }
+
+  /* MAIN GRID */
+  .main-grid { flex: 1; display: grid; grid-template-columns: 320px 1fr 320px; gap: 0; overflow: hidden; min-height: 0; }
+
+  /* ORDER BOOK COLUMNS */
+  .ob-col { display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
+  .ob-col:last-child { border-right: none; border-left: 1px solid var(--border); }
+  .ob-col-header { padding: 16px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .ob-col-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .ob-col-title.bid { color: var(--green); }
+  .ob-col-title.ask { color: var(--red); }
+  .ob-tab-row { display: flex; gap: 6px; }
+  .ob-tab { font-size: 0.62rem; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; color: var(--muted); background: transparent; }
+  .ob-tab.active { border-color: var(--gold); color: var(--gold); background: rgba(240,192,64,0.1); }
+  .ob-list { flex: 1; overflow-y: auto; padding: 10px; }
+  .ob-list::-webkit-scrollbar { width: 4px; }
+  .ob-list::-webkit-scrollbar-track { background: transparent; }
+  .ob-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .ob-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 6px; margin-bottom: 4px; position: relative; overflow: hidden; transition: all 0.3s; }
+  .ob-row-bg { position: absolute; top:0;bottom:0;border-radius:6px;transition:width 0.5s ease; }
+  .bid-row .ob-row-bg { left:0; background: rgba(0,230,118,0.12); }
+  .ask-row .ob-row-bg { right:0; background: rgba(255,82,82,0.12); }
+  .ob-price { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; position: relative; }
+  .bid-row .ob-price { color: var(--green); }
+  .ask-row .ob-price { color: var(--red); }
+  .ob-right { text-align: right; position: relative; }
+  .ob-qty { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--muted); }
+  .ob-participants { font-size: 0.6rem; color: var(--border); margin-top: 1px; }
+  .ob-empty { text-align: center; padding: 32px; color: var(--muted); font-size: 0.88rem; }
+
+  /* CENTER PANEL */
+  .center-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+  /* INSTRUMENT TABS */
+  .inst-tab-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; gap: 8px; flex-shrink: 0; }
+  .inst-btn { padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border); font-size: 0.72rem; font-weight: 600; cursor: pointer; color: var(--muted); background: transparent; transition: all 0.15s; }
+  .inst-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(240,192,64,0.08); }
+
+  /* CLEARING PRICE DISPLAY */
+  .clearing-display { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .cd-left { }
+  .cd-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 4px; }
+  .cd-price { font-size: 2.2rem; font-weight: 900; color: var(--white); font-family: 'JetBrains Mono', monospace; letter-spacing: -1px; }
+  .cd-price.crossed { color: var(--green); }
+  .cd-spread { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .cd-right { display: flex; gap: 20px; }
+  .cd-stat { text-align: center; }
+  .cd-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 700; color: var(--white); }
+  .cd-stat-lbl { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+  /* PRICE CHART */
+  .chart-section { flex: 1; padding: 16px 20px; overflow: hidden; min-height: 0; display: flex; flex-direction: column; }
+  .chart-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .chart-legend { display: flex; gap: 12px; }
+  .chart-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.65rem; color: var(--muted); }
+  .chart-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  canvas#chartCanvas { width: 100%; flex: 1; }
+
+  /* ROUND HISTORY (right strip in center-bottom) */
+  .round-history { background: var(--surface); border-top: 1px solid var(--border); padding: 12px 20px; flex-shrink: 0; }
+  .rh-title { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 8px; }
+  .rh-row { display: flex; align-items: center; gap: 12px; margin-bottom: 5px; }
+  .rh-round-lbl { font-size: 0.7rem; color: var(--muted); min-width: 48px; font-family: 'JetBrains Mono', monospace; }
+  .rh-prices { display: flex; gap: 12px; flex-wrap: wrap; }
+  .rh-inst { display: flex; align-items: center; gap: 5px; }
+  .rh-inst-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .rh-inst-price { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text); font-weight: 600; }
+
+  /* REFRESH */
+  .refresh-strip { background: var(--bg); border-top: 1px solid var(--border); padding: 6px 32px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .refresh-left { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.68rem; }
+  .refresh-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+  .refresh-timer { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+
+  /* WAITING OVERLAY */
+  .waiting-overlay { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+  .wo-logo { font-size: 3rem; margin-bottom: 16px; }
+  .wo-title { font-size: 1.8rem; font-weight: 900; color: var(--white); margin-bottom: 8px; }
+  .wo-sub { color: var(--muted); font-size: 1rem; }
+  .wo-pulse { margin-top: 24px; display: flex; gap: 8px; }
+  .wo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gold); animation: pulse 1.2s ease-in-out infinite; }
+  .wo-dot:nth-child(2){animation-delay:0.2s} .wo-dot:nth-child(3){animation-delay:0.4s}
+  @keyframes pulse{0%,100%{transform:scale(0.6);opacity:0.4}50%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body style="position:relative;">
+
+<!-- WAITING OVERLAY -->
+<div class="waiting-overlay" id="waitingOverlay">
+  <div class="wo-logo">📈</div>
+  <div class="wo-title">Price Discovery Game</div>
+  <div class="wo-sub">FIA 401 · Derivatives Lab · Waiting for instructor…</div>
+  <div class="wo-pulse"><div class="wo-dot"></div><div class="wo-dot"></div><div class="wo-dot"></div></div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="h-left">
+    <div>
+      <div class="h-asset" id="hAsset">—</div>
+      <div class="h-symbol" id="hSymbol">FIA 401 · Price Discovery Game</div>
+    </div>
+    <div class="h-badge" id="hRound">Round — / —</div>
+  </div>
+  <div class="h-right">
+    <div class="h-stat">
+      <div class="h-stat-value" id="hOrders">0</div>
+      <div class="h-stat-label">Orders</div>
+    </div>
+    <div class="h-stat">
+      <div class="h-stat-value" id="hStudents">0</div>
+      <div class="h-stat-label">Traders</div>
+    </div>
+    <div class="status-badge status-waiting" id="hStatus">
+      <span class="status-dot"></span>
+      <span id="hStatusText">Connecting</span>
+    </div>
+  </div>
+</div>
+
+<!-- CUE BANNER -->
+<div class="cue-banner">
+  <div class="cue-icon">📰</div>
+  <div class="cue-inner">
+    <div class="cue-label">Round Information — What the Market Knows</div>
+    <div class="cue-text" id="cueTxt">Waiting for instructor…</div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- LEFT: BID SIDE -->
+  <div class="ob-col">
+    <div class="ob-col-header">
+      <div class="ob-col-title bid">↑ Buy Orders (Bids)</div>
+      <div class="ob-tab-row" id="bidTabRow">
+        <button class="ob-tab active" data-inst="spot" onclick="selectInst(this,'spot')">Spot</button>
+        <button class="ob-tab" data-inst="futures" onclick="selectInst(this,'futures')">Futures</button>
+        <button class="ob-tab" data-inst="call" onclick="selectInst(this,'call')">Calls</button>
+        <button class="ob-tab" data-inst="put" onclick="selectInst(this,'put')">Puts</button>
+      </div>
+    </div>
+    <div class="ob-list" id="bidList"></div>
+  </div>
+
+  <!-- CENTER: CHART + CLEARING -->
+  <div class="center-panel">
+
+    <div class="inst-tab-bar">
+      <button class="inst-btn active" data-inst="spot" onclick="selectCenterInst(this,'spot')">Spot</button>
+      <button class="inst-btn" data-inst="futures" onclick="selectCenterInst(this,'futures')">Futures</button>
+      <button class="inst-btn" data-inst="call" onclick="selectCenterInst(this,'call')">Call Options</button>
+      <button class="inst-btn" data-inst="put" onclick="selectCenterInst(this,'put')">Put Options</button>
+      <button class="inst-btn active" style="margin-left:auto;" data-inst="all" onclick="selectCenterInst(this,'all')">All Instruments</button>
+    </div>
+
+    <div class="clearing-display">
+      <div class="cd-left">
+        <div class="cd-label" id="cdLabel">Discovered Price · Spot</div>
+        <div class="cd-price" id="cdPrice">—</div>
+        <div class="cd-spread" id="cdSpread">Waiting for orders…</div>
+      </div>
+      <div class="cd-right">
+        <div class="cd-stat">
+          <div class="cd-stat-val" id="cdBids">0</div>
+          <div class="cd-stat-lbl">Bids</div>
+        </div>
+        <div class="cd-stat">
+          <div class="cd-stat-val" id="cdAsks">0</div>
+          <div class="cd-stat-lbl">Asks</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-title">
+        Price Discovery · Round-by-Round
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+      <canvas id="chartCanvas"></canvas>
+    </div>
+
+    <div class="round-history">
+      <div class="rh-title">Clearing Prices by Round</div>
+      <div id="rhContent">—</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: ASK SIDE -->
+  <div class="ob-col" style="border-left:1px solid var(--border);border-right:none;">
+    <div class="ob-col-header">
+      <div class="ob-col-title ask">↓ Sell Orders (Asks)</div>
+      <div class="ob-tab-row" id="askTabRow">
+        <button class="ob-tab active" data-inst="spot" onclick="selectInst(this,'spot')">Spot</button>
+        <button class="ob-tab" data-inst="futures" onclick="selectInst(this,'futures')">Futures</button>
+        <button class="ob-tab" data-inst="call" onclick="selectInst(this,'call')">Calls</button>
+        <button class="ob-tab" data-inst="put" onclick="selectInst(this,'put')">Puts</button>
+      </div>
+    </div>
+    <div class="ob-list" id="askList"></div>
+  </div>
+
+</div>
+
+<!-- REFRESH STRIP -->
+<div class="refresh-strip">
+  <div class="refresh-left">
+    <span class="refresh-dot"></span>
+    <span>Auto-refreshing every 5 seconds</span>
+  </div>
+  <div class="refresh-timer" id="refreshTimer">Next refresh in 5s</div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+//  CONFIG
+// ────────────────────────────────────────────────
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
+
+let curInst = 'spot';
+let centerInst = 'spot';
+let gameData = null;
+let refreshSecs = 5;
+
+const COLORS = { spot:'#60a0ff', futures:'#f0a060', call:'#00e676', put:'#ff5252' };
+
+// ────────────────────────────────────────────────
+//  HELPERS
+// ────────────────────────────────────────────────
+function fmtNum(n) {
+  return new Intl.NumberFormat('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2}).format(n);
+}
+function fmtPrice(n){ return '₹'+fmtNum(n); }
+
+// ────────────────────────────────────────────────
+//  INSTRUMENT TABS
+// ────────────────────────────────────────────────
+function selectInst(el, inst) {
+  curInst = inst;
+  ['bidTabRow','askTabRow'].forEach(id=>{
+    document.getElementById(id).querySelectorAll('.ob-tab').forEach(t=>{
+      t.classList.toggle('active', t.dataset.inst===inst);
+    });
+  });
+  renderOrderBook();
+}
+
+function selectCenterInst(el, inst) {
+  centerInst = inst;
+  document.querySelectorAll('.inst-tab-bar .inst-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderClearing();
+}
+
+// ────────────────────────────────────────────────
+//  CLEARING PRICE
+// ────────────────────────────────────────────────
+function computeClearing(orders, inst, round) {
+  const ro = orders.filter(o=>o.inst===inst&&parseInt(o.round)===round);
+  const bids = ro.filter(o=>o.side==='buy').sort((a,b)=>b.price-a.price);
+  const asks = ro.filter(o=>o.side==='sell').sort((a,b)=>a.price-b.price);
+  if (!bids.length||!asks.length) return null;
+  if (bids[0].price>=asks[0].price) return (bids[0].price+asks[0].price)/2;
+  return null;
+}
+
+function getBestBidAsk(orders, inst, round) {
+  const ro=orders.filter(o=>o.inst===inst&&parseInt(o.round)===round);
+  const bids=ro.filter(o=>o.side==='buy').map(o=>o.price);
+  const asks=ro.filter(o=>o.side==='sell').map(o=>o.price);
+  return {
+    bestBid: bids.length?Math.max(...bids):null,
+    bestAsk: asks.length?Math.min(...asks):null,
+    bidCnt:  bids.length,
+    askCnt:  asks.length
+  };
+}
+
+function renderClearing() {
+  if (!gameData) return;
+  const orders=gameData.orders||[];
+  const round=parseInt(gameData.currentRound)||0;
+  const inst=centerInst==='all'?'spot':centerInst;
+  const cp=computeClearing(orders,inst,round);
+  const ba=getBestBidAsk(orders,inst,round);
+  const instLabels={spot:'Spot',futures:'Futures',call:'Call Options',put:'Put Options'};
+  document.getElementById('cdLabel').textContent='Discovered Price · '+(centerInst==='all'?'All Instruments':instLabels[inst]||inst);
+  if (cp!==null){
+    document.getElementById('cdPrice').textContent=fmtPrice(cp.toFixed(2));
+    document.getElementById('cdPrice').className='cd-price crossed';
+    document.getElementById('cdSpread').textContent='✓ Market crossed — price discovered';
+  } else if (ba.bestBid&&ba.bestAsk){
+    document.getElementById('cdPrice').textContent='—';
+    document.getElementById('cdPrice').className='cd-price';
+    document.getElementById('cdSpread').textContent='Best Bid '+fmtPrice(ba.bestBid.toFixed(0))+' · Best Ask '+fmtPrice(ba.bestAsk.toFixed(0))+' · Spread ₹'+fmtNum((ba.bestAsk-ba.bestBid).toFixed(1));
+  } else {
+    document.getElementById('cdPrice').textContent='—';
+    document.getElementById('cdPrice').className='cd-price';
+    document.getElementById('cdSpread').textContent=(!ba.bidCnt&&!ba.askCnt)?'Waiting for orders…':(!ba.bidCnt?'No buyers yet':'No sellers yet');
+  }
+  document.getElementById('cdBids').textContent=ba.bidCnt;
+  document.getElementById('cdAsks').textContent=ba.askCnt;
+}
+
+// ────────────────────────────────────────────────
+//  ORDER BOOK RENDER
+// ────────────────────────────────────────────────
+function renderOrderBook() {
+  if (!gameData) return;
+  const orders=gameData.orders||[];
+  const round=parseInt(gameData.currentRound)||0;
+  const inst=curInst;
+  const ro=orders.filter(o=>o.inst===inst&&parseInt(o.round)===round);
+  const bids=ro.filter(o=>o.side==='buy').sort((a,b)=>b.price-a.price);
+  const asks=ro.filter(o=>o.side==='sell').sort((a,b)=>a.price-b.price);
+
+  function agg(arr){
+    const m={};
+    arr.forEach(o=>{if(!m[o.price])m[o.price]={price:o.price,qty:0,pIds:[]};m[o.price].qty+=o.qty;m[o.price].pIds.push(o.enrollId);});
+    return Object.values(m);
+  }
+  const aggBids=agg(bids).sort((a,b)=>b.price-a.price);
+  const aggAsks=agg(asks).sort((a,b)=>a.price-b.price);
+  const maxQ=Math.max(...aggBids.map(b=>b.qty),...aggAsks.map(a=>a.qty),1);
+
+  function renderRows(arr,type){
+    if(!arr.length) return '<div class="ob-empty">No '+(type==='bid'?'buy':'sell')+' orders yet</div>';
+    return arr.map(r=>{
+      const w=Math.round((r.qty/maxQ)*80);
+      return `<div class="ob-row ${type}-row">
+        <div class="ob-row-bg" style="width:${w}%"></div>
+        <span class="ob-price">₹${fmtNum(r.price)}</span>
+        <div class="ob-right"><div class="ob-qty">${r.qty} lot${r.qty>1?'s':''}</div><div class="ob-participants">${r.pIds.length} trader${r.pIds.length>1?'s':''}</div></div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('bidList').innerHTML=renderRows(aggBids,'bid');
+  document.getElementById('askList').innerHTML=renderRows(aggAsks,'ask');
+}
+
+// ────────────────────────────────────────────────
+//  PRICE DISCOVERY CHART
+// ────────────────────────────────────────────────
+function drawChart(clearingPrices, numRounds) {
+  const canvas=document.getElementById('chartCanvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
+  const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  const W=rect.width, H=rect.height;
+
+  // Legend
+  const insts=[...new Set((clearingPrices||[]).map(p=>p.inst))];
+  const legend=document.getElementById('chartLegend');
+  legend.innerHTML=insts.map(i=>`<div class="chart-legend-item"><div class="chart-legend-dot" style="background:${COLORS[i]||'#aaa'}"></div>${i.charAt(0).toUpperCase()+i.slice(1)}</div>`).join('');
+
+  if(!clearingPrices||!clearingPrices.length){
+    ctx.fillStyle='#7b93b8'; ctx.font='14px Inter'; ctx.textAlign='center';
+    ctx.fillText('Price discovery chart will appear after the first round closes',W/2,H/2); return;
+  }
+  const rounds=[...new Set(clearingPrices.map(p=>parseInt(p.round)))].sort((a,b)=>a-b);
+  const allP=clearingPrices.map(p=>parseFloat(p.price));
+  const minP=Math.min(...allP)*0.995, maxP=Math.max(...allP)*1.005;
+  const range=maxP-minP||1;
+  const pad={l:60,r:24,t:20,b:36};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+
+  // Grid lines
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*(1-i/4);
+    ctx.strokeStyle='rgba(36,48,80,0.8)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#7b93b8'; ctx.font='11px JetBrains Mono'; ctx.textAlign='right';
+    ctx.fillText('₹'+fmtNum((minP+range*i/4).toFixed(0)),pad.l-8,y+4);
+  }
+
+  // X axis
+  ctx.fillStyle='#7b93b8'; ctx.font='11px Inter'; ctx.textAlign='center';
+  rounds.forEach((r,i)=>{
+    const x=pad.l+(i/(rounds.length-1||1))*cW;
+    ctx.fillText('Round '+r, x, H-8);
+    ctx.strokeStyle='rgba(36,48,80,0.5)'; ctx.lineWidth=1; ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,H-pad.b); ctx.stroke(); ctx.setLineDash([]);
+  });
+
+  // Lines per instrument
+  insts.forEach(inst=>{
+    const pts=rounds.map(r=>{
+      const f=clearingPrices.find(p=>parseInt(p.round)===r&&p.inst===inst);
+      return f?parseFloat(f.price):null;
+    });
+    const color=COLORS[inst]||'#aaa';
+
+    // Gradient fill
+    const gradient=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+    gradient.addColorStop(0,color.replace(')',',0.15)').replace('rgb','rgba'));
+    gradient.addColorStop(1,'transparent');
+    ctx.fillStyle=gradient;
+    ctx.beginPath();
+    let started=false;
+    pts.forEach((p,i)=>{ if(p===null)return; const x=pad.l+(i/(rounds.length-1||1))*cW,y=pad.t+cH*(1-(p-minP)/range); if(!started){ctx.moveTo(x,H-pad.b);ctx.lineTo(x,y);started=true;}else ctx.lineTo(x,y); });
+    if(started){const li=pts.reduce((a,b,i)=>b!==null?i:a,-1); ctx.lineTo(pad.l+(li/(rounds.length-1||1))*cW,H-pad.b);}
+    ctx.closePath(); ctx.fill();
+
+    // Line
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.setLineDash([]);
+    ctx.beginPath(); started=false;
+    pts.forEach((p,i)=>{ if(p===null)return; const x=pad.l+(i/(rounds.length-1||1))*cW,y=pad.t+cH*(1-(p-minP)/range); if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y); });
+    ctx.stroke();
+
+    // Dots + labels
+    pts.forEach((p,i)=>{
+      if(p===null)return;
+      const x=pad.l+(i/(rounds.length-1||1))*cW;
+      const y=pad.t+cH*(1-(p-minP)/range);
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(x,y,6,0,2*Math.PI); ctx.fill();
+      ctx.fillStyle='#0b1222'; ctx.beginPath(); ctx.arc(x,y,3,0,2*Math.PI); ctx.fill();
+      // Price label
+      ctx.fillStyle=color; ctx.font='bold 10px JetBrains Mono'; ctx.textAlign='center';
+      ctx.fillText('₹'+fmtNum(p.toFixed(0)),x,y-12);
+    });
+  });
+}
+
+// ────────────────────────────────────────────────
+//  ROUND HISTORY STRIP
+// ────────────────────────────────────────────────
+function renderRoundHistory(clearingPrices) {
+  const el=document.getElementById('rhContent');
+  if(!clearingPrices||!clearingPrices.length){el.textContent='—';return;}
+  const rounds=[...new Set(clearingPrices.map(p=>parseInt(p.round)))].sort((a,b)=>a-b);
+  el.innerHTML=rounds.map(r=>{
+    const rp=clearingPrices.filter(p=>parseInt(p.round)===r);
+    const prices=rp.map(p=>`<span class="rh-inst"><span class="rh-inst-dot" style="background:${COLORS[p.inst]||'#aaa'}"></span><span class="rh-inst-price">${fmtPrice(parseFloat(p.price).toFixed(0))}</span><span style="font-size:0.6rem;color:var(--muted);margin-left:2px;">${p.inst.toUpperCase()}</span></span>`).join('');
+    return `<div class="rh-row"><span class="rh-round-lbl">R${r}</span><div class="rh-prices">${prices}</div></div>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────
+//  APPLY STATE
+// ────────────────────────────────────────────────
+function applyState(data) {
+  if (!data || data.status==='no_game') { return; }
+  document.getElementById('waitingOverlay').style.display='none';
+  gameData = { ...data, orders: (data.orders||[]).map(o=>({...o,price:parseFloat(o.price),qty:parseInt(o.qty)})) };
+
+  const r=parseInt(data.currentRound)||0;
+  const n=parseInt(data.numRounds)||0;
+  document.getElementById('hAsset').textContent=data.assetName||'—';
+  document.getElementById('hSymbol').textContent=(data.assetSymbol||'')+'  ·  FIA 401 Price Discovery Game'+(data.spotPrice?' · Ref ₹'+fmtNum(data.spotPrice):'');
+  document.getElementById('hRound').textContent='Round '+r+' / '+n;
+  document.getElementById('cueTxt').textContent=data.roundCue||'Waiting for instructor to release information…';
+
+  const st=document.getElementById('hStatus');
+  const stMap={waiting:'status-waiting',open:'status-open',closed:'status-closed',ended:'status-ended'};
+  const stTxt={waiting:'Waiting',open:'Trading Open',closed:'Round Closed',ended:'Game Ended'};
+  st.className='status-badge '+(stMap[data.status]||'status-waiting');
+  document.getElementById('hStatusText').textContent=stTxt[data.status]||data.status;
+
+  const thisRound=gameData.orders.filter(o=>parseInt(o.round)===r);
+  document.getElementById('hOrders').textContent=thisRound.length;
+  document.getElementById('hStudents').textContent=[...new Set(thisRound.map(o=>o.enrollId))].length;
+
+  renderOrderBook();
+  renderClearing();
+  drawChart(data.clearingPrices||[], n);
+  renderRoundHistory(data.clearingPrices||[]);
+}
+
+// ────────────────────────────────────────────────
+//  FETCH
+// ────────────────────────────────────────────────
+function fetchState() {
+  const cbName='proj_cb_'+Date.now();
+  window[cbName]=d=>{ delete window[cbName]; applyState(d); };
+  const s=document.createElement('script');
+  s.src=APPS_URL+'?action=pd_get_state&callback='+cbName;
+  s.onerror=()=>delete window[cbName];
+  document.head.appendChild(s);
+}
+
+// ────────────────────────────────────────────────
+//  REFRESH TIMER
+// ────────────────────────────────────────────────
+let timerCount=5;
+function tickTimer(){
+  timerCount--;
+  document.getElementById('refreshTimer').textContent='Next refresh in '+timerCount+'s';
+  if(timerCount<=0){timerCount=5;fetchState();}
+}
+
+fetchState();
+setInterval(tickTimer,1000);
+window.addEventListener('resize',()=>{ if(gameData) drawChart(gameData.clearingPrices||[],parseInt(gameData.numRounds)||0); });
+</script>
+</body>
+</html>

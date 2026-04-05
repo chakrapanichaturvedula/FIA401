@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Price Discovery Game · FIA 401</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #152744; --bg: #F0F4F8; --card: #FFFFFF;
+    --text: #152744; --muted: #6C757D; --border: #E9ECEF;
+    --gold: #D4A017; --gold-light: #FFF8E7; --gold-border: #F0C040;
+    --green: #198754; --green-light: #D1E7DD;
+    --red: #DC3545; --red-light: #F8D7DA;
+    --blue: #0D6EFD; --blue-light: #CFE2FF;
+    --violet: #6A4C93;
+    --shadow: 0 2px 12px rgba(21,39,68,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  .nav { background: var(--navy); padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+  .nav-brand { color: #fff; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; }
+  .nav-brand span { color: var(--gold); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-enroll { color: rgba(255,255,255,0.7); font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; }
+  .nav-pill { background: rgba(212,160,23,0.2); color: var(--gold); border: 1px solid var(--gold); border-radius: 20px; padding: 3px 10px; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.5px; }
+
+  /* MAIN */
+  main { max-width: 540px; margin: 0 auto; padding: 16px 12px 80px; }
+
+  /* GAME HEADER */
+  .game-header { background: var(--card); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--gold); }
+  .gh-asset { font-size: 1.15rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+  .gh-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .gh-round { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .status-open { background: var(--green-light); color: var(--green); }
+  .status-closed { background: #f8f9fa; color: var(--muted); }
+  .status-waiting { background: var(--blue-light); color: var(--blue); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .gh-waiting { font-size: 0.82rem; color: var(--muted); padding: 8px 0; }
+
+  /* CUE CARD */
+  .cue-card { background: var(--gold-light); border: 1.5px solid var(--gold-border); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+  .cue-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gold); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .cue-text { font-size: 0.88rem; line-height: 1.55; color: var(--navy); font-weight: 500; }
+  .cue-empty { color: var(--muted); font-style: italic; font-size: 0.82rem; }
+
+  /* ORDER ENTRY */
+  .order-card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 12px; }
+
+  /* Instrument Tabs */
+  .inst-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
+  .inst-tab { background: #fff; border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .inst-tab:active { transform: scale(0.96); }
+  .inst-tab.active { border-color: var(--gold); background: var(--gold-light); }
+  .inst-tab-icon { font-size: 1.1rem; display: block; margin-bottom: 2px; }
+  .inst-tab-label { font-size: 0.65rem; font-weight: 600; color: var(--navy); }
+  .inst-tab.active .inst-tab-label { color: var(--gold); }
+
+  /* Options sub-params */
+  .options-params { display: none; background: #f8f9fa; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+  .options-params.visible { display: block; }
+  .op-row { display: flex; gap: 10px; margin-bottom: 8px; }
+  .op-row:last-child { margin-bottom: 0; }
+  .op-field { flex: 1; }
+  .op-label { font-size: 0.65rem; color: var(--muted); font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .op-select { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.82rem; font-family: 'JetBrains Mono', monospace; background: #fff; color: var(--navy); appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236C757D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+
+  /* Direction toggle */
+  .dir-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .dir-btn { padding: 12px; border-radius: 8px; border: 2px solid var(--border); font-size: 0.85rem; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.15s; background: #fff; letter-spacing: 0.5px; }
+  .dir-btn:active { transform: scale(0.96); }
+  .dir-btn.buy.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .dir-btn.sell.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* Price & Qty inputs */
+  .inputs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .input-group { }
+  .input-label { font-size: 0.65rem; color: var(--muted); font-weight: 600; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; }
+  .input-hint { font-size: 0.6rem; color: var(--gold); font-weight: 500; }
+  .price-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--navy); background: #fff; transition: border-color 0.15s; text-align: right; }
+  .price-input:focus { outline: none; border-color: var(--gold); }
+  .price-prefix { position: relative; }
+  .price-prefix::before { content: '₹'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; pointer-events: none; }
+  .price-prefix input { padding-left: 22px; text-align: left; }
+
+  /* Submit */
+  .submit-btn { width: 100%; padding: 15px; background: var(--gold); border: none; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
+  .submit-btn:active { transform: scale(0.97); background: #b8880f; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* BSM price display */
+  .bsm-hint { background: #f0f8ff; border: 1px solid #b8daff; border-radius: 7px; padding: 8px 12px; margin-bottom: 10px; display: none; }
+  .bsm-hint.visible { display: block; }
+  .bsm-hint-label { font-size: 0.62rem; color: var(--blue); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .bsm-hint-price { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 700; color: var(--navy); }
+
+  /* MY ORDERS */
+  .my-orders-card { background: var(--card); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .order-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 0.78rem; }
+  .order-item:last-child { margin-bottom: 0; }
+  .order-item.buy { background: var(--green-light); }
+  .order-item.sell { background: var(--red-light); }
+  .order-item-left { display: flex; align-items: center; gap: 8px; }
+  .order-badge { font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+  .order-badge.buy { background: var(--green); color: #fff; }
+  .order-badge.sell { background: var(--red); color: #fff; }
+  .order-inst { font-weight: 600; color: var(--navy); }
+  .order-price { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--navy); }
+  .order-qty { color: var(--muted); font-size: 0.72rem; }
+  .no-orders { color: var(--muted); font-size: 0.8rem; text-align: center; padding: 10px; font-style: italic; }
+
+  /* ORDER BOOK */
+  .ob-card { background: var(--card); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .ob-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .ob-tab { font-size: 0.65rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--border); cursor: pointer; color: var(--muted); background: #fff; }
+  .ob-tab.active { border-color: var(--navy); color: var(--navy); background: #f0f4f8; }
+  .ob-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .ob-col { padding: 8px; }
+  .ob-col-header { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; text-align: center; padding: 4px; border-radius: 4px; }
+  .ob-col-header.bid { background: var(--green-light); color: var(--green); }
+  .ob-col-header.ask { background: var(--red-light); color: var(--red); }
+  .ob-divider { width: 1px; background: var(--border); }
+  .ob-row { display: flex; justify-content: space-between; padding: 5px 6px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; border-radius: 4px; margin-bottom: 3px; position: relative; overflow: hidden; }
+  .ob-row-bg { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+  .ob-row.bid-row .ob-row-bg { left: 0; background: rgba(25,135,84,0.15); }
+  .ob-row.ask-row .ob-row-bg { right: 0; background: rgba(220,53,69,0.15); }
+  .ob-price { font-weight: 600; position: relative; }
+  .ob-price.bid-row { color: var(--green); }
+  .ob-price.ask-row { color: var(--red); }
+  .ob-qty { color: var(--muted); position: relative; font-size: 0.68rem; }
+  .ob-clearing { text-align: center; padding: 8px; margin: 4px 0; }
+  .ob-clearing-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .ob-clearing-price { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 800; color: var(--navy); }
+  .ob-spread { font-size: 0.65rem; color: var(--muted); }
+  .ob-empty { text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem; font-style: italic; }
+
+  /* PRICE CHART */
+  .chart-card { background: var(--card); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .chart-canvas { width: 100%; height: 140px; }
+
+  /* REFRESH INDICATOR */
+  .refresh-bar { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; font-size: 0.65rem; color: var(--muted); }
+  .refresh-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; white-space: nowrap; }
+  #toast.show { opacity: 1; }
+
+  /* ROUND HISTORY */
+  .rh-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; background: #f8f9fa; margin-bottom: 6px; }
+  .rh-round { font-size: 0.7rem; font-weight: 700; color: var(--muted); min-width: 52px; }
+  .rh-prices { flex: 1; display: flex; gap: 10px; flex-wrap: wrap; }
+  .rh-inst { display: flex; align-items: center; gap: 4px; font-size: 0.7rem; }
+  .rh-inst-name { color: var(--muted); }
+  .rh-inst-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--navy); }
+
+  /* Disabled overlay */
+  .disabled-overlay { position: relative; }
+  .disabled-overlay::after { content: 'Round closed'; position: absolute; inset: 0; background: rgba(240,244,248,0.85); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--muted); font-weight: 600; z-index: 5; }
+
+  @media (max-width: 360px) {
+    .inst-tabs { grid-template-columns: repeat(2, 1fr); }
+    .inst-tab-label { font-size: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">FIA <span>401</span> · Derivatives Lab</div>
+  <div class="nav-right">
+    <span class="nav-enroll" id="enrollDisplay">—</span>
+    <span class="nav-pill">Price Discovery</span>
+  </div>
+</nav>
+
+<main>
+
+  <!-- GAME HEADER -->
+  <div class="game-header" id="gameHeader">
+    <div class="gh-asset" id="assetName">Waiting for game…</div>
+    <div class="gh-meta">
+      <span class="gh-round" id="roundDisplay">—</span>
+      <span class="status-pill status-waiting" id="statusPill">
+        <span class="status-dot"></span>
+        <span id="statusText">Connecting</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- INFO CUE -->
+  <div class="cue-card">
+    <div class="cue-label">📰 Round Information</div>
+    <div class="cue-text" id="cueTxt"><span class="cue-empty">Waiting for instructor to release information…</span></div>
+  </div>
+
+  <!-- ORDER ENTRY -->
+  <div class="order-card" id="orderPanel">
+    <div class="section-title">Your Order</div>
+
+    <!-- Instrument tabs -->
+    <div class="inst-tabs">
+      <div class="inst-tab active" data-inst="spot" onclick="selectInst(this,'spot')">
+        <span class="inst-tab-icon">📈</span>
+        <span class="inst-tab-label">Spot</span>
+      </div>
+      <div class="inst-tab" data-inst="futures" onclick="selectInst(this,'futures')">
+        <span class="inst-tab-icon">📦</span>
+        <span class="inst-tab-label">Futures</span>
+      </div>
+      <div class="inst-tab" data-inst="call" onclick="selectInst(this,'call')">
+        <span class="inst-tab-icon">🟢</span>
+        <span class="inst-tab-label">Call</span>
+      </div>
+      <div class="inst-tab" data-inst="put" onclick="selectInst(this,'put')">
+        <span class="inst-tab-icon">🔴</span>
+        <span class="inst-tab-label">Put</span>
+      </div>
+    </div>
+
+    <!-- Options sub-params -->
+    <div class="options-params" id="optionsParams">
+      <div class="op-row">
+        <div class="op-field">
+          <div class="op-label">Strike (₹)</div>
+          <select class="op-select" id="optStrike" onchange="updateBsmHint()">
+            <option value="2200">2,200</option>
+            <option value="2300">2,300</option>
+            <option value="2400">2,400</option>
+            <option value="2450" selected>2,450</option>
+            <option value="2500">2,500</option>
+            <option value="2550">2,550</option>
+            <option value="2600">2,600</option>
+            <option value="2700">2,700</option>
+          </select>
+        </div>
+        <div class="op-field">
+          <div class="op-label">Expiry</div>
+          <select class="op-select" id="optExpiry" onchange="updateBsmHint()">
+            <option value="22">Near (22d)</option>
+            <option value="50">Mid (50d)</option>
+            <option value="78">Far (78d)</option>
+          </select>
+        </div>
+      </div>
+      <!-- BSM Hint -->
+      <div class="bsm-hint visible" id="bsmHint">
+        <div class="bsm-hint-label">Black-Scholes Fair Value</div>
+        <div class="bsm-hint-price" id="bsmPrice">—</div>
+      </div>
+    </div>
+
+    <!-- Direction -->
+    <div class="dir-toggle">
+      <button class="dir-btn buy active" id="btnBuy" onclick="selectDir('buy')">▲ BUY</button>
+      <button class="dir-btn sell" id="btnSell" onclick="selectDir('sell')">▼ SELL</button>
+    </div>
+
+    <!-- Price & Qty -->
+    <div class="inputs-row">
+      <div class="input-group">
+        <div class="input-label">
+          <span id="priceLabel">Your Price (₹)</span>
+          <span class="input-hint" id="priceHint"></span>
+        </div>
+        <div class="price-prefix">
+          <input type="number" class="price-input" id="orderPrice" placeholder="0.00" step="0.5" min="0" oninput="updateBsmHint()">
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-label">
+          <span id="qtyLabel">Quantity</span>
+        </div>
+        <input type="number" class="price-input" id="orderQty" value="1" min="1" max="50" style="text-align:center;">
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitOrder()">Submit Order</button>
+  </div>
+
+  <!-- MY ORDERS -->
+  <div class="my-orders-card">
+    <div class="section-title">My Orders This Round</div>
+    <div id="myOrdersList"><div class="no-orders">No orders submitted yet</div></div>
+  </div>
+
+  <!-- ORDER BOOK -->
+  <div class="ob-card">
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+      Live Order Book
+      <span style="font-size:0.62rem;color:var(--muted);" id="orderCount">0 orders</span>
+    </div>
+    <div class="ob-tabs">
+      <div class="ob-tab active" data-inst="spot" onclick="selectObTab(this,'spot')">Spot</div>
+      <div class="ob-tab" data-inst="futures" onclick="selectObTab(this,'futures')">Futures</div>
+      <div class="ob-tab" data-inst="call" onclick="selectObTab(this,'call')">Calls</div>
+      <div class="ob-tab" data-inst="put" onclick="selectObTab(this,'put')">Puts</div>
+    </div>
+    <div class="ob-grid">
+      <div class="ob-col">
+        <div class="ob-col-header bid">↑ Bids</div>
+        <div id="bidList"></div>
+      </div>
+      <div class="ob-divider"></div>
+      <div class="ob-col">
+        <div class="ob-col-header ask">↓ Asks</div>
+        <div id="askList"></div>
+      </div>
+    </div>
+    <div class="ob-clearing">
+      <div class="ob-clearing-label">Discovered Price</div>
+      <div class="ob-clearing-price" id="clearingPrice">—</div>
+      <div class="ob-spread" id="spreadDisplay"></div>
+    </div>
+  </div>
+
+  <!-- PRICE HISTORY CHART -->
+  <div class="chart-card">
+    <div class="section-title">Price Discovery · Round by Round</div>
+    <canvas class="chart-canvas" id="discoveryCanvas"></canvas>
+    <div id="roundHistory" style="margin-top:10px;"></div>
+  </div>
+
+  <!-- REFRESH -->
+  <div class="refresh-bar">
+    <span class="refresh-dot"></span>
+    <span>Auto-refreshes every 5 seconds</span>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ────────────────────────────────────────────────
+//  CONFIG
+// ────────────────────────────────────────────────
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
+
+const session = JSON.parse(localStorage.getItem('dlabSession') || 'null');
+if (!session || session.expires < Date.now()) window.location.href = 'index.html';
+
+document.getElementById('enrollDisplay').textContent = (session.enrollId || 'Guest') + ' •';
+
+// ────────────────────────────────────────────────
+//  STATE
+// ────────────────────────────────────────────────
+let state = {
+  inst: 'spot',
+  dir: 'buy',
+  obInst: 'spot',
+  gameId: null,
+  assetName: '—',
+  assetSymbol: '',
+  currentRound: 0,
+  numRounds: 0,
+  roundStatus: 'waiting',  // waiting | open | closed | ended
+  roundCue: '',
+  spotPrice: 0,
+  myOrders: [],       // all my orders this game
+  clearingPrices: [], // { round, inst, price } per round per inst
+  allOrders: []       // all orders from server (current round)
+};
+
+// ────────────────────────────────────────────────
+//  UI HELPERS
+// ────────────────────────────────────────────────
+function toast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function fmtNum(n) {
+  if (!n && n!==0) return '—';
+  return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+}
+function fmtPrice(n) {
+  if (!n && n!==0) return '—';
+  return '₹' + fmtNum(n);
+}
+
+// ────────────────────────────────────────────────
+//  INSTRUMENT / DIRECTION SELECTION
+// ────────────────────────────────────────────────
+function selectInst(el, inst) {
+  state.inst = inst;
+  document.querySelectorAll('.inst-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const isOpt = inst === 'call' || inst === 'put';
+  document.getElementById('optionsParams').classList.toggle('visible', isOpt);
+  document.getElementById('priceLabel').textContent = isOpt ? 'Premium (₹)' : 'Your Price (₹)';
+  const hints = { spot: 'per share', futures: 'per lot', call: 'per contract', put: 'per contract' };
+  document.getElementById('priceHint').textContent = hints[inst] || '';
+  const qtys = { spot: 'Shares', futures: 'Lots', call: 'Contracts', put: 'Contracts' };
+  document.getElementById('qtyLabel').textContent = qtys[inst] || 'Quantity';
+  if (isOpt) updateBsmHint();
+  else document.getElementById('bsmHint').classList.remove('visible');
+}
+
+function selectDir(dir) {
+  state.dir = dir;
+  document.getElementById('btnBuy').classList.toggle('active', dir === 'buy');
+  document.getElementById('btnSell').classList.toggle('active', dir === 'sell');
+}
+
+function selectObTab(el, inst) {
+  state.obInst = inst;
+  document.querySelectorAll('.ob-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderOrderBook();
+}
+
+// ────────────────────────────────────────────────
+//  BLACK-SCHOLES (for option hint)
+// ────────────────────────────────────────────────
+function bsm(S, K, r, sigma, T, type) {
+  const d1 = (Math.log(S/K) + (r + sigma*sigma/2)*T) / (sigma*Math.sqrt(T));
+  const d2 = d1 - sigma*Math.sqrt(T);
+  const N = x => 0.5*(1+erf(x/Math.sqrt(2)));
+  const erf = x => {
+    const t=1/(1+0.3275911*Math.abs(x)), p=t*(0.254829592+t*(-0.284496736+t*(1.421413741+t*(-1.453152027+t*1.061405429))));
+    return (1-p*Math.exp(-x*x))*(x>=0?1:-1);
+  };
+  if (type==='call') return S*N(d1) - K*Math.exp(-r*T)*N(d2);
+  return K*Math.exp(-r*T)*N(-d2) - S*N(-d1);
+}
+
+function updateBsmHint() {
+  const isOpt = state.inst==='call'||state.inst==='put';
+  if (!isOpt) return;
+  const S = state.spotPrice || 2450;
+  const K = parseFloat(document.getElementById('optStrike').value) || 2450;
+  const T = (parseFloat(document.getElementById('optExpiry').value) || 22)/365;
+  const r = 0.085, sigma = 0.25;
+  const price = bsm(S, K, r, sigma, T, state.inst);
+  document.getElementById('bsmPrice').textContent = fmtPrice(price.toFixed(2)) + ' (BSM est.)';
+}
+
+// ────────────────────────────────────────────────
+//  SUBMIT ORDER
+// ────────────────────────────────────────────────
+function submitOrder() {
+  if (state.roundStatus !== 'open') { toast('Round is not open — wait for instructor'); return; }
+  const price = parseFloat(document.getElementById('orderPrice').value);
+  const qty   = parseInt(document.getElementById('orderQty').value) || 1;
+  if (!price || price <= 0) { toast('Enter a valid price'); return; }
+  if (qty <= 0 || qty > 50) { toast('Quantity must be 1–50'); return; }
+
+  const isOpt = state.inst==='call'||state.inst==='put';
+  const strike = isOpt ? parseFloat(document.getElementById('optStrike').value) : null;
+  const expiry = isOpt ? parseInt(document.getElementById('optExpiry').value) : null;
+
+  const order = {
+    gameId: state.gameId,
+    round: state.currentRound,
+    enrollId: session.enrollId,
+    studentName: session.name || session.enrollId,
+    inst: state.inst,
+    side: state.dir,
+    price,
+    qty,
+    strike,
+    expiry,
+    ts: Date.now()
+  };
+
+  // Fire-and-forget to Apps Script
+  const params = new URLSearchParams({
+    action: 'pd_submit_order',
+    ...order,
+    strike: order.strike||'',
+    expiry: order.expiry||''
+  });
+  new Image().src = APPS_URL + '?' + params.toString();
+
+  // Add to local display immediately
+  state.myOrders.push(order);
+  renderMyOrders();
+  document.getElementById('orderPrice').value = '';
+  document.getElementById('orderQty').value = '1';
+  toast('Order submitted ✓');
+
+  // Refresh order book
+  fetchGameState();
+}
+
+// ────────────────────────────────────────────────
+//  RENDER MY ORDERS
+// ────────────────────────────────────────────────
+function renderMyOrders() {
+  const el = document.getElementById('myOrdersList');
+  const thisRound = state.myOrders.filter(o => o.round === state.currentRound);
+  if (!thisRound.length) { el.innerHTML = '<div class="no-orders">No orders submitted yet</div>'; return; }
+  el.innerHTML = thisRound.map(o => {
+    const instLabel = o.inst.toUpperCase() + (o.strike ? ` ${o.strike}` : '');
+    const expiryLabel = o.expiry ? ` · ${o.expiry}d` : '';
+    return `<div class="order-item ${o.side}">
+      <div class="order-item-left">
+        <span class="order-badge ${o.side}">${o.side}</span>
+        <span class="order-inst">${instLabel}${expiryLabel}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="order-price">₹${fmtNum(o.price)}</span>
+        <span class="order-qty">×${o.qty}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────
+//  RENDER ORDER BOOK
+// ────────────────────────────────────────────────
+function renderOrderBook() {
+  const inst = state.obInst;
+  const orders = state.allOrders.filter(o => o.inst === inst && o.round == state.currentRound);
+
+  const bids = orders.filter(o => o.side==='buy').sort((a,b)=>b.price-a.price);
+  const asks = orders.filter(o => o.side==='sell').sort((a,b)=>a.price-b.price);
+
+  // Total count
+  document.getElementById('orderCount').textContent = state.allOrders.length + ' orders';
+
+  // Clearing price
+  let clearingPrice = null;
+  let spread = null;
+  if (bids.length && asks.length) {
+    const topBid = bids[0].price;
+    const topAsk = asks[0].price;
+    if (topBid >= topAsk) {
+      clearingPrice = (topBid + topAsk) / 2;
+    } else {
+      spread = topAsk - topBid;
+    }
+  }
+
+  // Aggregate by price
+  function aggregate(arr) {
+    const map = {};
+    arr.forEach(o => { map[o.price] = (map[o.price]||0) + o.qty; });
+    return Object.entries(map).map(([price, qty]) => ({ price: parseFloat(price), qty }));
+  }
+  const aggBids = aggregate(bids).sort((a,b)=>b.price-a.price).slice(0,6);
+  const aggAsks = aggregate(asks).sort((a,b)=>a.price-b.price).slice(0,6);
+
+  const maxQty = Math.max(...aggBids.map(b=>b.qty), ...aggAsks.map(a=>a.qty), 1);
+
+  function renderRows(rows, type) {
+    if (!rows.length) return '<div class="ob-empty">No ' + (type==='bid'?'bids':'asks') + '</div>';
+    return rows.map(r => {
+      const width = Math.round((r.qty/maxQty)*80);
+      return `<div class="ob-row ${type}-row">
+        <div class="ob-row-bg" style="width:${width}%"></div>
+        <span class="ob-price ${type}-row">₹${fmtNum(r.price)}</span>
+        <span class="ob-qty">${r.qty}</span>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('bidList').innerHTML = renderRows(aggBids, 'bid');
+  document.getElementById('askList').innerHTML = renderRows(aggAsks, 'ask');
+
+  if (clearingPrice !== null) {
+    document.getElementById('clearingPrice').textContent = fmtPrice(clearingPrice.toFixed(2));
+    document.getElementById('spreadDisplay').textContent = '✓ Market crossed — trades executed';
+  } else if (bids.length && asks.length && spread !== null) {
+    const best = bids[0]?.price || '—';
+    const ask  = asks[0]?.price || '—';
+    document.getElementById('clearingPrice').textContent = '—';
+    document.getElementById('spreadDisplay').textContent = `Best bid ₹${fmtNum(best)} · Best ask ₹${fmtNum(ask)} · Spread ₹${fmtNum(spread.toFixed(1))}`;
+  } else if (!bids.length && !asks.length) {
+    document.getElementById('clearingPrice').textContent = '—';
+    document.getElementById('spreadDisplay').textContent = 'Waiting for orders…';
+  } else {
+    document.getElementById('clearingPrice').textContent = '—';
+    document.getElementById('spreadDisplay').textContent = bids.length ? 'No sellers yet' : 'No buyers yet';
+  }
+}
+
+// ────────────────────────────────────────────────
+//  PRICE DISCOVERY CHART
+// ────────────────────────────────────────────────
+function drawDiscoveryChart() {
+  const canvas = document.getElementById('discoveryCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+  canvas.height = 140 * window.devicePixelRatio;
+  canvas.style.height = '140px';
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const W = canvas.offsetWidth, H = 140;
+
+  const cp = state.clearingPrices;
+  if (cp.length === 0) {
+    ctx.fillStyle = '#adb5bd'; ctx.font = '12px Inter'; ctx.textAlign = 'center';
+    ctx.fillText('Price discovery chart will appear as rounds complete', W/2, H/2);
+    return;
+  }
+
+  // Get rounds and instruments
+  const insts = [...new Set(cp.map(p=>p.inst))];
+  const rounds = [...new Set(cp.map(p=>p.round))].sort((a,b)=>a-b);
+  const colors = { spot:'#0077B6', futures:'#D4622A', call:'#198754', put:'#DC3545' };
+  const prices = cp.map(p=>p.price);
+  const minP = Math.min(...prices)*0.995, maxP = Math.max(...prices)*1.005;
+  const range = maxP - minP || 1;
+
+  const padL=40, padR=16, padT=16, padB=24;
+  const cW=W-padL-padR, cH=H-padT-padB;
+
+  // Grid
+  ctx.strokeStyle='#dee2e6'; ctx.lineWidth=1;
+  for (let i=0;i<=4;i++) {
+    const y=padT+cH*(1-i/4);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    ctx.fillStyle='#adb5bd'; ctx.font='9px JetBrains Mono'; ctx.textAlign='right';
+    ctx.fillText('₹'+fmtNum((minP+range*i/4).toFixed(0)), padL-4, y+3);
+  }
+
+  // X axis labels
+  ctx.fillStyle='#adb5bd'; ctx.font='9px Inter'; ctx.textAlign='center';
+  rounds.forEach((r,i) => {
+    const x = padL + (i/(rounds.length-1||1))*cW;
+    ctx.fillText('R'+r, x, H-4);
+  });
+
+  // Lines per instrument
+  insts.forEach(inst => {
+    const pts = rounds.map(r => {
+      const found = cp.find(p=>p.round===r && p.inst===inst);
+      return found ? found.price : null;
+    });
+    ctx.strokeStyle = colors[inst]||'#6C757D'; ctx.lineWidth=2; ctx.setLineDash([]);
+    ctx.beginPath();
+    let started=false;
+    pts.forEach((p,i) => {
+      if (p===null) return;
+      const x = padL+(i/(rounds.length-1||1))*cW;
+      const y = padT+cH*(1-(p-minP)/range);
+      if (!started) { ctx.moveTo(x,y); started=true; }
+      else ctx.lineTo(x,y);
+      ctx.fillStyle=colors[inst]||'#6C757D';
+      ctx.beginPath(); ctx.arc(x,y,4,0,2*Math.PI); ctx.fill();
+    });
+    ctx.strokeStyle=colors[inst]||'#6C757D'; ctx.lineWidth=2;
+    // re-draw line
+    ctx.beginPath(); started=false;
+    pts.forEach((p,i) => {
+      if (p===null) return;
+      const x = padL+(i/(rounds.length-1||1))*cW;
+      const y = padT+cH*(1-(p-minP)/range);
+      if (!started){ctx.moveTo(x,y);started=true;} else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  });
+
+  // Legend
+  const legX=padL; let legY=padT;
+  insts.forEach(inst => {
+    ctx.fillStyle=colors[inst]||'#6C757D';
+    ctx.fillRect(legX,legY,10,3);
+    ctx.font='9px Inter'; ctx.textAlign='left';
+    ctx.fillText(inst.charAt(0).toUpperCase()+inst.slice(1), legX+14, legY+4);
+    legY+=12;
+  });
+}
+
+// ────────────────────────────────────────────────
+//  RENDER ROUND HISTORY
+// ────────────────────────────────────────────────
+function renderRoundHistory() {
+  const cp = state.clearingPrices;
+  const rounds = [...new Set(cp.map(p=>p.round))].sort((a,b)=>a-b);
+  const colors = { spot:'#0077B6', futures:'#D4622A', call:'#198754', put:'#DC3545' };
+  const el = document.getElementById('roundHistory');
+  if (!rounds.length) { el.innerHTML=''; return; }
+  el.innerHTML = rounds.map(r => {
+    const roundPrices = cp.filter(p=>p.round===r);
+    const pricesHtml = roundPrices.map(p =>
+      `<span class="rh-inst"><span class="rh-inst-name" style="color:${colors[p.inst]||'#6C757D'}">${p.inst.toUpperCase()}</span> <span class="rh-inst-price">${fmtPrice(p.price.toFixed(0))}</span></span>`
+    ).join('');
+    return `<div class="rh-row"><span class="rh-round">Round ${r}</span><div class="rh-prices">${pricesHtml||'<span style="color:var(--muted);font-size:0.7rem;">No completed prices</span>'}</div></div>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────
+//  FETCH GAME STATE FROM APPS SCRIPT
+// ────────────────────────────────────────────────
+function fetchGameState() {
+  const cbName = 'pd_cb_' + Date.now();
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (data && data.status !== 'no_game') applyGameState(data);
+    else showNoGame();
+  };
+  const s = document.createElement('script');
+  s.src = APPS_URL + '?action=pd_get_state&callback=' + cbName;
+  s.onerror = () => { delete window[cbName]; showNoGame(); };
+  document.head.appendChild(s);
+}
+
+function applyGameState(data) {
+  state.gameId      = data.gameId;
+  state.assetName   = data.assetName || 'Asset';
+  state.assetSymbol = data.assetSymbol || '';
+  state.currentRound= parseInt(data.currentRound) || 0;
+  state.numRounds   = parseInt(data.numRounds) || 0;
+  state.roundStatus = data.status || 'waiting';
+  state.roundCue    = data.roundCue || '';
+  state.spotPrice   = parseFloat(data.spotPrice) || 0;
+  state.allOrders   = (data.orders || []).map(o => ({
+    ...o, price: parseFloat(o.price), qty: parseInt(o.qty)
+  }));
+  state.clearingPrices = data.clearingPrices || [];
+
+  // Update UI
+  document.getElementById('assetName').textContent = state.assetName + (state.assetSymbol ? ' (' + state.assetSymbol + ')' : '');
+  document.getElementById('roundDisplay').textContent = state.currentRound + ' of ' + state.numRounds + ' rounds';
+  document.getElementById('cueTxt').innerHTML = state.roundCue
+    ? state.roundCue
+    : '<span class="cue-empty">Waiting for instructor to release information…</span>';
+
+  const pill = document.getElementById('statusPill');
+  const statusText = document.getElementById('statusText');
+  pill.className = 'status-pill status-' + state.roundStatus;
+  statusText.textContent = { waiting: 'Waiting', open: 'Trading Open', closed: 'Round Closed', ended: 'Game Ended' }[state.roundStatus] || state.roundStatus;
+
+  document.getElementById('submitBtn').disabled = state.roundStatus !== 'open';
+
+  if (state.spotPrice > 0) {
+    document.getElementById('optStrike').value = getClosestStrike(state.spotPrice);
+    updateBsmHint();
+  }
+
+  renderOrderBook();
+  drawDiscoveryChart();
+  renderRoundHistory();
+}
+
+function getClosestStrike(spot) {
+  const strikes = [2200,2300,2400,2450,2500,2550,2600,2700];
+  return strikes.reduce((a,b) => Math.abs(b-spot)<Math.abs(a-spot)?b:a);
+}
+
+function showNoGame() {
+  document.getElementById('assetName').textContent = 'No active game';
+  document.getElementById('cueTxt').innerHTML = '<span class="cue-empty">Ask your instructor to start the Price Discovery game.</span>';
+  document.getElementById('statusText').textContent = 'Waiting';
+  document.getElementById('statusPill').className = 'status-pill status-waiting';
+  document.getElementById('submitBtn').disabled = true;
+}
+
+// ────────────────────────────────────────────────
+//  INIT
+// ────────────────────────────────────────────────
+fetchGameState();
+setInterval(fetchGameState, 5000);
+</script>
+</body>
+</html>
