@@ -1,327 +1,427 @@
-// ════════════════════════════════════════════════════════════════
-//  PRICE DISCOVERY GAME — Google Apps Script Additions
-//  FIA 401 · Derivatives Lab
-// ════════════════════════════════════════════════════════════════
-//
-//  HOW TO ADD TO YOUR EXISTING SCRIPT:
-//  1. Open your Apps Script project (linked to your Google Sheet)
-//  2. Create a new file: File → New → Script file → name it "PriceDiscovery"
-//  3. Paste this ENTIRE file into it
-//  4. In your EXISTING doGet() function, add this line at the top of the switch/if block:
-//
-//       var pdResult = handlePriceDiscovery(e);
-//       if (pdResult) return pdResult;
-//
-//  5. Save and re-deploy: Deploy → Manage Deployments → Edit → New Version → Deploy
-//
-//  SHEETS CREATED AUTOMATICALLY:
-//    PD_Game   — one row per game (current game is last row)
-//    PD_Orders — one row per order submitted by a student
-// ════════════════════════════════════════════════════════════════
+// ============================================================
+// PriceDiscovery.gs â FIA 401 Price Discovery Game (v5)
+// NSE-style continuous matching Â· Price-time priority Â· Cancel
+// ============================================================
 
-// ─────────────────────────────────────────────────────────────
-//  ROUTER — called from your doGet()
-// ─────────────────────────────────────────────────────────────
-function handlePriceDiscovery(e) {
-  var params = e.parameter;
-  var action = params.action || '';
-  if (!action.startsWith('pd_')) return null;  // not a PD action
-
-  var callback = params.callback || '';
-
-  try {
-    var result;
-    switch (action) {
-      case 'pd_create_game':   result = pd_createGame(params);   break;
-      case 'pd_get_state':     result = pd_getState(params);     break;
-      case 'pd_submit_order':  result = pd_submitOrder(params);  break;
-      case 'pd_open_round':    result = pd_openRound(params);    break;
-      case 'pd_close_round':   result = pd_closeRound(params);   break;
-      case 'pd_next_round':    result = pd_nextRound(params);    break;
-      case 'pd_end_game':      result = pd_endGame(params);      break;
-      default:                 result = { error: 'Unknown PD action: ' + action };
-    }
-  } catch (err) {
-    result = { error: err.toString() };
-  }
-
-  var json = JSON.stringify(result);
-  if (callback) {
-    return ContentService.createTextOutput(callback + '(' + json + ');')
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
-  }
-  return ContentService.createTextOutput(json)
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-// ─────────────────────────────────────────────────────────────
-//  SHEET HELPERS
-// ─────────────────────────────────────────────────────────────
+// âââââââââ SHEET SETUP ââââââââââ
 function getOrCreateSheet(name, headers) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(name);
   if (!sh) {
     sh = ss.insertSheet(name);
-    sh.appendRow(headers);
-    sh.setFrozenRows(1);
+    if (headers) sh.appendRow(headers);
   }
   return sh;
 }
 
 function getGameSheet() {
   return getOrCreateSheet('PD_Game', [
-    'game_id', 'asset_name', 'asset_symbol', 'spot_price', 'num_rounds',
-    'current_round', 'round_cue', 'status', 'clearing_prices', 'created_at', 'updated_at', 'lot_size'
+    'game_id','asset_name','asset_symbol','spot_price','num_rounds',
+    'current_round','round_cue','status','discovery_prices','created_at','updated_at','lot_size'
   ]);
 }
 
-function getOrderSheet() {
+function getOrdersSheet() {
   return getOrCreateSheet('PD_Orders', [
-    'game_id', 'round', 'enroll_id', 'student_name', 'inst', 'side',
-    'price', 'qty', 'strike', 'expiry', 'timestamp'
+    'order_id','game_id','round','student_id','student_name',
+    'side','instrument','strike','expiry','price','qty','filled_qty','timestamp','status'
   ]);
 }
 
-function getActiveGame() {
+function getTradesSheet() {
+  return getOrCreateSheet('PD_Trades', [
+    'trade_id','game_id','round','instrument','strike','expiry',
+    'price','qty','buy_order_id','sell_order_id','timestamp'
+  ]);
+}
+
+// ââââââââââ ROW CONVERTERS ââââââââââ
+function rowToGame(row) {
+  return {
+    gameId: row[0], assetName: row[1], assetSymbol: row[2],
+    spotPrice: parseFloat(row[3]) || 0,
+    numRounds: parseInt(row[4]) || 3,
+    currentRound: parseInt(row[5]) || 1,
+    roundCue: row[6] || '',
+    status: row[7] || 'waiting',
+    discoveryPrices: JSON.parse(row[8] || '[]'),
+    createdAt: row[9], updatedAt: row[10],
+    lotSize: parseInt(row[11]) || 1
+  };
+}
+
+function rowToOrder(row) {
+  return {
+    orderId:    row[0],  gameId:     row[1],
+    round:      parseInt(row[2]) || 1,
+    studentId:  row[3],  studentName: row[4],
+    side:       row[5],  instrument:  row[6],
+    strike:     parseFloat(row[7]) || 0,
+    expiry:     row[8] || '',
+    price:      parseFloat(row[9]) || 0,
+    qty:        parseInt(row[10]) || 0,
+    filledQty:  parseInt(row[11]) || 0,
+    timestamp:  row[12],
+    status:     row[13] || 'open'
+  };
+}
+
+function rowToTrade(row) {
+  return {
+    tradeId:     row[0],  gameId:    row[1],
+    round:       parseInt(row[2]) || 1,
+    instrument:  row[3],
+    strike:      parseFloat(row[4]) || 0,
+    expiry:      row[5] || '',
+    price:       parseFloat(row[6]) || 0,
+    qty:         parseInt(row[7]) || 0,
+    buyOrderId:  row[8],  sellOrderId: row[9],
+    timestamp:   row[10]
+  };
+}
+
+// ââââââââââ GAME LOOKUP ââââââââââ
+function getGameById(gameId) {
+  var sh = getGameSheet();
+  var data = sh.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] == gameId) return { row: rowToGame(data[i]), rowIndex: i + 1 };
+  }
+  return null;
+}
+
+function getLatestGame() {
   var sh = getGameSheet();
   var data = sh.getDataRange().getValues();
   if (data.length < 2) return null;
-  // Last row is the active game
-  var row = data[data.length - 1];
-  return rowToGame(row);
+  return { row: rowToGame(data[data.length - 1]), rowIndex: data.length };
 }
 
-function rowToGame(row) {
-  return {
-    gameId:         row[0],
-    assetName:      row[1],
-    assetSymbol:    row[2],
-    spotPrice:      parseFloat(row[3]) || 0,
-    numRounds:      parseInt(row[4]) || 4,
-    currentRound:   parseInt(row[5]) || 0,
-    roundCue:       row[6],
-    status:         row[7],
-    clearingPrices: safeParseJson(row[8], []),
-    createdAt:      row[9],
-    updatedAt:      row[10],
-    lotSize:        parseInt(row[11]) || 1   // col 12 — defaults to 1 for older rows
-  };
+function resolveGame(params) {
+  return params.gameId ? getGameById(params.gameId) : getLatestGame();
 }
 
-function safeParseJson(str, fallback) {
-  try { return JSON.parse(str); } catch(e) { return fallback; }
-}
-
-function updateGame(gameId, updates) {
+function updateGameRow(rowIndex, updates) {
   var sh = getGameSheet();
-  var data = sh.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] === gameId) {
-      var row = i + 1; // 1-indexed
-      if ('currentRound'   in updates) sh.getRange(row, 6).setValue(updates.currentRound);
-      if ('roundCue'       in updates) sh.getRange(row, 7).setValue(updates.roundCue);
-      if ('status'         in updates) sh.getRange(row, 8).setValue(updates.status);
-      if ('clearingPrices' in updates) sh.getRange(row, 9).setValue(JSON.stringify(updates.clearingPrices));
-      sh.getRange(row, 11).setValue(new Date().toISOString());
-      return true;
-    }
-  }
-  return false;
+  var row = sh.getRange(rowIndex, 1, 1, 12).getValues()[0];
+  if (updates.status          !== undefined) row[7]  = updates.status;
+  if (updates.currentRound    !== undefined) row[5]  = updates.currentRound;
+  if (updates.roundCue        !== undefined) row[6]  = updates.roundCue;
+  if (updates.discoveryPrices !== undefined) row[8]  = JSON.stringify(updates.discoveryPrices);
+  row[10] = new Date().toISOString();
+  sh.getRange(rowIndex, 1, 1, 12).setValues([row]);
 }
 
-function getOrdersForGame(gameId) {
-  var sh = getOrderSheet();
+// ââââââââââ MATCHING ENGINE ââââââââââ
+// Instrument key: groups orders that can trade against each other
+function instrumentKey(o) {
+  if (o.instrument === 'spot')    return 'spot';
+  if (o.instrument === 'futures') return 'futures|' + o.expiry;
+  return o.instrument + '|' + o.strike + '|' + o.expiry;
+}
+
+// NSE-style continuous order matching with price-time priority.
+// Called after every new order is placed.
+function matchOrders(gameId, round) {
+  var sh   = getOrdersSheet();
+  var tsh  = getTradesSheet();
   var data = sh.getDataRange().getValues();
-  var orders = [];
+  var newTrades = [];
+
+  // Group open/partial orders by instrument key
+  var groups = {};
   for (var i = 1; i < data.length; i++) {
-    if (data[i][0] === gameId) {
-      orders.push({
-        gameId:      data[i][0],
-        round:       parseInt(data[i][1]),
-        enrollId:    data[i][2],
-        studentName: data[i][3],
-        inst:        data[i][4],
-        side:        data[i][5],
-        price:       parseFloat(data[i][6]),
-        qty:         parseInt(data[i][7]),
-        strike:      data[i][8] || null,
-        expiry:      data[i][9] || null,
-        timestamp:   data[i][10]
+    var o = rowToOrder(data[i]);
+    if (o.gameId != gameId || o.round != round) continue;
+    if (o.status !== 'open' && o.status !== 'partial') continue;
+    var rem = o.qty - o.filledQty;
+    if (rem <= 0) continue;
+    var key = instrumentKey(o);
+    if (!groups[key]) groups[key] = { buys: [], sells: [] };
+    o._rowIndex = i + 1;  // remember sheet row for updates
+    if (o.side === 'buy') groups[key].buys.push(o);
+    else                  groups[key].sells.push(o);
+  }
+
+  for (var key in groups) {
+    var g = groups[key];
+
+    // Price-time priority:
+    //   Buys  â highest price first; ties by earliest timestamp
+    //   Sells â lowest price first; ties by earliest timestamp
+    g.buys.sort(function(a, b) {
+      if (b.price !== a.price) return b.price - a.price;
+      return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+    g.sells.sort(function(a, b) {
+      if (a.price !== b.price) return a.price - b.price;
+      return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+
+    while (g.buys.length > 0 && g.sells.length > 0) {
+      var bestBuy  = g.buys[0];
+      var bestSell = g.sells[0];
+
+      // No match: bid is lower than ask â market not crossed
+      if (bestBuy.price < bestSell.price) break;
+
+      // Trade price = resting (passive) order's price.
+      // Resting order is the one placed first (earlier timestamp).
+      var tradePrice = (new Date(bestBuy.timestamp) <= new Date(bestSell.timestamp))
+                       ? bestBuy.price    // buy was resting; sell trades at bid price
+                       : bestSell.price;  // sell was resting; buy trades at ask price
+
+      var buyRem   = bestBuy.qty  - bestBuy.filledQty;
+      var sellRem  = bestSell.qty - bestSell.filledQty;
+      var tradeQty = Math.min(buyRem, sellRem);
+
+      var tradeId = 'T' + Date.now() + '_' + newTrades.length;
+      var ts = new Date().toISOString();
+
+      tsh.appendRow([
+        tradeId, gameId, round,
+        bestBuy.instrument, bestBuy.strike, bestBuy.expiry,
+        tradePrice, tradeQty,
+        bestBuy.orderId, bestSell.orderId, ts
+      ]);
+      newTrades.push({
+        tradeId: tradeId, price: tradePrice, qty: tradeQty,
+        instrument: bestBuy.instrument, strike: bestBuy.strike,
+        expiry: bestBuy.expiry, timestamp: ts
       });
+
+      // Update buy order
+      bestBuy.filledQty += tradeQty;
+      var buyStatus = (bestBuy.filledQty >= bestBuy.qty) ? 'filled' : 'partial';
+      sh.getRange(bestBuy._rowIndex, 12).setValue(bestBuy.filledQty);
+      sh.getRange(bestBuy._rowIndex, 14).setValue(buyStatus);
+      if (buyStatus === 'filled') g.buys.shift();
+
+      // Update sell order
+      bestSell.filledQty += tradeQty;
+      var sellStatus = (bestSell.filledQty >= bestSell.qty) ? 'filled' : 'partial';
+      sh.getRange(bestSell._rowIndex, 12).setValue(bestSell.filledQty);
+      sh.getRange(bestSell._rowIndex, 14).setValue(sellStatus);
+      if (sellStatus === 'filled') g.sells.shift();
     }
   }
-  return orders;
+  return newTrades;es;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  AUTH HELPER
-// ─────────────────────────────────────────────────────────────
-var INSTRUCTOR_SECRET = 'IMTFD26_INSTRUCTOR';
-
-function checkSecret(params) {
-  return params.secret === INSTRUCTOR_SECRET;
+// Compute last trade price per instrument for a given round
+function computeDiscoveryPrices(gameId, round) {
+  var tsh  = getTradesSheet();
+  var data = tsh.getDataRange().getValues();
+  var last = {};
+  for (var i = 1; i < data.length; i++) {
+    var t = rowToTrade(data[i]);
+    if (t.gameId != gameId || t.round != round) continue;
+    var key = t.instrument === 'spot' ? 'spot' : (t.instrument + '|' + t.strike + '|' + t.expiry);
+    if (!last[key] || new Date(t.timestamp) > new Date(last[key].timestamp)) {
+      last[key] = t;
+    }
+  }
+  return Object.values(last).map(function(t) {
+    return { round: round, instrument: t.instrument, strike: t.strike, expiry: t.expiry, price: t.price };
+  });
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ACTION: CREATE GAME
-// ─────────────────────────────────────────────────────────────
-function pd_createGame(params) {
-  if (!checkSecret(params)) return { error: 'Unauthorized' };
+// ââââââââââ API ACTIONS ââââââââââ
 
-  var gameId    = 'PD_' + Date.now();
-  var assetName = params.assetName || 'Stock';
-  var symbol    = params.assetSymbol || '';
-  var spot      = parseFloat(params.spotPrice) || 0;
-  var numRounds = parseInt(params.numRounds) || 4;
-  var lotSize   = parseInt(params.lotSize) || 1;
-  var cue       = params.roundCue || 'Round 1 begins. Submit your orders.';
-
+function createGame(params) {
   var sh = getGameSheet();
+  var gameId = 'PD_' + Date.now();
   sh.appendRow([
-    gameId, assetName, symbol, spot, numRounds,
-    1, cue, 'waiting', '[]',
-    new Date().toISOString(), new Date().toISOString(), lotSize
+    gameId,
+    params.assetName   || 'Asset',
+    params.assetSymbol || '',
+    parseFloat(params.spotPrice) || 0,
+    parseInt(params.numRounds)   || 3,
+    1, params.roundCue || '', 'waiting', '[]',
+    new Date().toISOString(), new Date().toISOString(),
+    parseInt(params.lotSize) || 1
   ]);
-
-  // Also clear old orders for cleanliness (optional — comment out if you want history)
-  // getOrderSheet().clearContents(); // removes headers too — safer not to do this
-
-  return { success: true, gameId: gameId, message: 'Game created. Use pd_open_round to begin trading.' };
+  return { success: true, gameId: gameId };
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ACTION: GET STATE
-// ─────────────────────────────────────────────────────────────
-function pd_getState(params) {
-  var game = getActiveGame();
-  if (!game) return { status: 'no_game' };
-
-  var orders = getOrdersForGame(game.gameId);
-
-  return {
-    gameId:         game.gameId,
-    assetName:      game.assetName,
-    assetSymbol:    game.assetSymbol,
-    spotPrice:      game.spotPrice,
-    numRounds:      game.numRounds,
-    currentRound:   game.currentRound,
-    roundCue:       game.roundCue,
-    status:         game.status,
-    clearingPrices: game.clearingPrices,
-    lotSize:        game.lotSize,
-    orders:         orders
-  };
-}
-
-// ─────────────────────────────────────────────────────────────
-//  ACTION: SUBMIT ORDER
-// ─────────────────────────────────────────────────────────────
-function pd_submitOrder(params) {
-  var game = getActiveGame();
-  if (!game) return { error: 'No active game' };
-  if (game.status !== 'open') return { error: 'Round is not open' };
-
-  var enrollId = params.enrollId || 'Unknown';
-  var round    = parseInt(params.round) || game.currentRound;
-  var inst     = params.inst || 'spot';
-  var side     = params.side || 'buy';
-  var price    = parseFloat(params.price);
-  var qty      = parseInt(params.qty) || 1;
-
-  if (!price || price <= 0) return { error: 'Invalid price' };
-  if (!['spot','futures','call','put'].includes(inst)) return { error: 'Invalid instrument' };
-  if (!['buy','sell'].includes(side)) return { error: 'Invalid side' };
-
-  var sh = getOrderSheet();
-  sh.appendRow([
-    game.gameId, round, enrollId,
-    params.studentName || enrollId,
-    inst, side, price, qty,
-    params.strike || '', params.expiry || '',
-    new Date().toISOString()
-  ]);
-
+function openRound(params) {
+  var g = resolveGame(params);
+  if (!g) return { error: 'No game found' };
+  updateGameRow(g.rowIndex, { status: 'open', roundCue: params.roundCue || g.row.roundCue });
   return { success: true };
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ACTION: OPEN ROUND
-// ─────────────────────────────────────────────────────────────
-function pd_openRound(params) {
-  if (!checkSecret(params)) return { error: 'Unauthorized' };
-  var game = getActiveGame();
-  if (!game) return { error: 'No active game' };
-  updateGame(game.gameId, { status: 'open' });
-  return { success: true, message: 'Round ' + game.currentRound + ' is now open for trading.' };
+function closeRound(params) {
+  var g = resolveGame(params);
+  if (!g) return { error: 'No game found' };
+  // Persist last-trade prices for this round (price discovery from actual trades only)
+  var dp       = computeDiscoveryPrices(g.row.gameId, g.row.currentRound);
+  var existing = (g.row.discoveryPrices || []).filter(function(e) { return e.round != g.row.currentRound; });
+  updateGameRow(g.rowIndex, { status: 'closed', discoveryPrices: existing.concat(dp) });
+  return { success: true, discoveryPrices: dp };
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ACTION: CLOSE ROUND
-//  The instructor page computes clearing prices client-side and sends them.
-//  We just store them here.
-// ─────────────────────────────────────────────────────────────
-function pd_closeRound(params) {
-  if (!checkSecret(params)) return { error: 'Unauthorized' };
-  var game = getActiveGame();
-  if (!game) return { error: 'No active game' };
-
-  // Clearing prices computed by client and sent as JSON string
-  var newCp = safeParseJson(params.clearingPrices, []);
-
-  // Merge with existing clearing prices (from previous rounds)
-  var existing = game.clearingPrices || [];
-  var merged = existing.concat(newCp);
-
-  updateGame(game.gameId, { status: 'closed', clearingPrices: merged });
-  return { success: true, clearingPrices: merged };
+function nextRound(params) {
+  var g = resolveGame(params);
+  if (!g) return { error: 'No game found' };
+  var next = g.row.currentRound + 1;
+  if (next > g.row.numRounds) {
+    updateGameRow(g.rowIndex, { status: 'ended' });
+    return { success: true, ended: true };
+  }
+  updateGameRow(g.rowIndex, { currentRound: next, status: 'waiting', roundCue: params.roundCue || '' });
+  return { success: true, currentRound: next };
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ACTION: NEXT ROUND
-// ─────────────────────────────────────────────────────────────
-function pd_nextRound(params) {
-  if (!checkSecret(params)) return { error: 'Unauthorized' };
-  var game = getActiveGame();
-  if (!game) return { error: 'No active game' };
-
-  var nextRound = game.currentRound + 1;
-  if (nextRound > game.numRounds) return { error: 'All rounds completed. End the game.' };
-
-  var cue = params.roundCue || 'Round ' + nextRound;
-  updateGame(game.gameId, { currentRound: nextRound, roundCue: cue, status: 'waiting' });
-  return { success: true, round: nextRound };
+function endGame(params) {
+  var g = resolveGame(params);
+  if (!g) return { error: 'No game found' };
+  updateGameRow(g.rowIndex, { status: 'ended' });
+  return { success: true };
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ACTION: END GAME
-// ─────────────────────────────────────────────────────────────
-function pd_endGame(params) {
-  if (!checkSecret(params)) return { error: 'Unauthorized' };
-  var game = getActiveGame();
-  if (!game) return { error: 'No active game' };
-  updateGame(game.gameId, { status: 'ended' });
-  return { success: true, message: 'Game ended. Final results visible on projector.' };
+// placeOrder: save to sheet, then run matching engine immediately
+function placeOrder(params) {
+  var g = resolveGame(params);
+  if (!g) return { error: 'No game found' };
+  if (g.row.status !== 'open') return { error: 'Round is not open for trading' };
+
+  var sh      = getOrdersSheet();
+  var orderId = 'O' + Date.now() + '_' + (Math.random() * 9999 | 0);
+  var ts      = new Date().toISOString();
+
+  sh.appendRow([
+    orderId,
+    g.row.gameId,
+    g.row.currentRound,
+    params.studentId  || params.enrollId || '',
+    params.studentName || '',
+    params.side,
+    params.instrument || params.inst || 'spot',
+    parseFloat(params.strike) || 0,
+    params.expiry || '',
+    parseFloat(params.price) || 0,
+    parseInt(params.qty) || 1,
+    0,      // filled_qty starts at 0
+    ts,
+    'open'
+  ]);
+
+  var trades = matchOrders(g.row.gameId, g.row.currentRound);
+  return { success: true, orderId: orderId, newTrades: trades };
 }
 
-// ════════════════════════════════════════════════════════════════
-//  HOW TO INTEGRATE INTO YOUR EXISTING doGet()
-//  ─────────────────────────────────────────────────────────────
-//  Your existing doGet() function probably looks like:
-//
-//  function doGet(e) {
-//    var action = e.parameter.action;
-//    // ... existing switch/if ...
-//  }
-//
-//  Change it to:
-//
-//  function doGet(e) {
-//    // Price Discovery routing — ADD THESE 2 LINES FIRST:
-//    var pdResult = handlePriceDiscovery(e);
-//    if (pdResult) return pdResult;
-//
-//    // ... your existing code below unchanged ...
-//    var action = e.parameter.action;
-//    // ...
-//  }
-// ════════════════════════════════════════════════════════════════
+// cancelOrder: student cancels their own open or partially filled order
+function cancelOrder(params) {
+  var sh        = getOrdersSheet();
+  var data      = sh.getDataRange().getValues();
+  var studentId = params.studentId || params.enrollId || '';
+  for (var i = 1; i < data.length; i++) {
+    var o = rowToOrder(data[i]);
+    if (o.orderId !== params.orderId) continue;
+    if (o.studentId !== studentId) return { error: 'Not your order' };
+    if (o.status !== 'open' && o.status !== 'partial') return { error: 'Cannot cancel: status is ' + o.status };
+    sh.getRange(i + 1, 14).setValue('cancelled');
+    return { success: true };
+  }
+  return { error: 'Order not found' };
+}
+
+// getState: open order book + recent trades + student's own orders
+function getState(params) {
+  var g = resolveGame(params);
+  if (!g) return { status: 'no_game' };
+  var game      = g.row;
+  var studentId = params.studentId || params.enrollId || '';
+
+  var osh   = getOrdersSheet();
+  var oData = osh.getDataRange().getValues();
+  var openBids = [], openAsks = [], myOrders = [];
+
+  for (var i = 1; i < oData.length; i++) {
+    var o = rowToOrder(oData[i]);
+    if (o.gameId != game.gameId || o.round != game.currentRound) continue;
+
+    // Open order book: only orders with remaining quantity
+    if (o.status === 'open' || o.status === 'partial') {
+      var rem = o.qty - o.filledQty;
+      if (rem > 0) {
+        var entry = {
+          orderId: o.orderId, price: o.price, qty: rem,
+          instrument: o.instrument, strike: o.strike,
+          expiry: o.expiry, timestamp: o.timestamp
+        };
+        if (o.side === 'buy') openBids.push(entry);
+        else                  openAsks.push(entry);
+      }
+    }
+
+    // Student's own orders (all statuses)
+    if (studentId && o.studentId == studentId) {
+      myOrders.push({
+        orderId: o.orderId, side: o.side,
+        instrument: o.instrument, strike: o.strike, expiry: o.expiry,
+        price: o.price, qty: o.qty, filledQty: o.filledQty,
+        status: o.status, timestamp: o.timestamp
+      });
+    }
+  }
+
+  // Sort order book (price-time priority order)
+  openBids.sort(function(a, b) { return b.price !== a.price ? b.price - a.price : new Date(a.timestamp) - new Date(b.timestamp); });
+  openAsks.sort(function(a, b) { return a.price !== b.price ? a.price - b.price : new Date(a.timestamp) - new Date(b.timestamp); });
+  myOrders.sort(function(a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+
+  // Recent trades for current round (newest first)
+  var tsh   = getTradesSheet();
+  var tData = tsh.getDataRange().getValues();
+  var trades = [];
+  for (var j = 1; j < tData.length; j++) {
+    var t = rowToTrade(tData[j]);
+    if (t.gameId != game.gameId || t.round != game.currentRound) continue;
+    trades.push({
+      price: t.price, qty: t.qty,
+      instrument: t.instrument, strike: t.strike, expiry: t.expiry,
+      timestamp: t.timestamp
+    });
+  }
+  trades.sort(function(a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+
+  return {
+    gameId: game.gameId,  assetName: game.assetName, assetSymbol: game.assetSymbol,
+    spotPrice: game.spotPrice, numRounds: game.numRounds, currentRound: game.currentRound,
+    roundCue: game.roundCue,   status: game.status,     lotSize: game.lotSize,
+    discoveryPrices: game.discoveryPrices,
+    orderBook: { bids: openBids.slice(0, 10), asks: openAsks.slice(0, 10) },
+    trades:    trades.slice(0, 30),
+    myOrders:  myOrders
+  };
+}
+
+// ââââââââââ MAIN ROUTER ââââââââââ
+function doGet(e) {
+  var p  = e.parameter || {};
+  var cb = p.callback;
+  var result;
+  try {
+    var a = p.action;
+    if      (a === 'createGame'  || a === 'pd_create_game')  result = createGame(p);
+    else if (a === 'openRound'   || a === 'pd_open_round')   result = openRound(p);
+    else if (a === 'closeRound'  || a === 'pd_close_round')  result = closeRound(p);
+    else if (a === 'nextRound'   || a === 'pd_next_round')   result = nextRound(p);
+    else if (a === 'endGame'     || a === 'pd_end_game')     result = endGame(p);
+    else if (a === 'placeOrder'  || a === 'pd_submit_order') result = placeOrder(p);
+    else if (a === 'cancelOrder')                            result = cancelOrder(p);
+    else if (a === 'getState'    || a === 'pd_get_state')    result = getState(p);
+    else result = { error: 'Unknown action: ' + a };
+  } catch(err) {
+    result = { error: err.message, stack: err.stack };
+  }
+  var json = JSON.stringify(result);
+  if (cb) {
+    return ContentService.createTextOutput(cb + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(json)
+    .setMimeType(ContentService.MimeType.JSON);
+}
