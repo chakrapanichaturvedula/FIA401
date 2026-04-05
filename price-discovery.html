@@ -97,6 +97,10 @@
   /* BSM price display */
   .bsm-hint { background: #f0f8ff; border: 1px solid #b8daff; border-radius: 7px; padding: 8px 12px; margin-bottom: 10px; display: none; }
   .bsm-hint.visible { display: block; }
+
+  /* TOTAL PREVIEW (futures / options) */
+  .total-preview { background: #f0f4f8; border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.78rem; color: var(--navy); line-height: 1.5; }
+  .total-preview strong { color: var(--gold); font-family: 'JetBrains Mono', monospace; }
   .bsm-hint-label { font-size: 0.62rem; color: var(--blue); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
   .bsm-hint-price { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 700; color: var(--navy); }
 
@@ -270,16 +274,20 @@
           <span class="input-hint" id="priceHint"></span>
         </div>
         <div class="price-prefix">
-          <input type="number" class="price-input" id="orderPrice" placeholder="0.00" step="0.5" min="0" oninput="updateBsmHint()">
+          <input type="number" class="price-input" id="orderPrice" placeholder="0.00" step="0.5" min="0" oninput="updateBsmHint();updateTotalPreview();">
         </div>
       </div>
       <div class="input-group">
         <div class="input-label">
           <span id="qtyLabel">Quantity</span>
+          <span class="input-hint" id="lotHint"></span>
         </div>
-        <input type="number" class="price-input" id="orderQty" value="1" min="1" max="50" style="text-align:center;">
+        <input type="number" class="price-input" id="orderQty" value="1" min="1" style="text-align:center;" oninput="updateTotalPreview()">
       </div>
     </div>
+
+    <!-- Total exposure preview (hidden for spot, shown for futures/options) -->
+    <div class="total-preview" id="totalPreview" style="display:none;"></div>
 
     <button class="submit-btn" id="submitBtn" onclick="submitOrder()">Submit Order</button>
   </div>
@@ -363,6 +371,7 @@ let state = {
   roundStatus: 'waiting',  // waiting | open | closed | ended
   roundCue: '',
   spotPrice: 0,
+  lotSize: 1,         // shares per lot (1 = no lot structure, used for spot quantity labeling)
   myOrders: [],       // all my orders this game
   clearingPrices: [], // { round, inst, price } per round per inst
   allOrders: []       // all orders from server (current round)
@@ -392,16 +401,34 @@ function fmtPrice(n) {
 function selectInst(el, inst) {
   state.inst = inst;
   document.querySelectorAll('.inst-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  const isOpt = inst === 'call' || inst === 'put';
+  if (el) el.classList.add('active');
+  const isOpt  = inst === 'call' || inst === 'put';
+  const isFut  = inst === 'futures';
+  const isSpot = inst === 'spot';
+  const ls     = state.lotSize || 1;
+
   document.getElementById('optionsParams').classList.toggle('visible', isOpt);
-  document.getElementById('priceLabel').textContent = isOpt ? 'Premium (₹)' : 'Your Price (₹)';
-  const hints = { spot: 'per share', futures: 'per lot', call: 'per contract', put: 'per contract' };
-  document.getElementById('priceHint').textContent = hints[inst] || '';
-  const qtys = { spot: 'Shares', futures: 'Lots', call: 'Contracts', put: 'Contracts' };
-  document.getElementById('qtyLabel').textContent = qtys[inst] || 'Quantity';
+
+  // Price label — per-share for spot, per-share-premium for options, futures price for futures
+  if (isSpot) {
+    document.getElementById('priceLabel').textContent = 'Price per share (₹)';
+    document.getElementById('priceHint').textContent  = '';
+  } else if (isFut) {
+    document.getElementById('priceLabel').textContent = 'Futures price (₹)';
+    document.getElementById('priceHint').textContent  = ls > 1 ? `1 lot = ${fmtNum(ls)} sh` : '';
+  } else {
+    document.getElementById('priceLabel').textContent = 'Premium / share (₹)';
+    document.getElementById('priceHint').textContent  = ls > 1 ? `1 lot = ${fmtNum(ls)} sh` : '';
+  }
+
+  // Qty label — Shares for spot, Lots for everything else
+  document.getElementById('qtyLabel').textContent = isSpot ? 'Shares' : 'Lots';
+  document.getElementById('lotHint').textContent  = '';
+
   if (isOpt) updateBsmHint();
   else document.getElementById('bsmHint').classList.remove('visible');
+
+  updateTotalPreview();
 }
 
 function selectDir(dir) {
@@ -415,6 +442,38 @@ function selectObTab(el, inst) {
   document.querySelectorAll('.ob-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderOrderBook();
+}
+
+// ────────────────────────────────────────────────
+//  TOTAL EXPOSURE PREVIEW  (futures & options)
+// ────────────────────────────────────────────────
+function updateTotalPreview() {
+  const el = document.getElementById('totalPreview');
+  if (!el) return;
+  const inst  = state.inst;
+  const ls    = state.lotSize || 1;
+  if (inst === 'spot') { el.style.display = 'none'; return; }
+
+  const qty   = parseInt(document.getElementById('orderQty').value) || 0;
+  const price = parseFloat(document.getElementById('orderPrice').value) || 0;
+  if (qty <= 0) { el.style.display = 'none'; return; }
+
+  const lotWord   = qty === 1 ? 'lot' : 'lots';
+  const shares    = qty * ls;
+
+  if (inst === 'futures') {
+    el.style.display = 'block';
+    el.innerHTML = `${qty} ${lotWord} × ${fmtNum(ls)} shares/lot = <strong>${fmtNum(shares)} shares</strong>`;
+  } else {
+    // call or put — premium per share → total premium
+    el.style.display = 'block';
+    if (price > 0) {
+      const total = shares * price;
+      el.innerHTML = `${qty} ${lotWord} × ${fmtNum(ls)} shares × ₹${fmtNum(price)}/sh = <strong>₹${fmtNum(total.toFixed(2))} total premium</strong>`;
+    } else {
+      el.innerHTML = `${qty} ${lotWord} × ${fmtNum(ls)} shares/lot = <strong>${fmtNum(shares)} shares</strong>`;
+    }
+  }
 }
 
 // ────────────────────────────────────────────────
@@ -451,7 +510,7 @@ function submitOrder() {
   const price = parseFloat(document.getElementById('orderPrice').value);
   const qty   = parseInt(document.getElementById('orderQty').value) || 1;
   if (!price || price <= 0) { toast('Enter a valid price'); return; }
-  if (qty <= 0 || qty > 50) { toast('Quantity must be 1–50'); return; }
+  if (qty <= 0) { toast('Enter a valid quantity'); return; }
 
   const isOpt = state.inst==='call'||state.inst==='put';
   const strike = isOpt ? parseFloat(document.getElementById('optStrike').value) : null;
@@ -508,7 +567,7 @@ function renderMyOrders() {
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span class="order-price">₹${fmtNum(o.price)}</span>
-        <span class="order-qty">×${o.qty}</span>
+        <span class="order-qty">${o.inst === 'spot' ? fmtNum(o.qty) + ' sh' : o.qty + (o.qty===1?' lot':' lots')}</span>
       </div>
     </div>`;
   }).join('');
@@ -550,15 +609,17 @@ function renderOrderBook() {
   const aggAsks = aggregate(asks).sort((a,b)=>a.price-b.price).slice(0,6);
 
   const maxQty = Math.max(...aggBids.map(b=>b.qty), ...aggAsks.map(a=>a.qty), 1);
+  const isObSpot = state.obInst === 'spot';
 
   function renderRows(rows, type) {
     if (!rows.length) return '<div class="ob-empty">No ' + (type==='bid'?'bids':'asks') + '</div>';
     return rows.map(r => {
       const width = Math.round((r.qty/maxQty)*80);
+      const qtyTxt = isObSpot ? fmtNum(r.qty) + ' sh' : r.qty + (r.qty===1?' lot':' lots');
       return `<div class="ob-row ${type}-row">
         <div class="ob-row-bg" style="width:${width}%"></div>
         <span class="ob-price ${type}-row">₹${fmtNum(r.price)}</span>
-        <span class="ob-qty">${r.qty}</span>
+        <span class="ob-qty">${qtyTxt}</span>
       </div>`;
     }).join('');
   }
@@ -714,6 +775,7 @@ function applyGameState(data) {
   state.roundStatus = data.status || 'waiting';
   state.roundCue    = data.roundCue || '';
   state.spotPrice   = parseFloat(data.spotPrice) || 0;
+  state.lotSize     = parseInt(data.lotSize) || 1;
   state.allOrders   = (data.orders || []).map(o => ({
     ...o, price: parseFloat(o.price), qty: parseInt(o.qty)
   }));
@@ -734,18 +796,43 @@ function applyGameState(data) {
   document.getElementById('submitBtn').disabled = state.roundStatus !== 'open';
 
   if (state.spotPrice > 0) {
-    document.getElementById('optStrike').value = getClosestStrike(state.spotPrice);
+    updateStrikesDropdown(state.spotPrice);
     updateBsmHint();
   }
+  // Refresh instrument labels to pick up new lotSize
+  const activeTab = document.querySelector('.inst-tab.active');
+  if (activeTab) selectInst(activeTab, state.inst);
 
   renderOrderBook();
   drawDiscoveryChart();
   renderRoundHistory();
 }
 
+// Generate strikes dynamically around the spot price
+function generateStrikes(spot) {
+  if (!spot || spot <= 0) return [2200,2300,2400,2450,2500,2550,2600,2700];
+  const inc = spot < 100 ? 5 : spot < 500 ? 25 : spot < 2000 ? 50 : 100;
+  const pcts = [-0.20, -0.15, -0.10, -0.07, -0.05, 0, 0.05, 0.07, 0.10, 0.15, 0.20];
+  const raw = pcts.map(p => Math.round(spot * (1 + p) / inc) * inc);
+  return [...new Set(raw)].sort((a, b) => a - b);
+}
+
+function updateStrikesDropdown(spot) {
+  const strikes = generateStrikes(spot);
+  const inc = spot < 100 ? 5 : spot < 500 ? 25 : spot < 2000 ? 50 : 100;
+  const atm = Math.round(spot / inc) * inc;
+  const select = document.getElementById('optStrike');
+  const prev = parseFloat(select.value);
+  select.innerHTML = strikes.map(s => {
+    const label = fmtNum(s) + (s === atm ? ' ✦ATM' : '');
+    return `<option value="${s}"${s === atm ? ' selected' : ''}>${label}</option>`;
+  }).join('');
+  // Restore previous selection if it's still in the list
+  if (prev && strikes.includes(prev)) select.value = prev;
+}
+
 function getClosestStrike(spot) {
-  const strikes = [2200,2300,2400,2450,2500,2550,2600,2700];
-  return strikes.reduce((a,b) => Math.abs(b-spot)<Math.abs(a-spot)?b:a);
+  return generateStrikes(spot).reduce((a,b) => Math.abs(b-spot)<Math.abs(a-spot)?b:a);
 }
 
 function showNoGame() {

@@ -224,13 +224,18 @@
             <input type="number" class="form-input" id="spotPrice" value="2450" placeholder="e.g. 2450" step="1">
           </div>
           <div class="form-group">
-            <label class="form-label">Number of Rounds</label>
-            <select class="form-select" id="numRounds">
-              <option value="3">3 Rounds</option>
-              <option value="4">4 Rounds</option>
-              <option value="5" selected>5 Rounds</option>
-            </select>
+            <label class="form-label">Lot Size <span style="font-weight:400;color:var(--muted);font-size:0.7rem;">(shares per lot)</span></label>
+            <input type="number" class="form-input" id="lotSize" value="75" min="1" placeholder="e.g. 75 for Nifty, 500 for large caps">
           </div>
+        </div>
+
+        <div class="form-group" style="margin-top:8px;">
+          <label class="form-label">Number of Rounds</label>
+          <select class="form-select" id="numRounds">
+            <option value="3">3 Rounds</option>
+            <option value="4">4 Rounds</option>
+            <option value="5" selected>5 Rounds</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -434,10 +439,11 @@ function createGame() {
   const assetSymbol= document.getElementById('assetSymbol').value.trim();
   const spotPrice  = parseFloat(document.getElementById('spotPrice').value)||0;
   const numRounds  = parseInt(document.getElementById('numRounds').value)||4;
+  const lotSize    = parseInt(document.getElementById('lotSize').value)||1;
   const round1Cue  = document.getElementById('round1Cue').value.trim();
   if (!assetName || !round1Cue) { toast('Enter asset name and Round 1 information'); return; }
   userWantsSetup = false;  // allow fetchState to take over after creation
-  sendToApps({ action:'pd_create_game', assetName, assetSymbol, spotPrice, numRounds, roundCue: round1Cue });
+  sendToApps({ action:'pd_create_game', assetName, assetSymbol, spotPrice, numRounds, lotSize, roundCue: round1Cue });
   toast('Game created! Fetching state…');
   setTimeout(fetchState, 2000);
 }
@@ -528,7 +534,7 @@ function applyState(data) {
   const r = parseInt(data.currentRound)||0;
   const n = parseInt(data.numRounds)||0;
   document.getElementById('ctrlAssetName').textContent = data.assetName + (data.assetSymbol?' ('+data.assetSymbol+')':'');
-  document.getElementById('ctrlMeta').textContent = 'Spot reference: ₹' + fmtNum(data.spotPrice||0) + ' · Round ' + r + ' of ' + n;
+  document.getElementById('ctrlMeta').textContent = 'Spot: ₹' + fmtNum(data.spotPrice||0) + ' · Lot: ' + (data.lotSize||1) + ' shares · Round ' + r + ' of ' + n;
   document.getElementById('ctrlCueTxt').textContent = data.roundCue || '—';
 
   const pill = document.getElementById('ctrlStatus');
