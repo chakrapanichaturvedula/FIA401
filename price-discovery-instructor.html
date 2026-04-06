@@ -519,7 +519,7 @@ function fetchState() {
   callApps({ action:'getState' }, data => {
     // Don't override the form if instructor is actively setting up a new game
     if (userWantsSetup) return;
-    if (!data || data.status==='no_game') { showSetupPanel(); return; }
+    if (!data || data.status==='no_game' || !data.assetName || !data.numRounds) { showSetupPanel(); return; }
     gameState = data;
     applyState(data);
   });
