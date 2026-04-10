@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DerivativesLab - Student Access</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#eef4fb; color:#152744; margin:0; }
+    .wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .card { width:100%; max-width:520px; background:#fff; border:1px solid #dce6f1; border-radius:16px; padding:28px; box-shadow:0 20px 60px rgba(21,39,68,0.12); }
+    h1 { margin:0 0 10px; font-size:2rem; }
+    p { color:#5f738f; line-height:1.6; }
+    label { display:block; margin:18px 0 8px; font-size:0.85rem; font-weight:700; text-transform:uppercase; color:#5f738f; }
+    input { width:100%; padding:14px 16px; border:1.5px solid #dce6f1; border-radius:12px; font-size:1rem; box-sizing:border-box; }
+    button { width:100%; margin-top:14px; padding:14px 16px; border:none; border-radius:12px; background:#152744; color:#fff; font-size:1rem; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    .msg { display:none; margin-top:14px; padding:12px 14px; border-radius:10px; font-size:0.92rem; }
+    .msg.show { display:block; }
+    .msg.error { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+    .msg.success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+    .note { margin-top:18px; padding:14px; background:#f5f8fc; border:1px solid #e0e8f2; border-radius:12px; font-size:0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Student Access</h1>
+      <p>Enter your student ID or institute email. The course roster will validate access and start your session.</p>
+      <label for="studentIdentifier">Student ID or Institute Email</label>
+      <input id="studentIdentifier" type="text" placeholder="e.g. 26A1HP013 or student@imthyderabad.edu.in" />
+      <button id="loginBtn" type="button"><span id="loginBtnLabel">Continue to DerivativesLab</span></button>
+      <div class="msg error" id="loginError"></div>
+      <div class="msg success" id="loginSuccess">Signed in. Loading your course dashboard...</div>
+      <div class="note">
+        Firestore collection <strong>students</strong> should include <strong>studentId</strong>, <strong>name</strong>, <strong>email</strong>, and optional <strong>active</strong>.
+      </div>
+    </div>
+  </div>
+  <script src="site-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    if (window.DLabConfig && window.DLabConfig.firebase && window.DLabConfig.firebase.apiKey) {
+      firebase.initializeApp(window.DLabConfig.firebase);
+    }
+  </script>
+  <script src="firebase-auth.js"></script>
+  <script src="app.js"></script>
+  <script>
+    const loginBtn = document.getElementById('loginBtn');
+    const loginBtnLabel = document.getElementById('loginBtnLabel');
+    const studentIdentifier = document.getElementById('studentIdentifier');
+    const loginError = document.getElementById('loginError');
+    const loginSuccess = document.getElementById('loginSuccess');
+    function setBusy(isBusy) {
+      loginBtn.disabled = isBusy;
+      studentIdentifier.disabled = isBusy;
+      loginBtnLabel.textContent = isBusy ? 'Checking course roster...' : 'Continue to DerivativesLab';
+    }
+    function showError(message) {
+      loginSuccess.classList.remove('show');
+      loginError.textContent = message;
+      loginError.classList.add('show');
+    }
+    function showSuccess(message) {
+      loginError.classList.remove('show');
+      loginSuccess.textContent = message;
+      loginSuccess.classList.add('show');
+    }
+    async function startRosterLogin() {
+      loginError.classList.remove('show');
+      setBusy(true);
+      try {
+        if (!window.DLabFirebase || !DLabFirebase.isConfigured()) throw new Error('Firebase auth is not configured yet.');
+        const session = await DLabFirebase.signInStudentWithRoster(studentIdentifier.value);
+        localStorage.setItem('dlabSession', JSON.stringify(session));
+        showSuccess('Welcome, ' + session.name + '. Loading your dashboard...');
+        setTimeout(function () { window.location.href = 'course.html'; }, 1100);
+      } catch (error) {
+        if (error && (error.code === 'permission-denied' || error.code === 'firestore/permission-denied')) {
+          showError('Firestore rules are blocking roster lookup. Allow signed-in users to read the students collection, then try again.');
+        } else {
+          showError(error.message || 'Sign-in failed. Please try again.');
+        }
+      } finally {
+        setBusy(false);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.DLab && DLab.getSession()) {
+        window.location.href = 'course.html';
+        return;
+      }
+      loginBtn.addEventListener('click', startRosterLogin);
+      studentIdentifier.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') startRosterLogin();
+      });
+    });
+  </script>
+</body>
+</html>
