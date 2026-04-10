@@ -10,69 +10,100 @@
     return !!(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.authDomain);
   }
 
-  function getDomain(email) {
-    return String(email || '').split('@')[1] || '';
+  function normalise(value) {
+    return String(value || '').trim().toLowerCase();
   }
 
-  function normaliseStudent(doc) {
+  function isEmail(value) {
+    return normalise(value).includes('@');
+  }
+
+  function getDomain(email) {
+    return normalise(email).split('@')[1] || '';
+  }
+
+  function normaliseStudent(doc, docId) {
     if (!doc) return null;
     return {
       uid: doc.uid || '',
-      studentId: doc.studentId || doc.enrollmentId || doc.id || '',
-      enrollmentId: doc.enrollmentId || doc.studentId || doc.id || '',
+      studentId: doc.studentId || doc.enrollmentId || doc.id || docId || '',
+      enrollmentId: doc.enrollmentId || doc.studentId || doc.id || docId || '',
       name: doc.name || '',
-      email: doc.email || '',
+      email: normalise(doc.email),
       active: doc.active !== false,
       role: doc.role || 'student'
     };
   }
 
-  async function lookupRosterByEmail(email) {
-    const db = firebase.firestore();
-    const collection = authCfg.rosterCollection || 'students';
-    const snapshot = await db
-      .collection(collection)
-      .where('email', '==', String(email || '').toLowerCase())
-      .limit(1)
-      .get();
-
-    if (snapshot.empty) return null;
-    return normaliseStudent(snapshot.docs[0].data());
+  async function ensureAnonymousAuth() {
+    if (!window.firebase || !firebase.auth) {
+      throw new Error('Firebase auth library is not available.');
+    }
+    const current = firebase.auth().currentUser;
+    if (current) return current;
+    const result = await firebase.auth().signInAnonymously();
+    return result.user;
   }
 
-  async function signInStudentWithGoogle() {
+  async function lookupRoster(identifier) {
+    const db = firebase.firestore();
+    const collection = authCfg.rosterCollection || 'students';
+    const value = String(identifier || '').trim();
+    const clean = normalise(value);
+    let snapshot;
+
+    if (isEmail(value)) {
+      snapshot = await db
+        .collection(collection)
+        .where('email', '==', clean)
+        .limit(1)
+        .get();
+    } else {
+      snapshot = await db
+        .collection(collection)
+        .where('studentId', '==', value.toUpperCase())
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) {
+        const doc = await db.collection(collection).doc(value.toUpperCase()).get();
+        if (doc.exists) {
+          return normaliseStudent(doc.data(), doc.id);
+        }
+      }
+    }
+
+    if (snapshot.empty) return null;
+    return normaliseStudent(snapshot.docs[0].data(), snapshot.docs[0].id);
+  }
+
+  async function signInStudentWithRoster(identifier) {
     if (!isConfigured()) throw new Error('Firebase config is incomplete.');
+    const trimmed = String(identifier || '').trim();
+    if (!trimmed) {
+      throw new Error('Enter your student ID or institute email.');
+    }
 
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({
-      hd: authCfg.studentEmailDomain || 'imthyderabad.edu.in',
-      prompt: 'select_account'
-    });
-
-    const result = await firebase.auth().signInWithPopup(provider);
-    const user = result.user;
-    if (!user || !user.email) throw new Error('Google sign-in did not return an email address.');
+    await ensureAnonymousAuth();
+    const rosterEntry = await lookupRoster(trimmed);
+    if (!rosterEntry || rosterEntry.active === false) {
+      throw new Error('Your student record is not enabled in the course roster yet.');
+    }
 
     const allowedDomain = authCfg.studentEmailDomain || 'imthyderabad.edu.in';
-    if (getDomain(user.email).toLowerCase() !== allowedDomain.toLowerCase()) {
-      await firebase.auth().signOut();
-      throw new Error(`Please sign in with your institute email (@${allowedDomain}).`);
+    if (rosterEntry.email && getDomain(rosterEntry.email) !== allowedDomain.toLowerCase()) {
+      throw new Error(`Roster email must use @${allowedDomain}.`);
     }
 
-    const rosterEntry = await lookupRosterByEmail(user.email);
-    if (!rosterEntry || rosterEntry.active === false) {
-      await firebase.auth().signOut();
-      throw new Error('Your institute email is not yet enabled for this course roster.');
-    }
-
+    const currentUser = firebase.auth().currentUser;
     const payload = {
       id: rosterEntry.studentId,
       enrollId: rosterEntry.enrollmentId || rosterEntry.studentId,
       studentId: rosterEntry.studentId,
-      name: rosterEntry.name || user.displayName || rosterEntry.studentId,
-      email: String(user.email || '').toLowerCase(),
-      uid: user.uid,
-      provider: 'google',
+      name: rosterEntry.name || rosterEntry.studentId,
+      email: rosterEntry.email,
+      uid: currentUser ? currentUser.uid : '',
+      provider: 'roster',
       role: rosterEntry.role || 'student',
       ts: Date.now(),
       expires: Date.now() + SESSION_TTL
@@ -95,8 +126,8 @@
 
   window.DLabFirebase = {
     isConfigured,
-    lookupRosterByEmail,
-    signInStudentWithGoogle,
+    lookupRoster,
+    signInStudentWithRoster,
     signOutEverywhere
   };
 })();
