@@ -228,7 +228,7 @@ const DLab = {
         <div class="nav-links">${linksHtml}</div>
         <div class="nav-right">${studentHtml}</div>
       </nav>`;
-    const el = document.getElementById(containerId) || document.getElementById('app-nav') || document.getElementById('nav-root');
+    const el = document.getElementById(containerId);
     if (el) el.innerHTML = html;
   },
 
@@ -315,7 +315,7 @@ const DLab = {
       </div>`;
     }).join('');
 
-    const el = document.getElementById(containerId) || document.getElementById('app-nav') || document.getElementById('nav-root');
+    const el = document.getElementById(containerId);
     if (el) el.innerHTML = html;
   },
 
@@ -495,4 +495,5 @@ const DLab = {
 
 /* ─── EXPOSE GLOBALLY ────────────────────────────────────────── */
 window.DLab = DLab;
+
 
