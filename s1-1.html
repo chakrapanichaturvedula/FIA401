@@ -1,416 +1,585 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Markets, Longs & Shorts - DerivativesLab</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 1.1 - Spot, Long, Short, Square Off</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <style>
     body {
       background:
-        radial-gradient(circle at top right, rgba(0,119,182,0.08), transparent 24%),
+        radial-gradient(circle at top right, rgba(8,145,178,0.08), transparent 24%),
         linear-gradient(180deg, #eef4f8 0%, #f7fafc 100%);
     }
-    .lesson-hero {
-      background: linear-gradient(135deg, #0f3558 0%, #18507d 58%, #1f6c9f 100%);
-      border-radius: 24px;
-      padding: 28px 28px 24px;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 20px 48px rgba(15,53,88,0.16);
-      margin-bottom: 22px;
-    }
-    .lesson-hero::after {
-      content: '';
-      position: absolute;
-      right: -90px;
-      top: -70px;
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 66%);
-    }
-    .lesson-hero-inner {
-      position: relative;
-      z-index: 1;
+    .page-header { display: none; }
+    .lesson-shell {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.8fr);
+      grid-template-columns: 250px minmax(0, 1fr) 280px;
       gap: 18px;
-      align-items: end;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 92px 24px 44px;
+    }
+    .lesson-main {
+      min-width: 0;
+    }
+    .lesson-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      background: linear-gradient(140deg, #102f4c 0%, #174f7a 56%, #1570a6 100%);
+      color: #fff;
+      border-radius: 24px;
+      padding: 24px 26px;
+      box-shadow: 0 18px 40px rgba(16,47,76,0.15);
+      margin-bottom: 16px;
     }
     .lesson-kicker {
       display: inline-flex;
-      align-items: center;
-      gap: 10px;
       padding: 6px 12px;
-      margin-bottom: 14px;
       border-radius: 999px;
       background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.16);
-      font-size: 0.73rem;
+      border: 1px solid rgba(255,255,255,0.14);
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: rgba(255,255,255,0.84);
+      margin-bottom: 10px;
     }
     .lesson-hero h1 {
-      margin: 0 0 10px;
+      margin: 0 0 6px;
       font-family: 'Manrope', sans-serif;
-      font-size: clamp(1.9rem, 4vw, 3rem);
-      line-height: 1.02;
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      line-height: 1;
       letter-spacing: -0.05em;
-      max-width: 620px;
     }
     .lesson-hero p {
       margin: 0;
-      max-width: 620px;
-      color: rgba(255,255,255,0.78);
-      line-height: 1.7;
-      font-size: 0.96rem;
+      color: rgba(255,255,255,0.82);
+      font-size: 0.95rem;
     }
-    .hero-side {
+    .hero-link,
+    .action-btn,
+    .option-btn,
+    .check-btn,
+    .inline-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: none;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .hero-link,
+    .action-btn,
+    .check-btn,
+    .inline-link {
+      background: #123e67;
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(18,62,103,0.14);
+    }
+    .hero-link {
+      background: #fff;
+      color: #123e67;
+      box-shadow: none;
+    }
+    .section-card,
+    .activity-card,
+    .side-card {
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(21,39,68,0.08);
+      box-shadow: 0 12px 28px rgba(21,39,68,0.06);
+    }
+    .section-card {
+      border-radius: 22px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.24rem;
+      letter-spacing: -0.04em;
+      color: var(--navy);
+    }
+    .section-note {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: #e7f1fb;
+      color: #1c4f7d;
+      font-size: 0.73rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .activity-grid,
+    .mini-grid,
+    .choices,
+    .two-col {
       display: grid;
       gap: 12px;
     }
-    .hero-side-box {
-      padding: 14px 16px;
+    .activity-grid,
+    .two-col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .activity-card {
       border-radius: 18px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
+      padding: 16px;
     }
-    .hero-side-box strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 0.96rem;
-      color: #fff;
+    .activity-card h3 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      color: var(--navy);
     }
-    .hero-side-box span {
-      font-size: 0.82rem;
-      line-height: 1.5;
-      color: rgba(255,255,255,0.7);
+    .activity-card p,
+    .activity-card li,
+    .side-card p,
+    .feedback-box {
+      color: var(--text-2);
+      line-height: 1.6;
+      font-size: 0.9rem;
     }
-    .lesson-outline {
+    .choices {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+    .option-btn {
+      min-height: 46px;
+      padding: 10px 14px;
+      text-align: center;
+      background: #edf5fb;
+      color: #123e67;
+      box-shadow: none;
+      border: 1px solid #d7e6f2;
+    }
+    .option-btn.correct {
+      background: #e8f7ef;
+      border-color: #8fd3aa;
+      color: #1d6b47;
+    }
+    .option-btn.wrong {
+      background: #fff0f0;
+      border-color: #efb1b1;
+      color: #a13838;
+    }
+    .feedback-box {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #f5f9fc;
+      border: 1px solid #d8e6f1;
+      display: none;
+    }
+    .sequence-list {
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 16px;
-      margin-bottom: 22px;
+      gap: 10px;
+      margin-top: 12px;
     }
-    .outline-card,
-    .goal-card {
-      background: rgba(255,255,255,0.94);
-      border: 1px solid rgba(21,39,68,0.08);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 12px 28px rgba(21,39,68,0.06);
+    .sequence-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #f6fbff;
+      border: 1px solid #d8e6f1;
     }
-    .outline-card h3,
-    .goal-card h3 {
+    .sequence-item input {
+      width: 64px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #cfe0ee;
+      font: inherit;
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #edf5fb;
+      color: #1d4e75;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .side-card {
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .side-card h3 {
       margin: 0 0 8px;
       font-size: 1rem;
       color: var(--navy);
     }
-    .outline-card p,
-    .goal-card p {
+    .side-list {
       margin: 0;
-      color: var(--text-2);
-      line-height: 1.68;
-      font-size: 0.9rem;
-    }
-    .outline-list {
-      margin: 14px 0 0;
       padding-left: 18px;
       display: grid;
       gap: 8px;
       color: var(--text-2);
-      font-size: 0.88rem;
+      font-size: 0.9rem;
     }
-    .content-section {
-      background: rgba(255,255,255,0.95);
-      border: 1px solid rgba(21,39,68,0.07);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 12px 28px rgba(21,39,68,0.05);
-      margin-bottom: 18px;
+    .answer-input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid #d0dfec;
+      font: inherit;
+      margin-top: 10px;
     }
-    .page-header {
+    .inline-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .practice-block .feedback-box,
+    .quiz-feedback {
       display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #f5f9fc;
+      border: 1px solid #d8e6f1;
     }
-    @media (max-width: 900px) {
-      .lesson-hero-inner,
-      .lesson-outline {
+    .quiz-opts {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+      display: grid;
+      gap: 10px;
+    }
+    .quiz-opts li {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #f6fbff;
+      border: 1px solid #d8e6f1;
+      cursor: pointer;
+    }
+    .quiz-opts li.opt-correct {
+      background: #e8f7ef;
+      border-color: #8fd3aa;
+      color: #1d6b47;
+    }
+    .quiz-opts li.opt-wrong {
+      background: #fff0f0;
+      border-color: #efb1b1;
+      color: #a13838;
+    }
+    @media (max-width: 1180px) {
+      .lesson-shell {
         grid-template-columns: 1fr;
+      }
+      .sidebar-left,
+      .sidebar-right {
+        display: none;
+      }
+    }
+    @media (max-width: 760px) {
+      .lesson-shell {
+        padding: 84px 16px 32px;
+      }
+      .lesson-hero,
+      .activity-grid,
+      .two-col,
+      .choices {
+        grid-template-columns: 1fr;
+      }
+      .section-card {
+        padding: 16px;
       }
     }
   </style>
 </head>
 <body>
-<div id="nav-root"></div>
+<div id="app-nav"></div>
 
-<div class="page-inner">
-
+<div class="lesson-shell">
   <aside class="sidebar-left" id="sidebar-tree"></aside>
 
-  <main class="main-content">
-
+  <main class="lesson-main">
     <div class="breadcrumb" id="breadcrumb"></div>
 
     <section class="lesson-hero">
-      <div class="lesson-hero-inner">
-        <div>
-          <div class="lesson-kicker">Module 1 | Lesson 1.1 | Derivative Basics</div>
-          <h1>Markets, Longs and Shorts</h1>
-          <p>Start with the first principles: what derivatives are, where they trade, and how every position in the market begins as either long or short.</p>
-        </div>
-        <div class="hero-side">
-          <div class="hero-side-box">
-            <strong>Lesson Goal</strong>
-            <span>Understand derivative contracts as market exposures rather than ownership of the underlying asset.</span>
+      <div>
+        <div class="lesson-kicker">Session 1.1</div>
+        <h1>Spot, Long, Short, Square Off</h1>
+        <p>Do the activities and then move to Session 1.2.</p>
+      </div>
+      <a class="hero-link" href="s1-2.html">Next</a>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h2>Activity 1</h2>
+        <div class="section-note">Spot or Not</div>
+      </div>
+      <div class="activity-grid">
+        <article class="activity-card">
+          <h3>Pick the spot transaction</h3>
+          <p>A spot transaction means the trade happens now and delivery or settlement is immediate or near-immediate.</p>
+          <div class="choices" id="spot-choices">
+            <button class="option-btn" data-correct="true">Buy shares today and pay now</button>
+            <button class="option-btn">Agree today to buy after 3 months</button>
+            <button class="option-btn">Enter an index futures contract</button>
+            <button class="option-btn">Buy a call option for next month</button>
           </div>
-          <div class="hero-side-box">
-            <strong>By the End</strong>
-            <span>You should be able to explain long versus short payoff logic and identify the basic market structure.</span>
+          <div class="feedback-box" id="spot-feedback"></div>
+        </article>
+        <article class="activity-card">
+          <h3>Key idea</h3>
+          <p>First understand the spot market. Then forward and futures transactions become much easier to explain.</p>
+          <div class="tag-row">
+            <span class="tag">today</span>
+            <span class="tag">current price</span>
+            <span class="tag">immediate settlement</span>
           </div>
-        </div>
+        </article>
       </div>
     </section>
 
-    <section class="lesson-outline">
-      <article class="outline-card">
-        <h3>What this lesson covers</h3>
-        <p>This page moves from market definition to position logic, then closes with a worked example, a practice problem, and a quick concept check.</p>
-        <ul class="outline-list">
-          <li>What a derivative contract actually is</li>
-          <li>Exchange-traded versus OTC markets</li>
-          <li>Long and short positions</li>
-          <li>Simple payoff logic at expiry</li>
-        </ul>
+    <section class="section-card">
+      <div class="section-head">
+        <h2>Activity 2</h2>
+        <div class="section-note">Short in Spot</div>
+      </div>
+      <div class="two-col">
+        <article class="activity-card">
+          <h3>How do you short in the spot market?</h3>
+          <p>Pick the correct answer.</p>
+          <div class="choices" id="short-choices">
+            <button class="option-btn">You short only by paying margin to the exchange</button>
+            <button class="option-btn" data-correct="true">You borrow the asset, sell it, buy it back later, and return it</button>
+            <button class="option-btn">You just promise to sell later without borrowing</button>
+            <button class="option-btn">You can short in spot without any sale</button>
+          </div>
+          <div class="feedback-box" id="short-feedback"></div>
+        </article>
+        <article class="activity-card">
+          <h3>Sequence puzzle</h3>
+          <p>Enter the order using 1, 2, 3, 4.</p>
+          <div class="sequence-list">
+            <label class="sequence-item"><input type="number" min="1" max="4" data-seq="3" /> Buy back later</label>
+            <label class="sequence-item"><input type="number" min="1" max="4" data-seq="1" /> Borrow the asset</label>
+            <label class="sequence-item"><input type="number" min="1" max="4" data-seq="4" /> Return the asset</label>
+            <label class="sequence-item"><input type="number" min="1" max="4" data-seq="2" /> Sell the asset</label>
+          </div>
+          <div class="inline-actions">
+            <button class="check-btn" id="check-sequence">Check</button>
+          </div>
+          <div class="feedback-box" id="sequence-feedback"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h2>Activity 3</h2>
+        <div class="section-note">Long or Short</div>
+      </div>
+      <div class="activity-grid">
+        <article class="activity-card">
+          <h3>Choose the correct side</h3>
+          <p>You buy one Nifty futures contract because you expect the price to rise.</p>
+          <div class="choices" id="longshort-choices">
+            <button class="option-btn" data-correct="true">Long</button>
+            <button class="option-btn">Short</button>
+          </div>
+          <div class="feedback-box" id="longshort-feedback"></div>
+        </article>
+        <article class="activity-card">
+          <h3>Remember</h3>
+          <div class="tag-row">
+            <span class="tag">Long gains when price rises</span>
+            <span class="tag">Short gains when price falls</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h2>Activity 4</h2>
+        <div class="section-note">Square Off</div>
+      </div>
+      <div class="activity-grid">
+        <article class="activity-card">
+          <h3>What does square off mean?</h3>
+          <div class="choices" id="squareoff-choices">
+            <button class="option-btn">Increase the same position</button>
+            <button class="option-btn" data-correct="true">Take the opposite position and close the open position</button>
+            <button class="option-btn">Hold until expiry in every case</button>
+            <button class="option-btn">Convert futures into options</button>
+          </div>
+          <div class="feedback-box" id="squareoff-feedback"></div>
+        </article>
+        <article class="activity-card">
+          <h3>Mini example</h3>
+          <p>If you are long one futures contract, you can square off by selling one futures contract in the same contract.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h2>Practice</h2>
+        <div class="section-note">Quick P&amp;L</div>
+      </div>
+      <article class="activity-card">
+        <h3>Short futures example</h3>
+        <p>Priya shorts one Nifty futures contract at <strong>21,800</strong>. Lot size is <strong>50</strong>. The closing price is <strong>21,600</strong>. Enter total P&amp;L in rupees.</p>
+        <div class="practice-block" data-answer="10000" data-tol="10" data-section="1.1" data-problem-id="p1-1">
+          <input class="answer-input" type="number" placeholder="Enter answer" />
+          <div class="inline-actions">
+            <button class="check-btn check-btn">Check</button>
+            <button class="check-btn steps-btn" type="button">Show steps</button>
+          </div>
+          <div class="feedback-box"></div>
+          <div class="feedback-box steps-panel" style="display:none">
+            Short P&amp;L = (21,800 - 21,600) x 50 = <strong>10,000</strong>
+          </div>
+        </div>
       </article>
-      <article class="goal-card">
-        <h3>Why this matters</h3>
-        <p>If students miss the distinction between the underlying asset and the derivative exposure, every later topic becomes harder. This page is the conceptual base for pricing, hedging, and speculation.</p>
-      </article>
     </section>
 
-    <section class="content-section">
-      <h2 class="cs-title">What is a Derivative?</h2>
-      <p>A <strong>derivative</strong> is a financial contract whose value <em>derives</em> from the performance of an underlying asset, index, or rate. The underlying can be an equity (Reliance, Nifty), commodity (gold, crude oil), currency (USD/INR), or interest rate.</p>
-      <p style="margin-top:12px">Derivatives are not investments in the underlying itself - they are <em>agreements</em> about the future value of that underlying. This distinction gives derivatives their power: you can take a large economic exposure with a fraction of the capital.</p>
-
-      <div class="callout callout-blue" style="margin-top:18px">
-        <strong>Key idea:</strong> If you buy 100 shares of Reliance at Rs 2,450, you own Rs 2,45,000 worth of stock. If you buy one Reliance futures contract (lot size 250), you control Rs 6,12,500 of exposure with an initial margin of roughly Rs 60,000 - about 10% of the notional.
+    <section class="section-card">
+      <div class="section-head">
+        <h2>Quick Check</h2>
+        <div class="section-note">3 Questions</div>
       </div>
-
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px">
-        <div class="concept-card">
-          <div class="cc-title">Futures</div>
-          <div class="cc-body">Agreement to buy or sell an asset at a fixed price on a fixed future date. Traded on exchange, daily MTM.</div>
-        </div>
-        <div class="concept-card">
-          <div class="cc-title">Options</div>
-          <div class="cc-body">Right, but not obligation, to buy (call) or sell (put) at a strike price before or on expiry.</div>
-        </div>
-        <div class="concept-card">
-          <div class="cc-title">Swaps</div>
-          <div class="cc-body">Exchange of cash flows over time, for example fixed interest rate for floating rate.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="content-section">
-      <h2 class="cs-title">Exchange-Traded vs OTC Markets</h2>
-      <p>Derivatives trade in two distinct arenas, each with its own risk profile and regulation.</p>
-
-      <table class="example-table" style="margin-top:16px">
-        <thead>
-          <tr><th>Feature</th><th>Exchange-Traded</th><th>OTC (Over-the-Counter)</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Trading venue</td><td>NSE / BSE (India), CME (US)</td><td>Bilateral agreement between two parties</td></tr>
-          <tr><td>Contract design</td><td>Standardised (lot size, expiry)</td><td>Fully customised</td></tr>
-          <tr><td>Settlement</td><td>Daily MTM + central clearing</td><td>At maturity (usually)</td></tr>
-          <tr><td>Counterparty risk</td><td>Eliminated - NSCCL guarantees</td><td>High - depends on credit of counterparty</td></tr>
-          <tr><td>Transparency</td><td>Public prices, volumes, OI</td><td>Private - reported post-trade</td></tr>
-          <tr><td>Liquidity</td><td>High for major contracts</td><td>Depends on relationship</td></tr>
-          <tr><td>Indian example</td><td>Nifty50 futures, USD/INR futures</td><td>USD/INR 3-month forward with a bank</td></tr>
-        </tbody>
-      </table>
-
-      <div class="callout callout-blue" style="margin-top:18px">
-        <strong>Central Clearing:</strong> Exchange-traded derivatives eliminate counterparty risk through a central counterparty (CCP). In India, the <strong>NSE Clearing Ltd (NSCCL)</strong> stands between every buyer and seller. If one party defaults, the CCP covers the loss from the margin pool.
-      </div>
-    </section>
-
-    <section class="content-section">
-      <h2 class="cs-title">Long and Short Positions</h2>
-      <p>Every derivative trade involves exactly two sides - a long and a short. Understanding which side you are on, and how you profit or lose, is the foundation of all further analysis.</p>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px">
-        <div class="concept-card" style="border-left:4px solid #2D6A4F">
-          <div class="cc-title" style="color:#2D6A4F">Long Position</div>
-          <div class="cc-body">
-            You <strong>buy</strong> (or agree to buy) the asset. You profit when the price <strong>rises</strong>. You lose when the price falls.<br/><br/>
-            <em>Examples:</em> Buying a call option. Taking the buy side of a futures contract. Buying shares.
-          </div>
-        </div>
-        <div class="concept-card" style="border-left:4px solid #c0392b">
-          <div class="cc-title" style="color:#c0392b">Short Position</div>
-          <div class="cc-body">
-            You <strong>sell</strong> (or agree to sell) the asset. You profit when the price <strong>falls</strong>. You lose when the price rises.<br/><br/>
-            <em>Examples:</em> Writing a call option. Taking the sell side of a futures contract. Short-selling shares.
-          </div>
-        </div>
-      </div>
-
-      <h3 style="margin:24px 0 10px;font-size:1rem;color:var(--navy)">Payoff at Expiry</h3>
-      <div class="formula-box">
-        Long futures payoff = F<sub>T</sub> - F<sub>0</sub><br/>
-        Short futures payoff = F<sub>0</sub> - F<sub>T</sub><br/><br/>
-        where F<sub>0</sub> = entry price, F<sub>T</sub> = closing or expiry price
-      </div>
-
-      <table class="example-table" style="margin-top:16px">
-        <thead>
-          <tr><th>Expiry Price F<sub>T</sub></th><th>Long P&amp;L (F<sub>0</sub> = 22,000, lot 50)</th><th>Short P&amp;L</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>21,500</td><td class="text-red">-Rs 25,000</td><td class="text-green">+Rs 25,000</td></tr>
-          <tr><td>22,000</td><td>Rs 0</td><td>Rs 0</td></tr>
-          <tr><td>22,500</td><td class="text-green">+Rs 25,000</td><td class="text-red">-Rs 25,000</td></tr>
-          <tr><td>23,000</td><td class="text-green">+Rs 50,000</td><td class="text-red">-Rs 50,000</td></tr>
-        </tbody>
-      </table>
-      <p style="font-size:.8125rem;color:var(--text-3);margin-top:6px">P&amp;L = (F<sub>T</sub> - F<sub>0</sub>) x lot size x contracts</p>
-
-      <div class="callout callout-gold" style="margin-top:18px">
-        <strong>Zero-sum game:</strong> The long's gain is exactly equal to the short's loss and vice versa. Derivatives do not create wealth - they <em>transfer</em> risk from those who do not want it to those who do.
-      </div>
-    </section>
-
-    <section class="content-section">
-      <h2 class="cs-title">Worked Example</h2>
-      <p><strong>Scenario:</strong> Arjun is bullish on Nifty. He buys one Nifty50 futures contract at <strong>Rs 22,000</strong>. The lot size is 50 units.</p>
-      <table class="example-table" style="margin-top:14px">
-        <thead><tr><th>Outcome at Expiry</th><th>Nifty closes at</th><th>Arjun's P&amp;L</th><th>What happened</th></tr></thead>
-        <tbody>
-          <tr><td>Bullish view correct</td><td>22,350</td><td class="text-green">+Rs 17,500</td><td>(22,350 - 22,000) x 50</td></tr>
-          <tr><td>Sideways</td><td>22,000</td><td>Rs 0</td><td>No movement</td></tr>
-          <tr><td>Bearish move</td><td>21,700</td><td class="text-red">-Rs 15,000</td><td>(21,700 - 22,000) x 50</td></tr>
-        </tbody>
-      </table>
-      <p style="margin-top:12px">Notice that if Arjun had simply bought the underlying exposure directly, he would have needed much more capital. The futures allowed him to take the same economic view with a lower upfront outlay.</p>
-    </section>
-
-    <section class="content-section">
-      <h2 class="cs-title">Practice Problem</h2>
-      <p><strong>Problem 1.1:</strong> Priya shorts one Nifty50 futures contract at <strong>Rs 21,800</strong> (lot size = 50). The contract closes at expiry at <strong>Rs 21,600</strong>. What is her total P&amp;L on the position (in Rs)?</p>
-      <p style="font-size:.875rem;color:var(--text-2);margin:8px 0">Enter your answer (positive = profit, negative = loss):</p>
-      <div class="practice-block" data-answer="10000" data-tol="10" data-section="1.1" data-problem-id="p1-1">
-        <div class="input-row">
-          <span class="input-label">P&amp;L (Rs)</span>
-          <input class="answer-input" type="number" placeholder="e.g. 10000" />
-          <button class="check-btn">Check answer</button>
-        </div>
-        <div class="feedback-box" style="display:none"></div>
-        <div class="steps-panel" style="display:none">
-          <strong>Step-by-step solution:</strong><br/>
-          Short P&amp;L = (F<sub>0</sub> - F<sub>T</sub>) x lot size<br/>
-          = (21,800 - 21,600) x 50<br/>
-          = 200 x 50<br/>
-          = <strong>Rs 10,000 profit</strong><br/><br/>
-          Priya sold at 21,800 and the price fell to 21,600, so the short position gained Rs 200 per unit x 50 units.
-        </div>
-        <button class="steps-btn" style="margin-top:10px">Show steps</button>
-      </div>
-    </section>
-
-    <section class="content-section">
-      <h2 class="cs-title">Quick Check</h2>
-
-      <div class="quiz-block" data-quiz-id="q1-1"
-           data-feedback-correct="Correct! Exchange-traded derivatives use central clearing (NSCCL in India) to eliminate counterparty risk."
-           data-feedback-wrong="Not quite - see the highlighted answer.">
-        <p class="quiz-q">1. Which market uses standardised contracts and central clearing to eliminate counterparty risk?</p>
+      <div class="quiz-block" data-quiz-id="q1-1" data-feedback-correct="Correct." data-feedback-wrong="Check the highlighted answer.">
+        <p class="quiz-q">1. Which market uses standardised contracts and central clearing?</p>
         <ul class="quiz-opts">
-          <li data-correct="true">Exchange-traded (e.g. NSE)</li>
+          <li data-correct="true">Exchange-traded market</li>
           <li>OTC bilateral market</li>
-          <li>Forward market</li>
-          <li>Swap market</li>
+          <li>Forward market only</li>
+          <li>Private spot market only</li>
         </ul>
-        <div class="quiz-feedback" style="display:none"></div>
+        <div class="quiz-feedback"></div>
       </div>
-
-      <div class="quiz-block" data-quiz-id="q1-2"
-           data-feedback-correct="Correct! Long payoff = F_T - F_0. When F_T is above F_0, the long profits."
-           data-feedback-wrong="Not quite - see the highlighted answer.">
-        <p class="quiz-q">2. An investor who is long a futures contract benefits when the price:</p>
+      <div class="quiz-block" data-quiz-id="q1-2" data-feedback-correct="Correct." data-feedback-wrong="Check the highlighted answer.">
+        <p class="quiz-q">2. A long futures position benefits when price:</p>
         <ul class="quiz-opts">
-          <li>Falls below the entry price</li>
-          <li data-correct="true">Rises above the entry price</li>
-          <li>Stays exactly the same</li>
-          <li>Becomes more volatile</li>
+          <li>Falls</li>
+          <li data-correct="true">Rises</li>
+          <li>Never changes</li>
+          <li>Only becomes volatile</li>
         </ul>
-        <div class="quiz-feedback" style="display:none"></div>
+        <div class="quiz-feedback"></div>
       </div>
-
-      <div class="quiz-block" data-quiz-id="q1-3"
-           data-feedback-correct="Correct! Central clearing makes the CCP (NSCCL) the counterparty to every trade, eliminating bilateral default risk."
-           data-feedback-wrong="Not quite - see the highlighted answer.">
-        <p class="quiz-q">3. What primarily eliminates counterparty risk in exchange-traded derivatives?</p>
+      <div class="quiz-block" data-quiz-id="q1-3" data-feedback-correct="Correct." data-feedback-wrong="Check the highlighted answer.">
+        <p class="quiz-q">3. Squaring off means:</p>
         <ul class="quiz-opts">
-          <li>SEBI regulation alone</li>
-          <li>Large margin requirements</li>
-          <li data-correct="true">Central clearing through NSCCL</li>
-          <li>Credit default swaps</li>
+          <li data-correct="true">Taking the opposite trade and closing the open position</li>
+          <li>Doubling the same position</li>
+          <li>Waiting till expiry in all cases</li>
+          <li>Changing contract type</li>
         </ul>
-        <div class="quiz-feedback" style="display:none"></div>
+        <div class="quiz-feedback"></div>
       </div>
     </section>
-
   </main>
 
   <aside class="sidebar-right">
-
-    <div class="sr-card">
-      <div class="sr-card-title">Key Formulas</div>
-      <div class="formula-box" style="font-size:.8125rem">
-        Long P&amp;L = F<sub>T</sub> - F<sub>0</sub><br/>
-        Short P&amp;L = F<sub>0</sub> - F<sub>T</sub><br/>
-        x lot size x contracts
-      </div>
+    <div class="side-card">
+      <h3>Session 1.1</h3>
+      <ul class="side-list">
+        <li>Spot transaction</li>
+        <li>Short in spot market</li>
+        <li>Long and short</li>
+        <li>Square off</li>
+      </ul>
     </div>
-
-    <div class="sr-card">
-      <div class="sr-card-title">Hull Reference</div>
-      <p style="font-size:.8125rem;color:var(--text-2)">Hull, <em>Options, Futures and Other Derivatives</em>, Chapter 1: Introduction - derivative markets and instruments.</p>
+    <div class="side-card">
+      <h3>Next</h3>
+      <a class="inline-link" href="s1-2.html">Open Session 1.2</a>
     </div>
-
-    <div class="sr-card">
-      <div class="sr-card-title">Labs</div>
-      <a href="tools.html#futures-pricer" class="sr-link">Futures Pricer -></a>
-      <a href="tools.html#payoff-builder" class="sr-link">Payoff Builder -></a>
-    </div>
-
   </aside>
+</div>
 
-</div><!-- /page-inner -->
-
+<script src="site-config.js"></script>
 <script src="app.js"></script>
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-  DLab.requireSession();
-  DLab.renderNav('course.html');
-  DLab.renderSidebar('1.1');
-  DLab.setBreadcrumb([
-    { label: 'Home', href: 'course.html' },
-    { label: 'Derivative Basics', href: 'module1.html' },
-    { label: 'Markets, Longs & Shorts' }
-  ]);
-  DLab.initQuiz('.quiz-block', { sectionId: '1.1' });
-  DLab.initPractice('.practice-block');
-  DLab.track('MODULE_OPEN', { pageId: '1.1' });
-});
+  function bindChoiceGroup(groupId, feedbackId, correctText, wrongText) {
+    const group = document.getElementById(groupId);
+    const feedback = document.getElementById(feedbackId);
+    if (!group || !feedback) return;
+    const buttons = Array.from(group.querySelectorAll('.option-btn'));
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        buttons.forEach((b) => {
+          b.classList.remove('correct', 'wrong');
+          if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+        if (button.dataset.correct !== 'true') button.classList.add('wrong');
+        feedback.style.display = 'block';
+        feedback.textContent = button.dataset.correct === 'true' ? correctText : wrongText;
+      });
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const session = DLab.requireSession();
+    if (!session) return;
+
+    DLab.renderNav('course.html#module-map');
+    DLab.renderSidebar('1.1');
+    DLab.setBreadcrumb([
+      { label: 'Home', href: 'course.html' },
+      { label: 'Module 1', href: 'module1.html' },
+      { label: 'Session 1.1' }
+    ]);
+
+    bindChoiceGroup('spot-choices', 'spot-feedback', 'Correct. Spot means trade now, settlement now or near-now.', 'Not this one. Spot means immediate trade and settlement.');
+    bindChoiceGroup('short-choices', 'short-feedback', 'Correct. In spot short selling, the asset is borrowed first.', 'Not this one. Shorting in the spot market requires borrowing the asset first.');
+    bindChoiceGroup('longshort-choices', 'longshort-feedback', 'Correct. Buying a futures contract creates a long position.', 'Not this one. Buying futures creates a long position.');
+    bindChoiceGroup('squareoff-choices', 'squareoff-feedback', 'Correct. Square off means take the opposite trade and close the open position.', 'Not this one. Square off means take the opposite trade and close the open position.');
+
+    const checkSequence = document.getElementById('check-sequence');
+    const sequenceFeedback = document.getElementById('sequence-feedback');
+    if (checkSequence && sequenceFeedback) {
+      checkSequence.addEventListener('click', () => {
+        const inputs = Array.from(document.querySelectorAll('.sequence-item input'));
+        const ok = inputs.every((input) => String(input.value).trim() === String(input.dataset.seq));
+        sequenceFeedback.style.display = 'block';
+        sequenceFeedback.textContent = ok
+          ? 'Correct. Borrow, sell, buy back later, return the asset.'
+          : 'Try again. The correct order is: borrow, sell, buy back later, return the asset.';
+      });
+    }
+
+    DLab.initQuiz('.quiz-block', { sectionId: '1.1' });
+    DLab.initPractice('.practice-block');
+    DLab.track('MODULE_OPEN', { pageId: '1.1-activity' });
+  });
 </script>
 </body>
 </html>
