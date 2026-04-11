@@ -195,7 +195,7 @@ const DLab = {
    * @param {string} activeHref  href of the current page (highlights active link)
    * @param {string} containerId DOM id to inject into (default 'nav-root')
    */
-  renderNav(activeHref = '', containerId = 'nav-root') {
+  renderNav(activeHref = '', containerId = 'app-nav') {
     const s = this.getSession();
     const sid = (s && s.id) ? s.id : null;
     const studentLabel = s ? this.getStudentLabel(s) : '';
@@ -228,7 +228,7 @@ const DLab = {
         <div class="nav-links">${linksHtml}</div>
         <div class="nav-right">${studentHtml}</div>
       </nav>`;
-    const el = document.getElementById(containerId);
+    const el = document.getElementById(containerId) || document.getElementById('app-nav') || document.getElementById('nav-root');
     if (el) el.innerHTML = html;
   },
 
@@ -315,7 +315,7 @@ const DLab = {
       </div>`;
     }).join('');
 
-    const el = document.getElementById(containerId);
+    const el = document.getElementById(containerId) || document.getElementById('app-nav') || document.getElementById('nav-root');
     if (el) el.innerHTML = html;
   },
 
@@ -495,3 +495,4 @@ const DLab = {
 
 /* ─── EXPOSE GLOBALLY ────────────────────────────────────────── */
 window.DLab = DLab;
+
