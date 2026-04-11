@@ -199,15 +199,13 @@ const DLab = {
     const s = this.getSession();
     const sid = (s && s.id) ? s.id : null;
     const studentLabel = s ? this.getStudentLabel(s) : '';
-    const studentMeta = (s && s.email) ? s.email : '';
     const links = [
       { href: 'course.html', label: 'Home' },
       { href: 'course.html#module-map', label: 'Modules' },
       { href: 'assignments.html', label: 'Practice' },
-      { href: 'course.html#quiz-zone', label: 'Quizzes' },
       { href: 'tools.html', label: 'Labs' },
       { href: 'price-discovery.html', label: 'Market Games' },
-      { href: 'course.html#resource-zone', label: 'Resources' },
+      { href: 'course.html#resource-zone', label: 'More' },
     ];
     if (s && s.role === 'instructor') {
       links.push({ href: 'dashboard.html', label: 'Instructor' });
@@ -217,7 +215,7 @@ const DLab = {
       return `<a href="${l.href}" class="nav-link${active}">${l.label}</a>`;
     }).join('');
     const studentHtml = sid
-      ? `<span class="nav-student">${studentMeta ? `${studentLabel} · ${studentMeta}` : studentLabel}</span>
+      ? `<span class="nav-student">${studentLabel}</span>
          <button class="nav-btn" onclick="DLab.logout()">Sign out</button>`
       : `<button class="nav-btn" onclick="DLab.logout()">Sign out</button>`;
     const html = `
