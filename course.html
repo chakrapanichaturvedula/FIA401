@@ -104,7 +104,7 @@
     }
     .identity-panel {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
       gap: 14px;
       align-items: center;
       background: rgba(255,255,255,0.92);
@@ -137,50 +137,13 @@
       font-size: 0.9rem;
       line-height: 1.6;
     }
-    .identity-role {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 9px 12px;
-      border-radius: 999px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .identity-meta strong {
       color: var(--navy);
-      white-space: nowrap;
-    }
-    .hub-tabs {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-    }
-    .hub-tab {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 11px 16px;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(21,39,68,0.08);
-      border-radius: 14px;
-      font-size: 0.88rem;
       font-weight: 700;
-      color: var(--navy);
-      text-decoration: none;
-      box-shadow: 0 10px 24px rgba(21,39,68,0.06);
-      transition: transform .16s, box-shadow .16s, border-color .16s;
-    }
-    .hub-tab:hover {
-      transform: translateY(-2px);
-      border-color: rgba(21,39,68,0.18);
-      box-shadow: 0 14px 30px rgba(21,39,68,0.1);
     }
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 30px;
     }
@@ -449,8 +412,6 @@
       text-decoration: none;
     }
     .resource-card a:hover { text-decoration: underline; }
-    .instructor-link { display: none; }
-    .instructor-link.show { display: inline-flex; }
     @media (max-width: 980px) {
       .course-shell { padding: 84px 18px 58px; }
       .hero,
@@ -513,19 +474,7 @@
       <div class="identity-name" id="identityName">Student</div>
       <div class="identity-meta" id="identityMeta">Your signed-in identity will be used for course access, quizzes, labs, and market games.</div>
     </div>
-    <div class="identity-role" id="identityRole">Student</div>
   </section>
-
-  <nav class="hub-tabs">
-    <a class="hub-tab" href="course.html">Home</a>
-    <a class="hub-tab" href="#module-map">Modules</a>
-    <a class="hub-tab" href="assignments.html">Practice</a>
-    <a class="hub-tab" href="#quiz-zone">Quizzes</a>
-    <a class="hub-tab" href="tools.html">Labs</a>
-    <a class="hub-tab" href="price-discovery.html">Market Games</a>
-    <a class="hub-tab" href="#resource-zone">Resources</a>
-    <a class="hub-tab instructor-link" href="dashboard.html" id="instructorLink">Instructor</a>
-  </nav>
 
   <section class="summary-grid">
     <div class="summary-card">
@@ -535,10 +484,6 @@
     <div class="summary-card">
       <strong>6</strong>
       <span>Course modules</span>
-    </div>
-    <div class="summary-card">
-      <strong id="statStudent">-</strong>
-      <span>Student ID</span>
     </div>
     <div class="summary-card">
       <strong>90 min</strong>
@@ -738,16 +683,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   DLab.renderNav('course.html');
 
-  document.getElementById('statStudent').textContent = session.studentId || session.id;
   document.getElementById('identityName').textContent = DLab.getStudentLabel(session);
-  document.getElementById('identityMeta').textContent = session.email
-    ? `${session.email} | ${session.studentId || session.id}`
-    : (session.studentId || session.id);
-  document.getElementById('identityRole').textContent = session.role || 'student';
-
-  if (session.role === 'instructor') {
-    document.getElementById('instructorLink').classList.add('show');
-  }
+  document.getElementById('identityMeta').innerHTML = session.email
+    ? `<strong>${session.email}</strong>`
+    : 'Your signed-in identity will be used for course access, quizzes, labs, and market games.';
 
   const unlock = DLab.getUnlock();
   document.getElementById('statUnlocked').textContent = Object.values(unlock).filter(Boolean).length;
