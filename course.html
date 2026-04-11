@@ -3,521 +3,782 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DerivativesLab — FIA 401 Home</title>
+  <title>DerivativesLab - FIA 401</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* ── Hero ── */
-    .hero {
-      background: var(--navy);
-      color: #fff;
-      padding: 36px 0 32px;
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(0,119,182,0.08), transparent 24%),
+        linear-gradient(180deg, #eef4f8 0%, #f6f9fc 100%);
     }
-    .hero-inner {
-      max-width: 1140px;
+    .course-shell {
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 0 32px;
+      padding: 92px 28px 72px;
     }
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 100px;
-      padding: 4px 12px;
-      font-size: .72rem;
-      font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.80);
-      margin-bottom: 14px;
-    }
-    .hero-title {
-      font-size: 2rem;
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -.5px;
-      margin-bottom: 8px;
-    }
-    .hero-title span { color: #7eb8e0; }
-    .hero-desc {
-      font-size: .9375rem;
-      color: rgba(255,255,255,.68);
-      line-height: 1.6;
-      max-width: 640px;
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #152744 0%, #20385d 58%, #2d507d 100%);
+      border-radius: 28px;
+      padding: 38px 38px 34px;
+      color: #fff;
+      box-shadow: 0 24px 60px rgba(21,39,68,0.16);
       margin-bottom: 22px;
     }
-    .hero-stats {
-      display: flex;
-      gap: 28px;
+    .hero::after {
+      content: '';
+      position: absolute;
+      right: -100px;
+      top: -80px;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(126,184,224,0.22) 0%, transparent 68%);
+      pointer-events: none;
     }
-    .hero-stat-num {
-      font-size: 1.5rem;
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+      gap: 24px;
+      align-items: end;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      font-size: 0.73rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.82);
+    }
+    .hero h1 {
+      margin: 0 0 12px;
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      max-width: 680px;
+    }
+    .hero h1 span { color: #9fd3ef; }
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      color: rgba(255,255,255,0.76);
+      font-size: 0.98rem;
+      line-height: 1.75;
+    }
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .hero-stat {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .hero-stat strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1.45rem;
       font-weight: 800;
       color: #fff;
-      line-height: 1;
     }
-    .hero-stat-label {
-      font-size: .7rem;
-      color: rgba(255,255,255,.50);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-top: 2px;
-    }
-
-    /* ── Page container ── */
-    .page-body {
-      max-width: 1140px;
-      margin: 0 auto;
-      padding: 24px 32px 60px;
-    }
-
-    /* ── Quick-access toolbar ── */
-    .quick-bar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
+    .hero-stat span {
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.68);
     }
     .identity-panel {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
       align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(21,39,68,0.08);
+      border-radius: 22px;
       padding: 18px 20px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 28px rgba(21,39,68,0.08);
     }
     .identity-copy {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
     .identity-kicker {
-      font-size: .72rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      color: var(--text-3);
-      letter-spacing: .08em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      color: var(--text-3);
     }
     .identity-name {
-      font-size: 1.05rem;
+      font-size: 1.08rem;
       font-weight: 700;
       color: var(--navy);
     }
     .identity-meta {
-      font-size: .86rem;
       color: var(--text-2);
+      font-size: 0.9rem;
+      line-height: 1.6;
     }
-    .identity-pill {
+    .identity-role {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 8px 12px;
+      padding: 9px 12px;
       border-radius: 999px;
       background: var(--bg);
       border: 1px solid var(--border);
-      font-size: .76rem;
+      font-size: 0.75rem;
       font-weight: 700;
-      color: var(--navy);
       text-transform: uppercase;
-      letter-spacing: .06em;
+      letter-spacing: 0.08em;
+      color: var(--navy);
       white-space: nowrap;
     }
-    .quick-btn {
+    .hub-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .hub-tab {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 18px;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: .875rem;
-      font-weight: 600;
-      color: var(--navy);
-      text-decoration: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .quick-btn:hover {
-      border-color: var(--navy);
-      box-shadow: 0 2px 8px rgba(21,39,68,.10);
-    }
-    .quick-btn .qb-icon { font-size: 1.1rem; }
-
-    /* ── Section headings ── */
-    .section-heading {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .section-heading h2 {
-      font-size: 1.25rem;
+      padding: 11px 16px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(21,39,68,0.08);
+      border-radius: 14px;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--navy);
-    }
-    .section-heading .sh-count {
-      font-size: .8125rem;
-      color: var(--text-3);
-      font-weight: 500;
-    }
-
-    /* ── Module section rows ── */
-    .module-section { margin-bottom: 32px; }
-    .module-section-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 14px 20px;
-      border-radius: 10px 10px 0 0;
-      border-left: 4px solid;
-    }
-    .ms-num {
-      font-size: 1.5rem;
-      font-weight: 800;
-      opacity: .25;
-      font-family: var(--font-mono);
-    }
-    .ms-title { font-size: 1rem; font-weight: 700; }
-    .ms-badge { margin-left: auto; }
-
-    /* Color per section */
-    .ms-c1 { background: var(--c1-bg); border-color: var(--c1); }
-    .ms-c1 .ms-num, .ms-c1 .ms-title { color: var(--c1); }
-    .ms-c2 { background: var(--c2-bg); border-color: var(--c2); }
-    .ms-c2 .ms-num, .ms-c2 .ms-title { color: var(--c2); }
-    .ms-c3 { background: var(--c3-bg); border-color: var(--c3); }
-    .ms-c3 .ms-num, .ms-c3 .ms-title { color: var(--c3); }
-    .ms-c4 { background: var(--c4-bg); border-color: var(--c4); }
-    .ms-c4 .ms-num, .ms-c4 .ms-title { color: var(--c4); }
-    .ms-c5 { background: var(--c5-bg); border-color: var(--c5); }
-    .ms-c5 .ms-num, .ms-c5 .ms-title { color: var(--c5); }
-
-    /* ── Module cards grid ── */
-    .module-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 14px;
-      padding: 16px 0 4px;
-    }
-
-    .module-card {
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 20px;
       text-decoration: none;
-      color: var(--text);
-      transition: box-shadow .2s, border-color .2s, transform .15s;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      position: relative;
+      box-shadow: 0 10px 24px rgba(21,39,68,0.06);
+      transition: transform .16s, box-shadow .16s, border-color .16s;
     }
-    .module-card:hover:not(.locked) {
-      box-shadow: 0 4px 16px rgba(21,39,68,.10);
-      border-color: #c5cdd8;
+    .hub-tab:hover {
       transform: translateY(-2px);
+      border-color: rgba(21,39,68,0.18);
+      box-shadow: 0 14px 30px rgba(21,39,68,0.1);
     }
-    .module-card.locked {
-      cursor: default;
-      opacity: .58;
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 30px;
     }
-
-    .mc-id {
-      font-family: var(--font-mono);
-      font-size: .75rem;
-      font-weight: 600;
-      color: var(--text-3);
+    .summary-card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(21,39,68,0.08);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 12px 28px rgba(21,39,68,0.06);
     }
-    .mc-title {
-      font-size: .9375rem;
-      font-weight: 600;
+    .summary-card strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1.55rem;
+      font-weight: 800;
       color: var(--navy);
-      line-height: 1.35;
     }
-    .mc-meta {
-      font-size: .8rem;
+    .summary-card span {
+      display: block;
       color: var(--text-3);
-      margin-top: auto;
-    }
-    .mc-lock {
-      position: absolute;
-      top: 14px; right: 14px;
-      font-size: 1rem;
-      opacity: .5;
-    }
-    .mc-badge { font-size: .7rem; }
-
-    /* ── Tools strip ── */
-    .tools-strip {
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 24px 28px;
-      margin-bottom: 48px;
-    }
-    .tools-strip h3 {
-      font-size: .9375rem;
+      font-size: 0.76rem;
       font-weight: 700;
-      color: var(--navy);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .section { margin-bottom: 34px; }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
       margin-bottom: 16px;
     }
-    .tools-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+    .section-head h2 {
+      margin: 0;
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.45rem;
+      letter-spacing: -0.04em;
+      color: var(--navy);
     }
-    .tool-chip {
+    .section-head p {
+      margin: 6px 0 0;
+      color: var(--text-2);
+      font-size: 0.92rem;
+    }
+    .section-note {
+      font-size: 0.8rem;
+      color: var(--text-3);
+      font-weight: 600;
+    }
+    .path-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 18px;
+    }
+    .feature-card,
+    .stack-card,
+    .module-card,
+    .resource-card {
+      background: rgba(255,255,255,0.94);
+      border: 1px solid rgba(21,39,68,0.08);
+      border-radius: 24px;
+      box-shadow: 0 14px 30px rgba(21,39,68,0.06);
+    }
+    .feature-card { padding: 26px; }
+    .feature-card .eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: 100px;
-      font-size: .8125rem;
-      font-weight: 500;
-      color: var(--navy);
-      text-decoration: none;
-      transition: border-color .2s, background .2s;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--c2);
     }
-    .tool-chip:hover { border-color: var(--navy); background: var(--card); }
-
-    /* ── Progress row ── */
-    .progress-row {
+    .feature-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+      line-height: 1.15;
+      color: var(--navy);
+      letter-spacing: -0.04em;
+    }
+    .feature-card p {
+      margin: 0 0 18px;
+      color: var(--text-2);
+      line-height: 1.7;
+      max-width: 620px;
+    }
+    .feature-tags,
+    .mini-tags {
       display: flex;
-      gap: 14px;
-      margin-bottom: 28px;
+      gap: 10px;
       flex-wrap: wrap;
     }
-    .progress-card {
-      flex: 1;
-      min-width: 140px;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 18px;
-    }
-    .progress-card .pc-num {
-      font-size: 1.5rem;
-      font-weight: 800;
+    .feature-tag,
+    .mini-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
       color: var(--navy);
-      line-height: 1;
-      margin-bottom: 3px;
+      font-size: 0.76rem;
+      font-weight: 700;
     }
-    .progress-card .pc-label {
-      font-size: .75rem;
-      font-weight: 600;
-      color: var(--text-3);
+    .feature-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .primary-link,
+    .secondary-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: transform .16s, box-shadow .16s;
+    }
+    .primary-link {
+      background: var(--navy);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(21,39,68,0.16);
+    }
+    .secondary-link {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--navy);
+    }
+    .primary-link:hover,
+    .secondary-link:hover { transform: translateY(-1px); }
+    .stack-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .stack-card h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      color: var(--navy);
+    }
+    .mini-panel {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .mini-panel strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.96rem;
+      color: var(--navy);
+    }
+    .mini-panel p {
+      margin: 0 0 10px;
+      color: var(--text-2);
+      font-size: 0.88rem;
+      line-height: 1.65;
+    }
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .module-card {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .module-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+    }
+    .module-number {
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      letter-spacing: .06em;
+      color: var(--text-3);
+    }
+    .module-card h3 {
+      margin: 6px 0 0;
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.18rem;
+      color: var(--navy);
+      letter-spacing: -0.04em;
+    }
+    .module-pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .tone-c1 { color: var(--c1); background: var(--c1-bg); border-color: var(--c1-border); }
+    .tone-c2 { color: var(--c2); background: var(--c2-bg); border-color: var(--c2-border); }
+    .tone-c3 { color: var(--c3); background: var(--c3-bg); border-color: var(--c3-border); }
+    .tone-c4 { color: var(--c4); background: var(--c4-bg); border-color: var(--c4-border); }
+    .tone-c5 { color: var(--c5); background: var(--c5-bg); border-color: var(--c5-border); }
+    .module-desc {
+      margin: 0;
+      color: var(--text-2);
+      line-height: 1.72;
+      font-size: 0.92rem;
+    }
+    .module-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text-2);
+      display: grid;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+    .module-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: auto;
+    }
+    .module-link {
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .module-link:hover { text-decoration: underline; }
+    .module-progress {
+      font-size: 0.82rem;
+      color: var(--text-3);
+      font-weight: 600;
+    }
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .resource-card { padding: 20px; }
+    .resource-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.02rem;
+      color: var(--navy);
+    }
+    .resource-card p {
+      margin: 0 0 14px;
+      color: var(--text-2);
+      font-size: 0.9rem;
+      line-height: 1.68;
+    }
+    .resource-card a {
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: none;
+    }
+    .resource-card a:hover { text-decoration: underline; }
+    .instructor-link { display: none; }
+    .instructor-link.show { display: inline-flex; }
+    @media (max-width: 980px) {
+      .course-shell { padding: 84px 18px 58px; }
+      .hero,
+      .feature-card,
+      .stack-card,
+      .module-card,
+      .resource-card { border-radius: 20px; }
+      .hero-grid,
+      .path-grid,
+      .module-grid,
+      .resource-grid,
+      .summary-grid { grid-template-columns: 1fr; }
+      .hero { padding: 28px 24px; }
+      .hero-meta { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .hero-meta { grid-template-columns: 1fr; }
+      .identity-panel { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-
-<!-- Nav -->
 <div id="nav-root"></div>
 
-<!-- Hero -->
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-tag">📈 FIA 401 · Financial Derivatives · IMT Hyderabad</div>
-    <h1 class="hero-title">
-      Learn derivatives <span>by doing them.</span>
-    </h1>
-    <p class="hero-desc">
-      Simulations, live calculators, and interactive exercises built around
-      Hull's <em>Options, Futures, and Other Derivatives</em> (Chapters 3–6).
-    </p>
-    <div class="hero-stats">
-      <div><div class="hero-stat-num">5</div><div class="hero-stat-label">Sections</div></div>
-      <div><div class="hero-stat-num">14</div><div class="hero-stat-label">Modules</div></div>
-      <div><div class="hero-stat-num">10</div><div class="hero-stat-label">Calculators</div></div>
-      <div><div class="hero-stat-num">12</div><div class="hero-stat-label">Assignments</div></div>
+<main class="course-shell">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-kicker">FIA 401 | Financial Derivatives | IMT Hyderabad</div>
+        <h1>Build derivatives intuition through <span>concepts, practice, labs, and market games.</span></h1>
+        <p>
+          This course home is now organized around the actual academic flow of FIA 401. Students can move
+          from modules to practice, quizzes, labs, and the price discovery game without having to hunt through a cluttered interface.
+        </p>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-stat">
+          <strong>20</strong>
+          <span>planned class sessions across futures, options, hedging, pricing, Greeks, and simulation</span>
+        </div>
+        <div class="hero-stat">
+          <strong>6</strong>
+          <span>teaching modules built from your course handout and current learning assets</span>
+        </div>
+        <div class="hero-stat">
+          <strong>4</strong>
+          <span>learning modes: concept pages, solved practice, labs, and classroom market games</span>
+        </div>
+        <div class="hero-stat">
+          <strong>Next</strong>
+          <span>Module 1 becomes the visual template for the redesign of the rest of the course</span>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<!-- Page body -->
-<div class="page-body">
-
-  <div class="identity-panel">
+  <section class="identity-panel">
     <div class="identity-copy">
-      <div class="identity-kicker">Signed in as</div>
+      <div class="identity-kicker">Roster identity</div>
       <div class="identity-name" id="identityName">Student</div>
-      <div class="identity-meta" id="identityMeta">Your roster identity powers quizzes, assignments, and simulations.</div>
+      <div class="identity-meta" id="identityMeta">Your signed-in identity will be used for course access, quizzes, labs, and market games.</div>
     </div>
-    <div class="identity-pill" id="identityRole">Student</div>
-  </div>
+    <div class="identity-role" id="identityRole">Student</div>
+  </section>
 
-  <!-- Quick access -->
-  <div class="quick-bar">
-    <a href="tools.html"       class="quick-btn"><span class="qb-icon">🧮</span> Calculators</a>
-    <a href="simulation.html"  class="quick-btn"><span class="qb-icon">🎮</span> Futures Sim</a>
-    <a href="price-discovery.html" class="quick-btn"><span class="qb-icon">📊</span> Price Discovery</a>
-    <a href="assignments.html" class="quick-btn"><span class="qb-icon">📝</span> Assignments</a>
-    <a href="dashboard.html"   class="quick-btn" id="instructorBtn" style="display:none">
-      <span class="qb-icon">🎓</span> Instructor Dashboard
-    </a>
-  </div>
+  <nav class="hub-tabs">
+    <a class="hub-tab" href="course.html">Home</a>
+    <a class="hub-tab" href="#module-map">Modules</a>
+    <a class="hub-tab" href="assignments.html">Practice</a>
+    <a class="hub-tab" href="#quiz-zone">Quizzes</a>
+    <a class="hub-tab" href="tools.html">Labs</a>
+    <a class="hub-tab" href="price-discovery.html">Market Games</a>
+    <a class="hub-tab" href="#resource-zone">Resources</a>
+    <a class="hub-tab instructor-link" href="dashboard.html" id="instructorLink">Instructor</a>
+  </nav>
 
-  <!-- Progress row (populated by JS) -->
-  <div class="progress-row" id="progressRow">
-    <div class="progress-card">
-      <div class="pc-num" id="statUnlocked">1</div>
-      <div class="pc-label">Modules unlocked</div>
+  <section class="summary-grid">
+    <div class="summary-card">
+      <strong id="statUnlocked">0</strong>
+      <span>Session pages unlocked</span>
     </div>
-    <div class="progress-card">
-      <div class="pc-num" id="statQuizzes">—</div>
-      <div class="pc-label">Quizzes submitted</div>
+    <div class="summary-card">
+      <strong>6</strong>
+      <span>Course modules</span>
     </div>
-    <div class="progress-card">
-      <div class="pc-num" id="statAssign">—</div>
-      <div class="pc-label">Assignments attempted</div>
+    <div class="summary-card">
+      <strong id="statStudent">-</strong>
+      <span>Student ID</span>
     </div>
-    <div class="progress-card">
-      <div class="pc-num" id="statStudent">—</div>
-      <div class="pc-label">Student ID</div>
+    <div class="summary-card">
+      <strong>90 min</strong>
+      <span>Session duration</span>
     </div>
-  </div>
+  </section>
 
-  <!-- ── SECTION 1: Derivative Basics ── -->
-  <div class="module-section">
-    <div class="module-section-header ms-c1">
-      <span class="ms-num">01</span>
-      <span class="ms-title">Derivative Basics</span>
-      <span class="ms-badge"><span class="badge badge-c1">Hull Ch. 1–2</span></span>
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>How the Course Is Structured</h2>
+        <p>A cleaner academic front door: learn concepts first, then solve, test, and apply them.</p>
+      </div>
+      <div class="section-note">Teaching-first redesign</div>
     </div>
-    <div class="module-grid" id="grid-1"></div>
-  </div>
-
-  <!-- ── SECTION 2: Futures ── -->
-  <div class="module-section">
-    <div class="module-section-header ms-c2">
-      <span class="ms-num">02</span>
-      <span class="ms-title">Futures</span>
-      <span class="ms-badge"><span class="badge badge-c2">Hull Ch. 3–6</span></span>
+    <div class="path-grid">
+      <article class="feature-card">
+        <div class="eyebrow">Current Learning Path</div>
+        <h3>Move from concept pages to practice, then into labs and live market games.</h3>
+        <p>
+          The redesigned course home reduces navigation noise and makes the teaching sequence explicit.
+          Students should always know where to start, what to study next, and where the applied learning sits.
+        </p>
+        <div class="feature-tags">
+          <span class="feature-tag">Concept lessons</span>
+          <span class="feature-tag">Solved practice</span>
+          <span class="feature-tag">Short quizzes</span>
+          <span class="feature-tag">Interactive labs</span>
+          <span class="feature-tag">Price discovery game</span>
+        </div>
+        <div class="feature-actions">
+          <a class="primary-link" href="#module-map">Browse modules</a>
+          <a class="secondary-link" href="assignments.html">Open practice</a>
+          <a class="secondary-link" href="price-discovery.html">Enter market game</a>
+        </div>
+      </article>
+      <aside class="stack-card">
+        <h3>Course Areas</h3>
+        <div class="mini-panel">
+          <strong>Practice</strong>
+          <p>Solved exercises, assignment-style numericals, and revision work grouped more cleanly.</p>
+          <div class="mini-tags">
+            <span class="mini-tag">assignments</span>
+            <span class="mini-tag">worked examples</span>
+          </div>
+        </div>
+        <div class="mini-panel" id="quiz-zone">
+          <strong>Quizzes</strong>
+          <p>Concept checks stay inside lesson pages now, then later graduate into a central quiz hub.</p>
+          <div class="mini-tags">
+            <span class="mini-tag">session checks</span>
+            <span class="mini-tag">module revision</span>
+          </div>
+        </div>
+        <div class="mini-panel">
+          <strong>Labs and Games</strong>
+          <p>Calculators and pricing labs belong in Labs. Price discovery and classroom trading stay in Market Games.</p>
+          <div class="mini-tags">
+            <span class="mini-tag">tools</span>
+            <span class="mini-tag">simulation</span>
+            <span class="mini-tag">games</span>
+          </div>
+        </div>
+      </aside>
     </div>
-    <div class="module-grid" id="grid-2"></div>
-  </div>
+  </section>
 
-  <!-- ── SECTION 3: Options ── -->
-  <div class="module-section">
-    <div class="module-section-header ms-c3">
-      <span class="ms-num">03</span>
-      <span class="ms-title">Options</span>
-      <span class="ms-badge"><span class="badge badge-c3">Hull Ch. 9–13</span></span>
+  <section class="section" id="module-map">
+    <div class="section-head">
+      <div>
+        <h2>Module Map</h2>
+        <p>The site now follows the academic flow from the handout rather than a flat list of pages.</p>
+      </div>
+      <div class="section-note">6 modules</div>
     </div>
-    <div class="module-grid" id="grid-3"></div>
-  </div>
+    <div class="module-grid" id="moduleGrid"></div>
+  </section>
 
-  <!-- ── SECTION 4: Greeks ── -->
-  <div class="module-section">
-    <div class="module-section-header ms-c4">
-      <span class="ms-num">04</span>
-      <span class="ms-title">Greeks</span>
-      <span class="ms-badge"><span class="badge badge-c4">Hull Ch. 19</span></span>
+  <section class="section" id="resource-zone">
+    <div class="section-head">
+      <div>
+        <h2>Course Areas</h2>
+        <p>These are the major surfaces students will use after the redesign settles in.</p>
+      </div>
+      <div class="section-note">Student-facing hubs</div>
     </div>
-    <div class="module-grid" id="grid-4"></div>
-  </div>
-
-  <!-- ── SECTION 5: Simulation & Valuation ── -->
-  <div class="module-section">
-    <div class="module-section-header ms-c5">
-      <span class="ms-num">05</span>
-      <span class="ms-title">Simulation &amp; Valuation</span>
-      <span class="ms-badge"><span class="badge badge-c5">Hull Ch. 21</span></span>
+    <div class="resource-grid">
+      <article class="resource-card">
+        <h3>Practice</h3>
+        <p>Assignment-style problems, solved exercises, and revision numericals in one calmer place.</p>
+        <a href="assignments.html">Open practice</a>
+      </article>
+      <article class="resource-card">
+        <h3>Labs</h3>
+        <p>Pricing tools, calculators, futures simulation, and later the hedging and strategy builder workflows.</p>
+        <a href="tools.html">Open labs</a>
+      </article>
+      <article class="resource-card">
+        <h3>Market Games</h3>
+        <p>Role-based classroom play, price discovery, matching, and P&amp;L-led learning.</p>
+        <a href="price-discovery.html">Open market games</a>
+      </article>
     </div>
-    <div class="module-grid" id="grid-5"></div>
-  </div>
-
-  <!-- Tools quick strip -->
-  <div class="tools-strip">
-    <h3>🧮 Web Calculators &amp; Tools</h3>
-    <div class="tools-row">
-      <a href="tools.html#futures-pricer"    class="tool-chip">Futures Pricer</a>
-      <a href="tools.html#basis-tracker"     class="tool-chip">Basis Tracker</a>
-      <a href="tools.html#arbitrage"         class="tool-chip">Arbitrage Checker</a>
-      <a href="tools.html#forward-rate"      class="tool-chip">Forward Rate</a>
-      <a href="tools.html#hedge-ratio"       class="tool-chip">Hedge Ratio</a>
-      <a href="tools.html#binomial"          class="tool-chip">Binomial Pricer</a>
-      <a href="tools.html#black-scholes"     class="tool-chip">Black-Scholes</a>
-      <a href="tools.html#implied-vol"       class="tool-chip">Implied Vol Solver</a>
-      <a href="tools.html#payoff-builder"    class="tool-chip">Payoff Builder</a>
-      <a href="tools.html#greeks-dashboard"  class="tool-chip">Greeks Dashboard</a>
-    </div>
-  </div>
-
-</div><!-- /page-body -->
+  </section>
+</main>
 
 <script src="site-config.js"></script>
 <script src="app.js"></script>
 <script>
-/* ── Module manifest ── */
-const MODULES = [
-  { id:'1.1', sec:1, title:'Markets, Longs & Shorts',         href:'s1-1.html', desc:'Derivative markets, long/short positions' },
-  { id:'1.2', sec:1, title:'Trader Types',                    href:'s1-2.html', desc:'Speculators, hedgers, arbitrageurs' },
-  { id:'2.1', sec:2, title:'Futures Mechanics',               href:'s2-1.html', desc:'Forwards vs futures, OI, MTM, margins' },
-  { id:'2.2', sec:2, title:'Futures Pricing',                 href:'s2-2.html', desc:'Cost of carry, basis, contango, arbitrage' },
-  { id:'2.3', sec:2, title:'Currency Futures',                href:'s2-3.html', desc:'FX exposure, hedge execution, basis risk' },
-  { id:'2.4', sec:2, title:'Hedging Strategies',              href:'s2-4.html', desc:'MVH ratio, beta management, rolling hedge' },
-  { id:'3.1', sec:3, title:'Option Basics',                   href:'s3-1.html', desc:'Calls, puts, ITM/ATM/OTM, option chain' },
-  { id:'3.2', sec:3, title:'Option Strategies',               href:'s3-2.html', desc:'Protective put, covered call, combinations' },
-  { id:'3.3', sec:3, title:'Option Pricing',                  href:'s3-3.html', desc:'Binomial model, Black-Scholes model' },
-  { id:'3.4', sec:3, title:'Volatility',                      href:'s3-4.html', desc:'Hist vs implied vol, smile, put-call parity' },
-  { id:'4.1', sec:4, title:'Delta & Gamma',                   href:'s4-1.html', desc:'First and second order price sensitivity' },
-  { id:'4.2', sec:4, title:'Theta, Vega & Rho',               href:'s4-2.html', desc:'Time decay, vol sensitivity, rate sensitivity' },
-  { id:'4.3', sec:4, title:'Delta Neutrality',                href:'s4-3.html', desc:'Hedging a portfolio to zero delta' },
-  { id:'5.1', sec:5, title:'Monte Carlo Simulation',          href:'s5-1.html', desc:'GBM, random paths, convergence' },
+const LESSONS = [
+  { id: '1.1', href: 's1-1.html' },
+  { id: '1.2', href: 's1-2.html' },
+  { id: '2.1', href: 's2-1.html' },
+  { id: '2.2', href: 's2-2.html' },
+  { id: '2.3', href: 's2-3.html' },
+  { id: '2.4', href: 's2-4.html' },
+  { id: '3.1', href: 's3-1.html' },
+  { id: '3.2', href: 's3-2.html' },
+  { id: '3.3', href: 's3-3.html' },
+  { id: '3.4', href: 's3-4.html' },
+  { id: '4.1', href: 's4-1.html' },
+  { id: '4.2', href: 's4-2.html' },
+  { id: '4.3', href: 's4-3.html' },
+  { id: '5.1', href: 's5-1.html' }
 ];
 
+const COURSE_MODULES = [
+  {
+    number: 'Module 1',
+    title: 'Foundations of Derivatives',
+    tone: 'tone-c1',
+    sessions: 'Sessions 1-3',
+    link: 'module1.html',
+    summary: 'Introduction to derivatives, longs and shorts, market structure, and trader roles.',
+    topics: ['markets and instruments', 'spot versus derivatives', 'speculators, hedgers, arbitrageurs'],
+    lessons: ['1.1', '1.2']
+  },
+  {
+    number: 'Module 2',
+    title: 'Futures Pricing and Basis',
+    tone: 'tone-c2',
+    sessions: 'Sessions 4-5',
+    link: 'module2.html',
+    summary: 'Futures mechanics, cost of carry, basis, convergence, and arbitrage logic.',
+    topics: ['futures mechanics', 'pricing and basis', 'hedging logic'],
+    lessons: ['2.1', '2.2', '2.3', '2.4']
+  },
+  {
+    number: 'Module 3',
+    title: 'Options Foundations',
+    tone: 'tone-c3',
+    sessions: 'Sessions 6-7',
+    link: 'module3.html',
+    summary: 'Option market basics, payoff intuition, and the language of calls and puts.',
+    topics: ['calls and puts', 'moneyness', 'option chain thinking'],
+    lessons: ['3.1']
+  },
+  {
+    number: 'Module 4',
+    title: 'Hedging and Risk Management',
+    tone: 'tone-c4',
+    sessions: 'Sessions 8 and 15',
+    link: 'module4.html',
+    summary: 'Risk transfer, hedging design, and real-business use of derivatives.',
+    topics: ['futures hedging', 'options hedging', 'case-based application'],
+    lessons: ['2.4', '4.3']
+  },
+  {
+    number: 'Module 5',
+    title: 'Options Strategies and Pricing',
+    tone: 'tone-c5',
+    sessions: 'Sessions 9-14',
+    link: 'module5.html',
+    summary: 'Trading strategies, binomial trees, and Black-Scholes pricing intuition.',
+    topics: ['strategy design', 'binomial trees', 'Black-Scholes'],
+    lessons: ['3.2', '3.3', '3.4']
+  },
+  {
+    number: 'Module 6',
+    title: 'Greeks, Exotics, and Simulation',
+    tone: 'tone-c1',
+    sessions: 'Sessions 16-20',
+    link: 'module7.html',
+    summary: 'Sensitivity analysis, exotic options, and Monte Carlo-based valuation thinking.',
+    topics: ['option Greeks', 'exotic structures', 'Monte Carlo simulation'],
+    lessons: ['4.1', '4.2', '5.1']
+  }
+];
+
+function countUnlockedLessons(unlockMap, lessonIds) {
+  return lessonIds.filter((id) => !!unlockMap[id]).length;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  const s = DLab.requireSession();
-  if (!s) return;
+  const session = DLab.requireSession();
+  if (!session) return;
 
-  /* Populate student stats */
-  document.getElementById('statStudent').textContent = s.studentId || s.id;
-  document.getElementById('identityName').textContent = DLab.getStudentLabel(s);
-  document.getElementById('identityMeta').textContent = s.email
-    ? `${s.email} · ${s.studentId || s.id}`
-    : (s.studentId || s.id);
-  document.getElementById('identityRole').textContent = s.role || 'student';
-  const unlock = DLab.getUnlock();
-  const numUnlocked = Object.values(unlock).filter(Boolean).length;
-  document.getElementById('statUnlocked').textContent = numUnlocked;
-
-  /* Render nav */
   DLab.renderNav('course.html');
 
-  /* Build module cards */
-  MODULES.forEach(m => {
-    const locked = !unlock[m.id];
-    const grid = document.getElementById('grid-' + m.sec);
-    if (!grid) return;
+  document.getElementById('statStudent').textContent = session.studentId || session.id;
+  document.getElementById('identityName').textContent = DLab.getStudentLabel(session);
+  document.getElementById('identityMeta').textContent = session.email
+    ? `${session.email} | ${session.studentId || session.id}`
+    : (session.studentId || session.id);
+  document.getElementById('identityRole').textContent = session.role || 'student';
 
-    const card = document.createElement(locked ? 'div' : 'a');
-    card.className = 'module-card' + (locked ? ' locked' : '');
-    if (!locked) card.href = m.href;
+  if (session.role === 'instructor') {
+    document.getElementById('instructorLink').classList.add('show');
+  }
 
+  const unlock = DLab.getUnlock();
+  document.getElementById('statUnlocked').textContent = Object.values(unlock).filter(Boolean).length;
+
+  const moduleGrid = document.getElementById('moduleGrid');
+  COURSE_MODULES.forEach((module) => {
+    const unlocked = countUnlockedLessons(unlock, module.lessons);
+    const lessonCount = module.lessons.length;
+    const card = document.createElement('article');
+    card.className = 'module-card';
     card.innerHTML = `
-      ${locked ? '<span class="mc-lock">🔒</span>' : ''}
-      <div class="mc-id">${m.id}</div>
-      <div class="mc-title">${m.title}</div>
-      <div class="mc-meta">${m.desc}</div>
+      <div class="module-top">
+        <div>
+          <div class="module-number">${module.number}</div>
+          <h3>${module.title}</h3>
+        </div>
+        <div class="module-pill ${module.tone}">${module.sessions}</div>
+      </div>
+      <p class="module-desc">${module.summary}</p>
+      <ul class="module-list">
+        ${module.topics.map((topic) => `<li>${topic}</li>`).join('')}
+      </ul>
+      <div class="module-footer">
+        <a class="module-link" href="${module.link}">Open module page</a>
+        <div class="module-progress">${unlocked}/${lessonCount} linked lessons open</div>
+      </div>
     `;
-    grid.appendChild(card);
+    moduleGrid.appendChild(card);
   });
 
-  /* Track page open */
-  DLab.track('HOME_OPEN');
+  DLab.track('HOME_OPEN', { view: 'redesign-v1' });
 });
 </script>
 </body>
