@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Module 1 - Foundations of Derivatives</title>
+<title>Module 1 Journey - Foundations of Derivatives</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -11,465 +11,682 @@
 <style>
   body {
     background:
-      radial-gradient(circle at top right, rgba(0,119,182,0.08), transparent 24%),
+      radial-gradient(circle at top right, rgba(8, 145, 178, 0.09), transparent 24%),
+      radial-gradient(circle at bottom left, rgba(29, 78, 216, 0.08), transparent 28%),
       linear-gradient(180deg, #eef4f8 0%, #f7fafc 100%);
   }
-  .module-shell {
+  .journey-shell {
     max-width: 1180px;
     margin: 0 auto;
     padding: 92px 28px 72px;
   }
-  .module-hero {
+  .journey-hero {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, #0f3558 0%, #18507d 58%, #1f6c9f 100%);
+    background: linear-gradient(140deg, #102f4c 0%, #174f7a 56%, #1570a6 100%);
     color: #fff;
-    border-radius: 28px;
-    padding: 34px 34px 30px;
-    box-shadow: 0 24px 56px rgba(15,53,88,0.18);
-    margin-bottom: 22px;
+    border-radius: 30px;
+    padding: 36px 36px 32px;
+    box-shadow: 0 26px 60px rgba(16, 47, 76, 0.18);
+    margin-bottom: 24px;
   }
-  .module-hero::after {
+  .journey-hero::before {
     content: '';
     position: absolute;
-    right: -90px;
-    top: -70px;
-    width: 280px;
-    height: 280px;
+    right: -120px;
+    top: -80px;
+    width: 320px;
+    height: 320px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 66%);
+    background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 68%);
   }
-  .module-hero-grid {
+  .journey-hero-grid {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.9fr);
     gap: 20px;
     align-items: end;
   }
-  .module-kicker {
+  .journey-kicker {
     display: inline-flex;
     align-items: center;
     gap: 10px;
     padding: 6px 12px;
     margin-bottom: 16px;
     border-radius: 999px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.16);
-    font-size: 0.73rem;
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-size: 0.74rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.84);
   }
-  .module-hero h1 {
-    margin: 0 0 10px;
+  .journey-hero h1 {
+    margin: 0 0 12px;
     font-family: 'Manrope', sans-serif;
-    font-size: clamp(2rem, 4.8vw, 3.3rem);
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
     line-height: 0.98;
     letter-spacing: -0.05em;
-    max-width: 700px;
+    max-width: 720px;
   }
-  .module-hero h1 span { color: #b7e0f4; }
-  .module-hero p {
+  .journey-hero h1 span { color: #b8e7f7; }
+  .journey-hero p {
     margin: 0;
-    max-width: 650px;
-    font-size: 0.98rem;
+    max-width: 680px;
+    font-size: 1rem;
     line-height: 1.72;
-    color: rgba(255,255,255,0.78);
+    color: rgba(255,255,255,0.8);
   }
-  .hero-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-  .hero-fact {
-    padding: 15px 16px;
-    border-radius: 18px;
+  .hero-panel {
     background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-  }
-  .hero-fact strong {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 1.25rem;
-    font-weight: 800;
-  }
-  .hero-fact span {
-    font-size: 0.81rem;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.7);
-  }
-  .module-strip {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 18px;
-    margin-bottom: 28px;
-  }
-  .overview-card,
-  .action-card,
-  .lesson-card,
-  .note-card,
-  .resource-card {
-    background: rgba(255,255,255,0.94);
-    border: 1px solid rgba(21,39,68,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
     border-radius: 24px;
-    box-shadow: 0 14px 30px rgba(21,39,68,0.06);
-  }
-  .overview-card,
-  .action-card {
-    padding: 24px;
-  }
-  .section-title {
-    margin: 0 0 8px;
-    font-family: 'Manrope', sans-serif;
-    font-size: 1.28rem;
-    color: var(--navy);
-    letter-spacing: -0.04em;
-  }
-  .section-copy {
-    margin: 0;
-    color: var(--text-2);
-    font-size: 0.93rem;
-    line-height: 1.72;
-  }
-  .bullet-list {
-    margin: 16px 0 0;
-    padding-left: 18px;
-    display: grid;
-    gap: 10px;
-    color: var(--text-2);
-    font-size: 0.9rem;
-  }
-  .bullet-list li strong {
-    color: var(--navy);
-  }
-  .mini-pill-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 18px;
-  }
-  .mini-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--navy);
-    font-size: 0.76rem;
-    font-weight: 700;
-  }
-  .action-stack {
-    display: grid;
-    gap: 12px;
-    margin-top: 18px;
-  }
-  .action-box {
-    padding: 14px 16px;
-    border-radius: 18px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-  }
-  .action-box strong {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.95rem;
-    color: var(--navy);
-  }
-  .action-box p {
-    margin: 0;
-    color: var(--text-2);
-    font-size: 0.88rem;
-    line-height: 1.62;
-  }
-  .lesson-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    margin-bottom: 28px;
-  }
-  .lesson-card {
     padding: 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+    backdrop-filter: blur(12px);
   }
-  .lesson-top {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .lesson-id {
-    font-size: 0.75rem;
+  .hero-panel-label {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--c1);
+    color: rgba(255,255,255,0.68);
   }
-  .lesson-card h3 {
-    margin: 6px 0 0;
-    font-size: 1.16rem;
-    font-family: 'Manrope', sans-serif;
-    color: var(--navy);
-    letter-spacing: -0.04em;
+  .hero-panel strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.08rem;
+    letter-spacing: -0.02em;
   }
-  .lesson-status {
-    padding: 8px 10px;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+  .hero-panel p {
+    font-size: 0.93rem;
+    line-height: 1.65;
+    color: rgba(255,255,255,0.78);
+  }
+  .hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .hero-metric {
+    border-radius: 18px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 14px 16px;
+  }
+  .hero-metric strong {
+    display: block;
+    font-size: 1.34rem;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .hero-metric span {
+    display: block;
+    font-size: 0.76rem;
     text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.68);
+  }
+  .section-card {
+    background: rgba(255,255,255,0.88);
+    border: 1px solid rgba(206, 218, 229, 0.92);
+    border-radius: 28px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+    padding: 28px;
+    margin-bottom: 22px;
+  }
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .section-header h2 {
+    margin: 0 0 6px;
+    font-family: 'Manrope', sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    letter-spacing: -0.04em;
+    color: #102a43;
+  }
+  .section-header p {
+    margin: 0;
+    max-width: 700px;
+    color: #52667a;
+    line-height: 1.65;
+  }
+  .section-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: #e7f1fb;
+    color: #1c4f7d;
     white-space: nowrap;
   }
-  .status-open {
-    color: var(--c1);
-    background: var(--c1-bg);
-    border: 1px solid var(--c1-border);
+  .two-up {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
   }
-  .status-locked {
-    color: var(--locked);
-    background: var(--locked-bg);
-    border: 1px solid rgba(160,174,192,0.35);
+  .note-block {
+    border-radius: 22px;
+    padding: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+    border: 1px solid #d7e4ef;
   }
-  .lesson-card p {
-    margin: 0;
-    color: var(--text-2);
-    line-height: 1.72;
-    font-size: 0.91rem;
+  .note-block h3 {
+    margin: 0 0 10px;
+    font-size: 1.02rem;
+    color: #12375a;
   }
-  .lesson-points {
+  .note-block p,
+  .note-block li {
+    color: #52667a;
+    line-height: 1.68;
+  }
+  .note-block ul,
+  .note-block ol {
     margin: 0;
     padding-left: 18px;
+  }
+  .journey-grid,
+  .track-grid,
+  .support-grid,
+  .next-grid {
+    display: grid;
+    gap: 18px;
+  }
+  .journey-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .track-grid,
+  .support-grid,
+  .next-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .journey-card,
+  .track-card,
+  .support-card,
+  .next-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border-radius: 24px;
+    padding: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+    border: 1px solid #d7e4ef;
+  }
+  .journey-card.locked,
+  .track-card.locked {
+    opacity: 0.68;
+  }
+  .card-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #e9f5ff;
+    color: #155a8f;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .card-state {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #5f7388;
+  }
+  .journey-card h3,
+  .track-card h3,
+  .support-card h3,
+  .next-card h3 {
+    margin: 0;
+    font-size: 1.18rem;
+    color: #102a43;
+    letter-spacing: -0.03em;
+  }
+  .journey-card p,
+  .track-card p,
+  .support-card p,
+  .next-card p {
+    margin: 0;
+    color: #52667a;
+    line-height: 1.68;
+  }
+  .card-list {
     display: grid;
     gap: 8px;
-    color: var(--text-2);
-    font-size: 0.89rem;
   }
-  .lesson-footer {
+  .card-list span {
     display: flex;
-    justify-content: space-between;
+    align-items: flex-start;
+    gap: 9px;
+    color: #29465f;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .card-list span::before {
+    content: '•';
+    color: #1d6fa5;
+    font-weight: 700;
+  }
+  .card-actions {
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     margin-top: auto;
   }
-  .lesson-link {
-    font-weight: 700;
-    color: var(--navy);
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 14px;
+    padding: 11px 16px;
+    background: #123e67;
+    color: #fff;
     text-decoration: none;
-  }
-  .lesson-link:hover { text-decoration: underline; }
-  .lesson-meta {
-    font-size: 0.8rem;
-    color: var(--text-3);
-    font-weight: 600;
-  }
-  .support-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-  }
-  .note-card,
-  .resource-card {
-    padding: 20px;
-  }
-  .note-card h3,
-  .resource-card h3 {
-    margin: 0 0 8px;
-    font-size: 1rem;
-    color: var(--navy);
-  }
-  .note-card p,
-  .resource-card p {
-    margin: 0 0 12px;
-    color: var(--text-2);
-    font-size: 0.89rem;
-    line-height: 1.68;
-  }
-  .resource-card a {
     font-weight: 700;
-    color: var(--navy);
-    text-decoration: none;
+    box-shadow: 0 12px 26px rgba(18, 62, 103, 0.16);
   }
-  .resource-card a:hover { text-decoration: underline; }
-  @media (max-width: 980px) {
-    .module-shell {
-      padding: 84px 18px 58px;
-    }
-    .module-hero-grid,
-    .module-strip,
-    .lesson-grid,
-    .support-grid {
+  .card-link:hover { transform: translateY(-1px); }
+  .card-link.is-muted {
+    background: rgba(18, 62, 103, 0.08);
+    color: #123e67;
+    box-shadow: none;
+  }
+  .duration-tag {
+    font-size: 0.78rem;
+    color: #6a7d8f;
+    white-space: nowrap;
+  }
+  @media (max-width: 1024px) {
+    .journey-hero-grid,
+    .journey-grid,
+    .track-grid,
+    .support-grid,
+    .next-grid,
+    .two-up {
       grid-template-columns: 1fr;
     }
-    .module-hero {
-      padding: 28px 24px;
-    }
   }
-  @media (max-width: 640px) {
-    .hero-facts {
+  @media (max-width: 720px) {
+    .journey-shell {
+      padding: 84px 18px 54px;
+    }
+    .journey-hero,
+    .section-card {
+      padding: 22px;
+      border-radius: 24px;
+    }
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .hero-metrics {
       grid-template-columns: 1fr;
+    }
+    .card-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .duration-tag {
+      white-space: normal;
     }
   }
 </style>
 </head>
 <body>
-<div id="nav-root"></div>
+<div id="app-nav"></div>
 
-<main class="module-shell">
-  <section class="module-hero">
-    <div class="module-hero-grid">
+<main class="journey-shell">
+  <section class="journey-hero">
+    <div class="journey-hero-grid">
       <div>
-        <div class="module-kicker">Module 1 | Sessions 1-3 | Foundations</div>
-        <h1>Start with the market basics before we <span>price, hedge, and trade.</span></h1>
+        <div class="journey-kicker">Module 1 Journey</div>
+        <h1>Learn the <span>market language first</span>, then build toward live futures thinking.</h1>
         <p>
-          Module 1 introduces the logic of derivatives markets: what a derivative is, how long and short positions work,
-          and why hedgers, speculators, and arbitrageurs all need each other for the market to function.
+          This module is designed as a student journey rather than a reading list. We begin with spot transactions,
+          long and short positions, and squaring off. Then we move into motive, trader hats, OTC versus exchange,
+          and finally the practical futures track with open interest, mark-to-market, and margin call.
         </p>
       </div>
-      <div class="hero-facts">
-        <div class="hero-fact">
-          <strong>2</strong>
-          <span>active lesson pages already available in this module</span>
-        </div>
-        <div class="hero-fact">
-          <strong>3</strong>
-          <span>core trader roles students must be able to distinguish clearly</span>
-        </div>
-        <div class="hero-fact">
-          <strong>1</strong>
-          <span>goal: build intuition before futures and options pricing get technical</span>
-        </div>
-        <div class="hero-fact">
-          <strong>Base</strong>
-          <span>this module becomes the design pattern for the rest of the course</span>
+      <div class="hero-panel">
+        <div class="hero-panel-label">Teaching Outcome</div>
+        <strong>Students should be able to read a simple market situation and explain what each trader is doing.</strong>
+        <p>
+          By the end of this journey, students should comfortably talk about spot, forwards, futures, hedging,
+          speculation, arbitrage, open interest, and daily settlement in classroom market language.
+        </p>
+        <div class="hero-metrics">
+          <div class="hero-metric">
+            <strong>3</strong>
+            <span>Core Sessions</span>
+          </div>
+          <div class="hero-metric">
+            <strong>4</strong>
+            <span>Practical Futures Pages</span>
+          </div>
+          <div class="hero-metric">
+            <strong>Activity</strong>
+            <span>First Design</span>
+          </div>
+          <div class="hero-metric">
+            <strong>Module 2</strong>
+            <span>Ready Next</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="module-strip">
-    <article class="overview-card">
-      <h2 class="section-title">What Students Should Leave With</h2>
-      <p class="section-copy">
-        By the end of this module, a student should be able to explain what derivatives are, distinguish spot and derivative exposures,
-        calculate the P&amp;L logic of long and short positions, and identify whether a participant is acting as a hedger, a speculator, or an arbitrageur.
-      </p>
-      <ul class="bullet-list">
-        <li><strong>Conceptual clarity:</strong> derivative contracts are agreements linked to an underlying, not the underlying itself.</li>
-        <li><strong>Position logic:</strong> every trade has a long and a short side, and profit/loss flips across the two sides.</li>
-        <li><strong>Role clarity:</strong> hedgers transfer risk, speculators absorb risk, arbitrageurs enforce price discipline.</li>
-      </ul>
-      <div class="mini-pill-row">
-        <span class="mini-pill">Hull Ch. 1-2</span>
-        <span class="mini-pill">Market structure</span>
-        <span class="mini-pill">Trader roles</span>
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <h2>How Students Move Through Module 1</h2>
+        <p>The goal is to reduce passive reading. Each part asks students to observe, sort, match, predict, and explain before they move on.</p>
       </div>
-    </article>
-
-    <aside class="action-card">
-      <h2 class="section-title">How to Use This Module</h2>
-      <p class="section-copy">The cleaner teaching sequence for this module is simple and repeatable.</p>
-      <div class="action-stack">
-        <div class="action-box">
-          <strong>1. Learn the basic language</strong>
-          <p>Start with markets, derivative contracts, and long/short intuition.</p>
-        </div>
-        <div class="action-box">
-          <strong>2. Test the role logic</strong>
-          <p>Work through how hedgers, speculators, and arbitrageurs respond differently to the same market move.</p>
-        </div>
-        <div class="action-box">
-          <strong>3. Then move forward</strong>
-          <p>Once this foundation is clear, futures pricing and hedging become much easier to understand.</p>
-        </div>
+      <div class="section-chip">Journey Logic</div>
+    </div>
+    <div class="two-up">
+      <div class="note-block">
+        <h3>What Students Should Leave With</h3>
+        <ul>
+          <li>A clear picture of what a spot transaction means.</li>
+          <li>Comfort with the ideas of long, short, and square off.</li>
+          <li>An intuitive distinction between hedging, speculation, and arbitrage.</li>
+          <li>Basic clarity on OTC versus exchange and forwards versus futures.</li>
+          <li>Enough practical vocabulary to read a futures contract screen sensibly.</li>
+        </ul>
       </div>
-    </aside>
+      <div class="note-block">
+        <h3>How To Use This Module</h3>
+        <ol>
+          <li><strong>See the transaction.</strong> Students first work with spot actions and position language.</li>
+          <li><strong>Understand the motive.</strong> They then ask why a participant is taking a position.</li>
+          <li><strong>Step into futures practice.</strong> Only after that do they enter contract, open interest, P&amp;L, and margin pages.</li>
+        </ol>
+      </div>
+    </div>
   </section>
 
-  <section>
-    <h2 class="section-title">Lesson Pages</h2>
-    <p class="section-copy" style="margin-bottom:18px;">These lesson pages already contain the teaching core. This module page now acts as the cleaner bridge into them.</p>
-    <div class="lesson-grid" id="lessonGrid"></div>
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <h2>Core Session Journey</h2>
+        <p>These are the main learning steps for Module 1. The first two already connect to your live lesson pages, and the third prepares students for the futures mechanics track.</p>
+      </div>
+      <div class="section-chip">Session Flow</div>
+    </div>
+    <div class="journey-grid" id="session-journey-grid"></div>
   </section>
 
-  <section class="support-grid">
-    <article class="note-card">
-      <h3>Teaching Note</h3>
-      <p>The strongest conceptual trap in Module 1 is that students think hedging is a strategy for making money. It is more important to establish certainty versus speculation here than to rush into formulas.</p>
-    </article>
-    <article class="note-card">
-      <h3>Link to Practice</h3>
-      <p>Once students finish the two lesson pages, move them into the assignments area so they can solve a few basic long/short and hedger/speculator problems.</p>
-      <a class="lesson-link" href="assignments.html">Open practice</a>
-    </article>
-    <article class="resource-card">
-      <h3>Next Step</h3>
-      <p>After this module, the course should flow naturally into futures mechanics, pricing, basis, and cost of carry.</p>
-      <a href="module2.html">Open Module 2</a>
-    </article>
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <h2>Bridges That Remove Confusion Early</h2>
+        <p>These support pages sit between basic derivative language and live futures mechanics, so students do not carry textbook confusion forward.</p>
+      </div>
+      <div class="section-chip">Support Pages</div>
+    </div>
+    <div class="support-grid">
+      <article class="support-card">
+        <div class="card-topline">
+          <div class="card-index">Bridge</div>
+          <div class="card-state">Language</div>
+        </div>
+        <h3>OTC, Exchange, Forwards, and Futures</h3>
+        <p>
+          This page should come before or immediately after futures are introduced. It tackles the exact confusion students face when both forwards and futures talk about future delivery, but only futures can usually be squared off more easily.
+        </p>
+        <div class="card-list">
+          <span>Private bilateral agreement versus standardized exchange-traded contract</span>
+          <span>Why it is easier to close an open futures position</span>
+          <span>Why forward language often feels more hold-to-expiry</span>
+        </div>
+        <div class="card-actions">
+          <a class="card-link is-muted" href="course.html#resource-zone">Add as bridge page</a>
+          <span class="duration-tag">Activity blueprint ready</span>
+        </div>
+      </article>
+      <article class="support-card">
+        <div class="card-topline">
+          <div class="card-index">Checks</div>
+          <div class="card-state">Consolidation</div>
+        </div>
+        <h3>Concept Checks and Module Quiz</h3>
+        <p>
+          Students should not move on by scrolling. They should complete quick match, sequence, true/false, and MCQ checks before they leave the module.
+        </p>
+        <div class="card-list">
+          <span>Spot versus not-spot</span>
+          <span>If you are not hedging, you are speculating</span>
+          <span>Arbitrage versus speculation</span>
+        </div>
+        <div class="card-actions">
+          <a class="card-link is-muted" href="course.html#resource-zone">Build concept checks next</a>
+          <span class="duration-tag">Question banks ready</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <h2>Practical Futures Track</h2>
+        <p>Once students understand the market language, they move into the practical block: reading contracts, understanding open interest, daily P&amp;L, and margin discipline.</p>
+      </div>
+      <div class="section-chip">After Session 3</div>
+    </div>
+    <div class="track-grid" id="futures-track-grid"></div>
+  </section>
+
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <h2>What This Unlocks Next</h2>
+        <p>Module 1 is not just an introduction. It sets the language, intuition, and classroom rhythm for the rest of the course.</p>
+      </div>
+      <div class="section-chip">Why It Matters</div>
+    </div>
+    <div class="next-grid">
+      <article class="next-card">
+        <h3>Module 2 Readiness</h3>
+        <p>
+          Once this journey is clear, students are ready for pricing logic, basis, and cost of carry without getting lost in basic vocabulary.
+        </p>
+      </article>
+      <article class="next-card">
+        <h3>Games and Simulations</h3>
+        <p>
+          Trader hats, price discovery, and role-based market games become much more meaningful when students already understand motive and position language.
+        </p>
+      </article>
+      <article class="next-card">
+        <h3>Teaching Standard</h3>
+        <p>
+          This module should become the standard page pattern for the rest of the site: activity first, short explanation second, and concept checks before exit.
+        </p>
+      </article>
+      <article class="next-card">
+        <h3>Seamless Navigation</h3>
+        <p>
+          The student should always feel where they are in the journey: session pages first, bridge pages next, then practical futures pages, then quizzes and games.
+        </p>
+      </article>
+    </div>
   </section>
 </main>
 
 <script src="site-config.js"></script>
 <script src="app.js"></script>
 <script>
-const MODULE1_LESSONS = [
-  {
-    id: '1.1',
-    title: 'Markets, Longs and Shorts',
-    href: 's1-1.html',
-    summary: 'What derivatives are, where they trade, and how long and short positions create opposite payoff logic.',
-    points: ['spot versus derivative exposure', 'exchange-traded versus OTC', 'payoff logic for long and short'],
-    readTime: '15 min'
-  },
-  {
-    id: '1.2',
-    title: 'Trader Types',
-    href: 's1-2.html',
-    summary: 'Why hedgers, speculators, and arbitrageurs all participate differently in the same market.',
-    points: ['hedger versus speculator', 'arbitrage intuition', 'role-based market interpretation'],
-    readTime: '15 min'
-  }
-];
+  (function () {
+    const session = DLab.requireSession();
+    DLab.renderNav('course.html');
 
-window.addEventListener('DOMContentLoaded', () => {
-  const session = DLab.requireSession();
-  if (!session) return;
+    const unlock = DLab.getUnlock();
 
-  DLab.renderNav('course.html');
-  const unlock = DLab.getUnlock();
-  const lessonGrid = document.getElementById('lessonGrid');
+    const sessionCards = [
+      {
+        index: '1.1',
+        title: 'Spot, Long, Short, and Square Off',
+        description: 'Students begin with real transactions and market language before any heavy derivative terminology shows up.',
+        points: [
+          'Spot or not-spot activity',
+          'Short selling in the spot market requires borrowing first',
+          'Square off and close the open position language'
+        ],
+        href: 's1-1.html',
+        duration: 'Session page live',
+        isLocked: false,
+        action: 'Open session'
+      },
+      {
+        index: '1.2',
+        title: 'Risk, Hedging, and Speculation',
+        description: 'Students ask why a trader takes a position and learn the difference between certainty-seeking and profit-seeking.',
+        points: [
+          'Existing exposure versus taking a view',
+          'Why not hedging is also a choice',
+          'Wrong question versus right question in hedging'
+        ],
+        href: 's1-2.html',
+        duration: 'Session page live',
+        isLocked: !(unlock.session >= 2 || unlock.module > 1),
+        action: unlock.session >= 2 || unlock.module > 1 ? 'Open session' : 'Unlock after Session 1'
+      },
+      {
+        index: '1.3',
+        title: 'Arbitrage and Trader Hats',
+        description: 'Students compare hedger, speculator, and arbitrageur responses to the same market situation before stepping into futures mechanics.',
+        points: [
+          'Arbitrage spotting activity',
+          'Same market move, different trader motive',
+          'Bridge into the practical futures track'
+        ],
+        href: 'course.html#resource-zone',
+        duration: 'Content ready to build',
+        isLocked: false,
+        action: 'Use as blueprint'
+      }
+    ];
 
-  MODULE1_LESSONS.forEach((lesson) => {
-    const isUnlocked = !!unlock[lesson.id];
-    const card = document.createElement('article');
-    card.className = 'lesson-card';
-    card.innerHTML = `
-      <div class="lesson-top">
-        <div>
-          <div class="lesson-id">Lesson ${lesson.id}</div>
-          <h3>${lesson.title}</h3>
-        </div>
-        <div class="lesson-status ${isUnlocked ? 'status-open' : 'status-locked'}">${isUnlocked ? 'Open' : 'Locked'}</div>
-      </div>
-      <p>${lesson.summary}</p>
-      <ul class="lesson-points">
-        ${lesson.points.map((point) => `<li>${point}</li>`).join('')}
-      </ul>
-      <div class="lesson-footer">
-        ${isUnlocked ? `<a class="lesson-link" href="${lesson.href}">Open lesson</a>` : `<span class="lesson-link">Unlock from course flow</span>`}
-        <div class="lesson-meta">${lesson.readTime}</div>
-      </div>
-    `;
-    lessonGrid.appendChild(card);
-  });
+    const futuresTrack = [
+      {
+        index: 'Track A',
+        title: 'Read a Live NSE Futures Contract',
+        description: 'Students inspect contract fields visually and learn lot size, contract size, open interest, volume, and expiry through hover or tap explanations.',
+        points: [
+          'Hover on desktop, tap on mobile',
+          'Learn contract vocabulary in context',
+          'Bridge from concept language to market screen literacy'
+        ],
+        href: 'course.html#resource-zone',
+        duration: 'Blueprint ready',
+        isLocked: false,
+        action: 'Build page'
+      },
+      {
+        index: 'Track B',
+        title: 'Open Interest and Volume',
+        description: 'Students learn how open interest changes, how it differs from volume, and how to read both on a futures screen.',
+        points: [
+          'New positions versus closed positions',
+          'Open interest up, down, or unchanged',
+          'Volume is not the same as open interest'
+        ],
+        href: 'course.html#resource-zone',
+        duration: 'Activity script ready',
+        isLocked: false,
+        action: 'Build page'
+      },
+      {
+        index: 'Track C',
+        title: 'Mark-to-Market P&L',
+        description: 'Students understand that futures gains and losses are settled daily and not just at expiry.',
+        points: [
+          'Who gains on a daily move',
+          'Daily settlement logic',
+          'Long versus short daily P&L'
+        ],
+        href: 'course.html#resource-zone',
+        duration: 'Activity script ready',
+        isLocked: false,
+        action: 'Build page'
+      },
+      {
+        index: 'Track D',
+        title: 'Margin and Margin Call',
+        description: 'Students learn why futures traders post margin, what maintenance margin means, and when a margin call happens.',
+        points: [
+          'Margin is not the full contract value',
+          'Maintenance margin trigger',
+          'Add funds or close the open position'
+        ],
+        href: 'course.html#resource-zone',
+        duration: 'Activity script ready',
+        isLocked: false,
+        action: 'Build page'
+      }
+    ];
 
-  DLab.track('MODULE_OPEN', { pageId: 'module-1', module: '1' });
-});
+    function renderCards(items, targetId) {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      target.innerHTML = items.map(function (item) {
+        const classes = item.isLocked ? 'journey-card locked' : (targetId === 'futures-track-grid' ? 'track-card' : 'journey-card');
+        const cardClass = targetId === 'futures-track-grid' ? (item.isLocked ? 'track-card locked' : 'track-card') : classes;
+        return `
+          <article class="${cardClass}">
+            <div class="card-topline">
+              <div class="card-index">${item.index}</div>
+              <div class="card-state">${item.isLocked ? 'Locked' : 'Available'}</div>
+            </div>
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
+            <div class="card-list">
+              ${item.points.map(function (point) { return `<span>${point}</span>`; }).join('')}
+            </div>
+            <div class="card-actions">
+              <a class="card-link${item.isLocked ? ' is-muted' : ''}" href="${item.href}">${item.action}</a>
+              <span class="duration-tag">${item.duration}</span>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    renderCards(sessionCards, 'session-journey-grid');
+    renderCards(futuresTrack, 'futures-track-grid');
+
+    DLab.track('MODULE_OPEN', {
+      pageId: 'module-1-journey',
+      module: '1',
+      studentId: session.studentId || null
+    });
+  })();
 </script>
 </body>
 </html>

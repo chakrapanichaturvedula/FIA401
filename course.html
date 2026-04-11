@@ -11,7 +11,8 @@
   <style>
     body {
       background:
-        radial-gradient(circle at top left, rgba(0,119,182,0.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(8,145,178,0.08), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(29,78,216,0.07), transparent 26%),
         linear-gradient(180deg, #eef4f8 0%, #f6f9fc 100%);
     }
     .course-shell {
@@ -22,28 +23,28 @@
     .hero {
       position: relative;
       overflow: hidden;
-      background: linear-gradient(135deg, #152744 0%, #20385d 58%, #2d507d 100%);
-      border-radius: 28px;
+      background: linear-gradient(140deg, #132b45 0%, #1a4c75 58%, #1371a4 100%);
+      border-radius: 30px;
       padding: 38px 38px 34px;
       color: #fff;
-      box-shadow: 0 24px 60px rgba(21,39,68,0.16);
+      box-shadow: 0 24px 60px rgba(19,43,69,0.16);
       margin-bottom: 22px;
     }
     .hero::after {
       content: '';
       position: absolute;
       right: -100px;
-      top: -80px;
+      top: -90px;
       width: 320px;
       height: 320px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(126,184,224,0.22) 0%, transparent 68%);
+      background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 68%);
       pointer-events: none;
     }
     .hero-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
-      gap: 24px;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
+      gap: 22px;
       align-items: end;
       position: relative;
       z-index: 1;
@@ -61,7 +62,7 @@
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.82);
+      color: rgba(255,255,255,0.84);
     }
     .hero h1 {
       margin: 0 0 12px;
@@ -69,56 +70,83 @@
       font-size: clamp(2.2rem, 5vw, 3.5rem);
       line-height: 0.98;
       letter-spacing: -0.05em;
-      max-width: 680px;
+      max-width: 700px;
     }
-    .hero h1 span { color: #9fd3ef; }
+    .hero h1 span { color: #b8e7f7; }
     .hero p {
       margin: 0;
-      max-width: 640px;
-      color: rgba(255,255,255,0.76);
+      max-width: 660px;
+      color: rgba(255,255,255,0.8);
       font-size: 0.98rem;
-      line-height: 1.75;
+      line-height: 1.74;
+    }
+    .hero-panel {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 24px;
+      padding: 22px;
+      backdrop-filter: blur(12px);
+    }
+    .hero-panel-label {
+      margin: 0 0 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.68);
+    }
+    .hero-panel strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.08rem;
+      letter-spacing: -0.02em;
+    }
+    .hero-panel p {
+      font-size: 0.93rem;
+      line-height: 1.66;
+      color: rgba(255,255,255,0.78);
     }
     .hero-meta {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
+      margin-top: 16px;
     }
     .hero-stat {
-      padding: 16px 18px;
+      padding: 14px 16px;
       border-radius: 18px;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.12);
     }
     .hero-stat strong {
       display: block;
-      margin-bottom: 4px;
-      font-size: 1.45rem;
+      margin-bottom: 5px;
+      font-size: 1.4rem;
       font-weight: 800;
       color: #fff;
     }
     .hero-stat span {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       line-height: 1.5;
       color: rgba(255,255,255,0.68);
+    }
+    .identity-panel,
+    .section-card,
+    .summary-card,
+    .module-card,
+    .surface-card,
+    .next-card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(21,39,68,0.08);
+      box-shadow: 0 14px 30px rgba(21,39,68,0.06);
     }
     .identity-panel {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 14px;
-      align-items: center;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(21,39,68,0.08);
+      gap: 8px;
       border-radius: 22px;
       padding: 18px 20px;
       margin-bottom: 18px;
-      box-shadow: 0 12px 28px rgba(21,39,68,0.08);
-    }
-    .identity-copy {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 0;
     }
     .identity-kicker {
       font-size: 0.72rem;
@@ -134,25 +162,26 @@
     }
     .identity-meta {
       color: var(--text-2);
-      font-size: 0.9rem;
-      line-height: 1.6;
+      font-size: 0.92rem;
+      line-height: 1.65;
     }
     .identity-meta strong {
       color: var(--navy);
       font-weight: 700;
     }
-    .summary-grid {
+    .summary-grid,
+    .surface-grid,
+    .next-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
-      margin-bottom: 30px;
+    }
+    .summary-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 28px;
     }
     .summary-card {
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(21,39,68,0.08);
       border-radius: 20px;
       padding: 18px;
-      box-shadow: 0 12px 28px rgba(21,39,68,0.06);
     }
     .summary-card strong {
       display: block;
@@ -169,146 +198,146 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
-    .section { margin-bottom: 34px; }
+    .section {
+      margin-bottom: 28px;
+    }
+    .section-card {
+      border-radius: 28px;
+      padding: 28px;
+    }
     .section-head {
       display: flex;
-      align-items: end;
+      align-items: flex-end;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     .section-head h2 {
-      margin: 0;
+      margin: 0 0 6px;
       font-family: 'Manrope', sans-serif;
-      font-size: 1.45rem;
+      font-size: clamp(1.42rem, 3vw, 2rem);
       letter-spacing: -0.04em;
       color: var(--navy);
     }
     .section-head p {
-      margin: 6px 0 0;
+      margin: 0;
       color: var(--text-2);
-      font-size: 0.92rem;
+      font-size: 0.94rem;
+      line-height: 1.65;
+      max-width: 760px;
     }
     .section-note {
-      font-size: 0.8rem;
-      color: var(--text-3);
-      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: #e7f1fb;
+      color: #1c4f7d;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
-    .path-grid {
+    .feature-grid {
       display: grid;
       grid-template-columns: 1.3fr 1fr;
       gap: 18px;
     }
     .feature-card,
-    .stack-card,
-    .module-card,
-    .resource-card {
-      background: rgba(255,255,255,0.94);
-      border: 1px solid rgba(21,39,68,0.08);
+    .stack-card {
       border-radius: 24px;
-      box-shadow: 0 14px 30px rgba(21,39,68,0.06);
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      border: 1px solid #d7e4ef;
+      padding: 24px;
     }
-    .feature-card { padding: 26px; }
-    .feature-card .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--c2);
-    }
-    .feature-card h3 {
+    .feature-card h3,
+    .stack-card h3 {
       margin: 0 0 10px;
-      font-size: 1.5rem;
-      line-height: 1.15;
-      color: var(--navy);
-      letter-spacing: -0.04em;
+      font-size: 1.22rem;
+      letter-spacing: -0.03em;
+      color: #102a43;
     }
-    .feature-card p {
-      margin: 0 0 18px;
-      color: var(--text-2);
+    .feature-card p,
+    .stack-card p {
+      margin: 0;
+      color: #52667a;
       line-height: 1.7;
-      max-width: 620px;
     }
     .feature-tags,
-    .mini-tags {
+    .mini-tags,
+    .module-list,
+    .journey-list {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
+    }
+    .feature-tags {
+      margin: 18px 0;
     }
     .feature-tag,
     .mini-tag {
       display: inline-flex;
       align-items: center;
-      padding: 6px 12px;
+      justify-content: center;
+      padding: 8px 12px;
       border-radius: 999px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--navy);
-      font-size: 0.76rem;
+      background: #edf5fb;
+      color: #1d4e75;
+      font-size: 0.8rem;
       font-weight: 700;
     }
     .feature-actions {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 12px;
       margin-top: 20px;
     }
     .primary-link,
-    .secondary-link {
+    .secondary-link,
+    .module-link,
+    .surface-link,
+    .next-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 12px 16px;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 16px;
       border-radius: 14px;
       text-decoration: none;
       font-weight: 700;
-      font-size: 0.9rem;
-      transition: transform .16s, box-shadow .16s;
     }
-    .primary-link {
-      background: var(--navy);
+    .primary-link,
+    .module-link,
+    .surface-link,
+    .next-link {
+      background: #123e67;
       color: #fff;
-      box-shadow: 0 12px 24px rgba(21,39,68,0.16);
+      box-shadow: 0 12px 26px rgba(18,62,103,0.16);
     }
     .secondary-link {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--navy);
+      background: rgba(18,62,103,0.08);
+      color: #123e67;
     }
-    .primary-link:hover,
-    .secondary-link:hover { transform: translateY(-1px); }
     .stack-card {
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .stack-card h3 {
-      margin: 0;
-      font-size: 1.08rem;
-      color: var(--navy);
+      display: grid;
+      gap: 12px;
     }
     .mini-panel {
-      padding: 14px 16px;
       border-radius: 18px;
-      background: var(--bg);
-      border: 1px solid var(--border);
+      padding: 16px;
+      background: #fff;
+      border: 1px solid #d8e6f1;
     }
     .mini-panel strong {
       display: block;
-      margin-bottom: 6px;
-      font-size: 0.96rem;
-      color: var(--navy);
+      margin-bottom: 8px;
+      color: #12375a;
     }
     .mini-panel p {
-      margin: 0 0 10px;
-      color: var(--text-2);
-      font-size: 0.88rem;
-      line-height: 1.65;
+      margin-bottom: 12px;
     }
     .module-grid {
       display: grid;
@@ -316,276 +345,395 @@
       gap: 18px;
     }
     .module-card {
+      border-radius: 24px;
       padding: 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
     }
     .module-top {
       display: flex;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 14px;
-      align-items: start;
+      margin-bottom: 14px;
     }
     .module-number {
       font-size: 0.76rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
       text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: var(--text-3);
+      margin-bottom: 6px;
     }
     .module-card h3 {
-      margin: 6px 0 0;
-      font-family: 'Manrope', sans-serif;
-      font-size: 1.18rem;
+      margin: 0;
+      font-size: 1.2rem;
+      letter-spacing: -0.03em;
       color: var(--navy);
-      letter-spacing: -0.04em;
     }
     .module-pill {
-      padding: 8px 10px;
+      padding: 9px 12px;
       border-radius: 999px;
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
       text-transform: uppercase;
+      letter-spacing: 0.08em;
       white-space: nowrap;
-      border: 1px solid transparent;
     }
-    .tone-c1 { color: var(--c1); background: var(--c1-bg); border-color: var(--c1-border); }
-    .tone-c2 { color: var(--c2); background: var(--c2-bg); border-color: var(--c2-border); }
-    .tone-c3 { color: var(--c3); background: var(--c3-bg); border-color: var(--c3-border); }
-    .tone-c4 { color: var(--c4); background: var(--c4-bg); border-color: var(--c4-border); }
-    .tone-c5 { color: var(--c5); background: var(--c5-bg); border-color: var(--c5-border); }
+    .tone-c1 { background: #e8f3fb; color: #1b537d; }
+    .tone-c2 { background: #eaf7f0; color: #1f6d4a; }
+    .tone-c3 { background: #f4ecff; color: #6a3faa; }
+    .tone-c4 { background: #fff3e4; color: #9a5a10; }
+    .tone-c5 { background: #fcecee; color: #9b3850; }
     .module-desc {
-      margin: 0;
+      margin: 0 0 14px;
       color: var(--text-2);
-      line-height: 1.72;
-      font-size: 0.92rem;
+      line-height: 1.68;
     }
     .module-list {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--text-2);
-      display: grid;
-      gap: 8px;
-      font-size: 0.9rem;
+      margin: 0 0 18px;
+      padding: 0;
+      list-style: none;
+    }
+    .module-list li {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eff6fb;
+      color: #28475f;
+      font-size: 0.82rem;
+      font-weight: 600;
     }
     .module-footer {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      margin-top: auto;
+      justify-content: space-between;
+      gap: 14px;
     }
-    .module-link {
-      font-weight: 700;
-      color: var(--navy);
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .module-link:hover { text-decoration: underline; }
     .module-progress {
-      font-size: 0.82rem;
       color: var(--text-3);
-      font-weight: 600;
+      font-size: 0.84rem;
     }
-    .resource-grid {
-      display: grid;
+    .surface-grid,
+    .next-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
     }
-    .resource-card { padding: 20px; }
-    .resource-card h3 {
-      margin: 0 0 8px;
-      font-size: 1.02rem;
+    .surface-card,
+    .next-card {
+      border-radius: 24px;
+      padding: 22px;
+    }
+    .surface-card h3,
+    .next-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.14rem;
       color: var(--navy);
+      letter-spacing: -0.03em;
     }
-    .resource-card p {
-      margin: 0 0 14px;
+    .surface-card p,
+    .next-card p {
+      margin: 0 0 16px;
       color: var(--text-2);
-      font-size: 0.9rem;
       line-height: 1.68;
     }
-    .resource-card a {
+    .journey-list {
+      margin: 0 0 16px;
+      padding: 0;
+      list-style: none;
+      gap: 8px;
+    }
+    .journey-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: #29465f;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+    .journey-list li::before {
+      content: '•';
+      color: #1d6fa5;
       font-weight: 700;
-      color: var(--navy);
-      text-decoration: none;
     }
-    .resource-card a:hover { text-decoration: underline; }
-    @media (max-width: 980px) {
-      .course-shell { padding: 84px 18px 58px; }
-      .hero,
-      .feature-card,
-      .stack-card,
-      .module-card,
-      .resource-card { border-radius: 20px; }
+    @media (max-width: 1024px) {
       .hero-grid,
-      .path-grid,
+      .feature-grid,
       .module-grid,
-      .resource-grid,
-      .summary-grid { grid-template-columns: 1fr; }
-      .hero { padding: 28px 24px; }
-      .hero-meta { grid-template-columns: 1fr 1fr; }
+      .surface-grid,
+      .next-grid,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
     }
-    @media (max-width: 640px) {
-      .hero-meta { grid-template-columns: 1fr; }
-      .identity-panel { grid-template-columns: 1fr; }
+    @media (max-width: 720px) {
+      .course-shell {
+        padding: 84px 18px 56px;
+      }
+      .hero,
+      .section-card,
+      .identity-panel,
+      .summary-card,
+      .module-card,
+      .surface-card,
+      .next-card {
+        border-radius: 24px;
+      }
+      .hero,
+      .section-card {
+        padding: 22px;
+      }
+      .section-head,
+      .module-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero-meta {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-<div id="nav-root"></div>
+<div id="app-nav"></div>
 
 <main class="course-shell">
   <section class="hero">
     <div class="hero-grid">
       <div>
-        <div class="hero-kicker">FIA 401 | Financial Derivatives | IMT Hyderabad</div>
-        <h1>Build derivatives intuition through <span>concepts, practice, labs, and market games.</span></h1>
+        <div class="hero-kicker">FIA 401 Course Home</div>
+        <h1>Build derivative intuition through <span>activities, market language, and guided journeys.</span></h1>
         <p>
-          This course home is now organized around the actual academic flow of FIA 401. Students can move
-          from modules to practice, quizzes, labs, and the price discovery game without having to hunt through a cluttered interface.
+          This course home is now organized around how students should actually learn: first the concepts,
+          then concept checks, then quizzes, then simulations and games. Module 1 sets the tone by moving
+          from spot transactions and trader motives into practical futures mechanics.
         </p>
       </div>
-      <div class="hero-meta">
-        <div class="hero-stat">
-          <strong>20</strong>
-          <span>planned class sessions across futures, options, hedging, pricing, Greeks, and simulation</span>
-        </div>
-        <div class="hero-stat">
-          <strong>6</strong>
-          <span>teaching modules built from your course handout and current learning assets</span>
-        </div>
-        <div class="hero-stat">
-          <strong>4</strong>
-          <span>learning modes: concept pages, solved practice, labs, and classroom market games</span>
-        </div>
-        <div class="hero-stat">
-          <strong>Next</strong>
-          <span>Module 1 becomes the visual template for the redesign of the rest of the course</span>
+      <div class="hero-panel">
+        <div class="hero-panel-label">Current Teaching Focus</div>
+        <strong>Module 1 is now the lead student journey for the redesigned site.</strong>
+        <p>
+          Students should feel a clear path: understand the transaction, understand the motive,
+          then step into contract screens, open interest, mark-to-market, and margin.
+        </p>
+        <div class="hero-meta">
+          <div class="hero-stat">
+            <strong>6</strong>
+            <span>Course Modules</span>
+          </div>
+          <div class="hero-stat">
+            <strong>1</strong>
+            <span>Module Journey Rebuilt</span>
+          </div>
+          <div class="hero-stat">
+            <strong>Activity</strong>
+            <span>First Pedagogy</span>
+          </div>
+          <div class="hero-stat">
+            <strong>Live</strong>
+            <span>Student Identity Enabled</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <section class="identity-panel">
-    <div class="identity-copy">
-      <div class="identity-kicker">Roster identity</div>
-      <div class="identity-name" id="identityName">Student</div>
-      <div class="identity-meta" id="identityMeta">Your signed-in identity will be used for course access, quizzes, labs, and market games.</div>
-    </div>
+    <div class="identity-kicker">Signed In As</div>
+    <div class="identity-name" id="identityName">Student</div>
+    <div class="identity-meta" id="identityMeta">Your institute email will be used for course access, quizzes, simulations, and games.</div>
   </section>
 
   <section class="summary-grid">
-    <div class="summary-card">
+    <article class="summary-card">
       <strong id="statUnlocked">0</strong>
-      <span>Session pages unlocked</span>
-    </div>
-    <div class="summary-card">
-      <strong>6</strong>
-      <span>Course modules</span>
-    </div>
-    <div class="summary-card">
-      <strong>90 min</strong>
-      <span>Session duration</span>
-    </div>
+      <span>Unlocked Learning Items</span>
+    </article>
+    <article class="summary-card">
+      <strong>Module 1</strong>
+      <span>Current Build Focus</span>
+    </article>
+    <article class="summary-card">
+      <strong>Activity-Led</strong>
+      <span>Teaching Direction</span>
+    </article>
   </section>
 
   <section class="section">
-    <div class="section-head">
-      <div>
-        <h2>How the Course Is Structured</h2>
-        <p>A cleaner academic front door: learn concepts first, then solve, test, and apply them.</p>
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <h2>Start Here</h2>
+          <p>The home page should always make the next step obvious. Right now, that means moving directly into the Module 1 journey rather than browsing isolated pages.</p>
+        </div>
+        <div class="section-note">Student Path</div>
       </div>
-      <div class="section-note">Teaching-first redesign</div>
-    </div>
-    <div class="path-grid">
-      <article class="feature-card">
-        <div class="eyebrow">Current Learning Path</div>
-        <h3>Move from concept pages to practice, then into labs and live market games.</h3>
-        <p>
-          The redesigned course home reduces navigation noise and makes the teaching sequence explicit.
-          Students should always know where to start, what to study next, and where the applied learning sits.
-        </p>
-        <div class="feature-tags">
-          <span class="feature-tag">Concept lessons</span>
-          <span class="feature-tag">Solved practice</span>
-          <span class="feature-tag">Short quizzes</span>
-          <span class="feature-tag">Interactive labs</span>
-          <span class="feature-tag">Price discovery game</span>
-        </div>
-        <div class="feature-actions">
-          <a class="primary-link" href="#module-map">Browse modules</a>
-          <a class="secondary-link" href="assignments.html">Open practice</a>
-          <a class="secondary-link" href="price-discovery.html">Enter market game</a>
-        </div>
-      </article>
-      <aside class="stack-card">
-        <h3>Course Areas</h3>
-        <div class="mini-panel">
-          <strong>Practice</strong>
-          <p>Solved exercises, assignment-style numericals, and revision work grouped more cleanly.</p>
-          <div class="mini-tags">
-            <span class="mini-tag">assignments</span>
-            <span class="mini-tag">worked examples</span>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3>Move from concept language into real market thinking.</h3>
+          <p>
+            Module 1 now introduces spot transactions, long and short positions, squaring off, hedging,
+            speculation, arbitrage, OTC versus exchange, and then the practical futures track. The idea is
+            to help students act, classify, and explain before they ever face a dense screen of text.
+          </p>
+          <div class="feature-tags">
+            <span class="feature-tag">spot transactions</span>
+            <span class="feature-tag">long and short</span>
+            <span class="feature-tag">hedger vs speculator</span>
+            <span class="feature-tag">arbitrage</span>
+            <span class="feature-tag">futures mechanics</span>
           </div>
-        </div>
-        <div class="mini-panel" id="quiz-zone">
-          <strong>Quizzes</strong>
-          <p>Concept checks stay inside lesson pages now, then later graduate into a central quiz hub.</p>
-          <div class="mini-tags">
-            <span class="mini-tag">session checks</span>
-            <span class="mini-tag">module revision</span>
+          <div class="feature-actions">
+            <a class="primary-link" href="module1.html">Open Module 1 Journey</a>
+            <a class="secondary-link" href="#module-map">Browse all modules</a>
+            <a class="secondary-link" href="#learning-surfaces">See learning surfaces</a>
           </div>
-        </div>
-        <div class="mini-panel">
-          <strong>More</strong>
-          <p>Quizzes and resources live under More for now, while calculators stay in Labs and classroom play stays in Market Games.</p>
-          <div class="mini-tags">
-            <span class="mini-tag">quizzes</span>
-            <span class="mini-tag">resources</span>
-            <span class="mini-tag">handouts</span>
+        </article>
+        <aside class="stack-card">
+          <h3>How The Site Is Organized</h3>
+          <div class="mini-panel">
+            <strong>Modules</strong>
+            <p>Core teaching sequence with session-wise journeys, activities, and short explanations.</p>
+            <div class="mini-tags">
+              <span class="mini-tag">concept flow</span>
+              <span class="mini-tag">session pages</span>
+            </div>
           </div>
-        </div>
-      </aside>
+          <div class="mini-panel">
+            <strong>Concept Checks and Quizzes</strong>
+            <p>Concept checks stay close to the lesson, while quizzes consolidate learning at the module level.</p>
+            <div class="mini-tags">
+              <span class="mini-tag">true or false</span>
+              <span class="mini-tag">MCQ</span>
+              <span class="mini-tag">matching</span>
+            </div>
+          </div>
+          <div class="mini-panel">
+            <strong>Simulations, Games, and Resources</strong>
+            <p>Interactive models, market play, calculators, handouts, and future reference pages sit here.</p>
+            <div class="mini-tags">
+              <span class="mini-tag">simulations</span>
+              <span class="mini-tag">games</span>
+              <span class="mini-tag">resources</span>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   </section>
 
   <section class="section" id="module-map">
-    <div class="section-head">
-      <div>
-        <h2>Module Map</h2>
-        <p>The site now follows the academic flow from the handout rather than a flat list of pages.</p>
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <h2>Module Map</h2>
+          <p>The course now follows a clearer academic path. Module 1 is the leading redesign, and the rest of the modules will follow this same journey-based structure.</p>
+        </div>
+        <div class="section-note">6 modules</div>
       </div>
-      <div class="section-note">6 modules</div>
+      <div class="module-grid" id="moduleGrid"></div>
     </div>
-    <div class="module-grid" id="moduleGrid"></div>
+  </section>
+
+  <section class="section" id="learning-surfaces">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <h2>Learning Surfaces</h2>
+          <p>These are the major places students should move between as the redesign matures. Each surface has a different learning job.</p>
+        </div>
+        <div class="section-note">Course Structure</div>
+      </div>
+      <div class="surface-grid">
+        <article class="surface-card">
+          <h3>Concept Checks</h3>
+          <p>Quick questions inside and after lessons to test whether the concept has actually landed.</p>
+          <ul class="journey-list">
+            <li>True or false and MCQ</li>
+            <li>Matching and sequence puzzles</li>
+            <li>Immediate feedback</li>
+          </ul>
+          <a class="surface-link" href="module1.html">Use inside Module 1</a>
+        </article>
+        <article class="surface-card">
+          <h3>Quizzes</h3>
+          <p>Shorter formal checks at the module level once students finish the journey and concept checks.</p>
+          <ul class="journey-list">
+            <li>Module-end quiz bank</li>
+            <li>Track student understanding</li>
+            <li>Linked to signed-in identity</li>
+          </ul>
+          <a class="surface-link" href="#module-map">Build from module banks</a>
+        </article>
+        <article class="surface-card">
+          <h3>Simulations</h3>
+          <p>Interactive tools where students explore contract screens, open interest, MTM P&amp;L, margin, and later pricing logic.</p>
+          <ul class="journey-list">
+            <li>NSE contract reading page</li>
+            <li>Open interest and volume</li>
+            <li>Mark-to-market and margin</li>
+          </ul>
+          <a class="surface-link" href="tools.html">Open simulations</a>
+        </article>
+        <article class="surface-card">
+          <h3>Games</h3>
+          <p>Classroom market play where trader hats, price discovery, and P&amp;L become visible in a live group setting.</p>
+          <ul class="journey-list">
+            <li>Price discovery game</li>
+            <li>Role-based market activity</li>
+            <li>Hedger, speculator, arbitrageur</li>
+          </ul>
+          <a class="surface-link" href="price-discovery.html">Open games</a>
+        </article>
+        <article class="surface-card">
+          <h3>Resources</h3>
+          <p>Slides, handouts, calculators, and reference notes for students who need to revisit language or formulas.</p>
+          <ul class="journey-list">
+            <li>Course handouts</li>
+            <li>Reference pages</li>
+            <li>Tool and calculator links</li>
+          </ul>
+          <a class="surface-link" href="#resource-zone">Open resources</a>
+        </article>
+        <article class="surface-card">
+          <h3>Module 1 Practical Track</h3>
+          <p>The first full practical sequence after the foundations: contract screen, open interest, daily P&amp;L, and margin call.</p>
+          <ul class="journey-list">
+            <li>Read the contract</li>
+            <li>Understand open interest</li>
+            <li>See MTM and margin logic</li>
+          </ul>
+          <a class="surface-link" href="module1.html">Follow the journey</a>
+        </article>
+      </div>
+    </div>
   </section>
 
   <section class="section" id="resource-zone">
-    <div class="section-head">
-      <div>
-        <h2>Course Areas</h2>
-        <p>These are the major surfaces students will use after the redesign settles in.</p>
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <h2>What Comes Next</h2>
+          <p>We now have the content spine for Module 1. The next phase is to build the actual activity pages and practical futures pages so the home page becomes a real launch surface for students.</p>
+        </div>
+        <div class="section-note">Build Queue</div>
       </div>
-      <div class="section-note">Student-facing hubs</div>
-    </div>
-    <div class="resource-grid">
-      <article class="resource-card">
-        <h3>Practice</h3>
-        <p>Assignment-style problems, solved exercises, and revision numericals in one calmer place.</p>
-        <a href="assignments.html">Open practice</a>
-      </article>
-      <article class="resource-card">
-        <h3>Labs</h3>
-        <p>Pricing tools, calculators, futures simulation, and later the hedging and strategy builder workflows.</p>
-        <a href="tools.html">Open labs</a>
-      </article>
-      <article class="resource-card">
-        <h3>Market Games</h3>
-        <p>Role-based classroom play, price discovery, matching, and P&amp;L-led learning.</p>
-        <a href="price-discovery.html">Open market games</a>
-      </article>
+      <div class="next-grid">
+        <article class="next-card">
+          <h3>Session Pages</h3>
+          <p>Turn Session 1, 2, and 3 scripts into activity-led webpages with click, tap, and drag interactions.</p>
+          <a class="next-link" href="s1-1.html">Open Session 1</a>
+        </article>
+        <article class="next-card">
+          <h3>Practical Futures Pages</h3>
+          <p>Build the live contract, open interest, mark-to-market, and margin pages from the completed blueprints.</p>
+          <a class="next-link" href="module1.html">Use Module 1 as entry</a>
+        </article>
+        <article class="next-card">
+          <h3>Assessment Layer</h3>
+          <p>Connect concept checks and quizzes to the signed-in student identity so progress becomes visible and useful.</p>
+          <a class="next-link" href="#learning-surfaces">Review learning surfaces</a>
+        </article>
+      </div>
     </div>
   </section>
 </main>
@@ -617,8 +765,8 @@ const COURSE_MODULES = [
     tone: 'tone-c1',
     sessions: 'Sessions 1-3',
     link: 'module1.html',
-    summary: 'Introduction to derivatives, longs and shorts, market structure, and trader roles.',
-    topics: ['markets and instruments', 'spot versus derivatives', 'speculators, hedgers, arbitrageurs'],
+    summary: 'Spot transactions, longs and shorts, hedging, speculation, arbitrage, and the bridge into practical futures mechanics.',
+    topics: ['market language', 'trader motives', 'futures bridge'],
     lessons: ['1.1', '1.2']
   },
   {
@@ -627,8 +775,8 @@ const COURSE_MODULES = [
     tone: 'tone-c2',
     sessions: 'Sessions 4-5',
     link: 'module2.html',
-    summary: 'Futures mechanics, cost of carry, basis, convergence, and arbitrage logic.',
-    topics: ['futures mechanics', 'pricing and basis', 'hedging logic'],
+    summary: 'Cost of carry, basis, convergence, and arbitrage logic once students are fluent in futures language.',
+    topics: ['pricing logic', 'basis', 'convergence'],
     lessons: ['2.1', '2.2', '2.3', '2.4']
   },
   {
@@ -637,8 +785,8 @@ const COURSE_MODULES = [
     tone: 'tone-c3',
     sessions: 'Sessions 6-7',
     link: 'module3.html',
-    summary: 'Option market basics, payoff intuition, and the language of calls and puts.',
-    topics: ['calls and puts', 'moneyness', 'option chain thinking'],
+    summary: 'Calls, puts, payoff intuition, and option market language built on the same activity-first model.',
+    topics: ['calls and puts', 'payoff intuition', 'option language'],
     lessons: ['3.1']
   },
   {
@@ -647,8 +795,8 @@ const COURSE_MODULES = [
     tone: 'tone-c4',
     sessions: 'Sessions 8 and 15',
     link: 'module4.html',
-    summary: 'Risk transfer, hedging design, and real-business use of derivatives.',
-    topics: ['futures hedging', 'options hedging', 'case-based application'],
+    summary: 'Real-business hedging choices, design logic, and how risk transfer actually works in practice.',
+    topics: ['hedging design', 'risk transfer', 'cases'],
     lessons: ['2.4', '4.3']
   },
   {
@@ -657,8 +805,8 @@ const COURSE_MODULES = [
     tone: 'tone-c5',
     sessions: 'Sessions 9-14',
     link: 'module5.html',
-    summary: 'Trading strategies, binomial trees, and Black-Scholes pricing intuition.',
-    topics: ['strategy design', 'binomial trees', 'Black-Scholes'],
+    summary: 'Strategy structures, binomial trees, and Black-Scholes intuition with stronger sequencing.',
+    topics: ['strategies', 'binomial trees', 'pricing'],
     lessons: ['3.2', '3.3', '3.4']
   },
   {
@@ -667,8 +815,8 @@ const COURSE_MODULES = [
     tone: 'tone-c1',
     sessions: 'Sessions 16-20',
     link: 'module7.html',
-    summary: 'Sensitivity analysis, exotic options, and Monte Carlo-based valuation thinking.',
-    topics: ['option Greeks', 'exotic structures', 'Monte Carlo simulation'],
+    summary: 'Sensitivity analysis, exotic options, and Monte Carlo-style learning once the foundations are stable.',
+    topics: ['Greeks', 'exotics', 'simulation'],
     lessons: ['4.1', '4.2', '5.1']
   }
 ];
@@ -686,7 +834,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('identityName').textContent = DLab.getStudentLabel(session);
   document.getElementById('identityMeta').innerHTML = session.email
     ? `<strong>${session.email}</strong>`
-    : 'Your signed-in identity will be used for course access, quizzes, labs, and market games.';
+    : 'Your institute email will be used for course access, quizzes, simulations, and games.';
 
   const unlock = DLab.getUnlock();
   document.getElementById('statUnlocked').textContent = Object.values(unlock).filter(Boolean).length;
@@ -717,7 +865,7 @@ window.addEventListener('DOMContentLoaded', () => {
     moduleGrid.appendChild(card);
   });
 
-  DLab.track('HOME_OPEN', { view: 'redesign-v1' });
+  DLab.track('HOME_OPEN', { view: 'journey-home-v2' });
 });
 </script>
 </body>
