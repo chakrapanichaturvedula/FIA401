@@ -7,6 +7,9 @@
 
 /* ─── CONSTANTS ─────────────────────────────────────────────── */
 const APPS_SCRIPT_URL =
+  (window.DLabConfig &&
+    window.DLabConfig.backend &&
+    window.DLabConfig.backend.legacyAppsScriptUrl) ||
   'https://script.google.com/macros/s/AKfycbxxPNgz_A3qUPdQXkRglL_GCg3R9Nr_HxA6GF5yitb5TffLE3xI0Rl3rFBuOdBUevUFUQ/exec';
 const CLASS_KEY  = 'IMTFD26';
 const VALID_IDS  = ['26A1HP013','26A1HP085','26A1HP153','26A3HP640','26A1HP215'];
@@ -28,12 +31,49 @@ const DEFAULT_UNLOCK = {
 
 const DLab = {
 
+  normalizeSession(raw = {}) {
+    const session = { ...raw };
+    const canonicalId =
+      session.studentId ||
+      session.enrollId ||
+      session.enrollmentId ||
+      session.id ||
+      '';
+
+    session.id = canonicalId;
+    session.studentId = canonicalId;
+    session.enrollId = session.enrollId || canonicalId;
+    session.enrollmentId = session.enrollmentId || session.enrollId || canonicalId;
+    session.name = String(session.name || canonicalId).trim();
+    session.email = String(session.email || '').trim().toLowerCase();
+    session.role = session.role || 'student';
+    session.ts = session.ts || Date.now();
+    session.expires = session.expires || (session.ts + SESSION_TTL);
+
+    return session;
+  },
+
+  getStudentLabel(session = {}) {
+    return session.name && session.name !== session.studentId
+      ? session.name
+      : session.studentId || session.id || 'Student';
+  },
+
   /* ── SESSION ─────────────────────────────────────────────── */
 
   /** Save session after successful login */
-  saveSession(studentId) {
-    const payload = { id: studentId, ts: Date.now() };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+  saveSession(studentId, extras = {}) {
+    const payload = typeof studentId === 'object'
+      ? { ts: Date.now(), ...studentId }
+      : {
+          id: studentId,
+          enrollId: studentId,
+          studentId: studentId,
+          ts: Date.now(),
+          expires: Date.now() + SESSION_TTL,
+          ...extras
+        };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(this.normalizeSession(payload)));
   },
 
   /** Return session object or null if expired / missing */
@@ -41,8 +81,9 @@ const DLab = {
     try {
       const raw = localStorage.getItem(SESSION_KEY);
       if (!raw) return null;
-      const s = JSON.parse(raw);
-      if (Date.now() - s.ts > SESSION_TTL) {
+      const s = this.normalizeSession(JSON.parse(raw));
+      const expiryTs = s.expires || (s.ts + SESSION_TTL);
+      if (Date.now() > expiryTs) {
         localStorage.removeItem(SESSION_KEY);
         return null;
       }
@@ -53,14 +94,20 @@ const DLab = {
   /** Redirect to login if no valid session. Call at top of every protected page. */
   requireSession() {
     const s = this.getSession();
-    if (!s) { window.location.href = 'index.html'; return null; }
+    if (!s) { window.location.href = 'student-access.html'; return null; }
     return s;
   },
 
   /** Logout */
   logout() {
     localStorage.removeItem(SESSION_KEY);
-    window.location.href = 'index.html';
+    if (window.DLabFirebase && typeof window.DLabFirebase.signOutEverywhere === 'function') {
+      window.DLabFirebase.signOutEverywhere().finally(() => {
+        window.location.href = 'student-access.html';
+      });
+      return;
+    }
+    window.location.href = 'student-access.html';
   },
 
   /* ── UNLOCK SYSTEM ──────────────────────────────────────── */
@@ -116,7 +163,10 @@ const DLab = {
     if (!s) return;
     const payload = {
       action,
-      studentId: s.id,
+      studentId: s.studentId || s.id,
+      studentName: s.name || '',
+      studentEmail: s.email || '',
+      role: s.role || 'student',
       classKey: CLASS_KEY,
       timestamp: new Date().toISOString(),
       ...data
@@ -147,7 +197,9 @@ const DLab = {
    */
   renderNav(activeHref = '', containerId = 'nav-root') {
     const s = this.getSession();
-    const sid = (s && s.id) ? s.id : null;   // guard against undefined id
+    const sid = (s && s.id) ? s.id : null;
+    const studentLabel = s ? this.getStudentLabel(s) : '';
+    const studentMeta = (s && s.email) ? s.email : sid;
     const links = [
       { href: 'course.html',      label: 'Home'        },
       { href: 'tools.html',       label: 'Calculators' },
@@ -158,7 +210,7 @@ const DLab = {
       return `<a href="${l.href}" class="nav-link${active}">${l.label}</a>`;
     }).join('');
     const studentHtml = sid
-      ? `<span class="nav-student">${sid}</span>
+      ? `<span class="nav-student"><strong>${studentLabel}</strong><small>${studentMeta}</small></span>
          <button class="nav-btn" onclick="DLab.logout()">Sign out</button>`
       : `<button class="nav-btn" onclick="DLab.logout()">Sign out</button>`;
     const html = `

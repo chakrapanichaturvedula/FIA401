@@ -83,6 +83,53 @@
       flex-wrap: wrap;
       margin-bottom: 20px;
     }
+    .identity-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .identity-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .identity-kicker {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text-3);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .identity-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .identity-meta {
+      font-size: .86rem;
+      color: var(--text-2);
+    }
+    .identity-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-size: .76rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
+    }
     .quick-btn {
       display: inline-flex;
       align-items: center;
@@ -302,6 +349,15 @@
 <!-- Page body -->
 <div class="page-body">
 
+  <div class="identity-panel">
+    <div class="identity-copy">
+      <div class="identity-kicker">Signed in as</div>
+      <div class="identity-name" id="identityName">Student</div>
+      <div class="identity-meta" id="identityMeta">Your roster identity powers quizzes, assignments, and simulations.</div>
+    </div>
+    <div class="identity-pill" id="identityRole">Student</div>
+  </div>
+
   <!-- Quick access -->
   <div class="quick-bar">
     <a href="tools.html"       class="quick-btn"><span class="qb-icon">🧮</span> Calculators</a>
@@ -402,6 +458,7 @@
 
 </div><!-- /page-body -->
 
+<script src="site-config.js"></script>
 <script src="app.js"></script>
 <script>
 /* ── Module manifest ── */
@@ -427,7 +484,12 @@ window.addEventListener('DOMContentLoaded', () => {
   if (!s) return;
 
   /* Populate student stats */
-  document.getElementById('statStudent').textContent = s.id;
+  document.getElementById('statStudent').textContent = s.studentId || s.id;
+  document.getElementById('identityName').textContent = DLab.getStudentLabel(s);
+  document.getElementById('identityMeta').textContent = s.email
+    ? `${s.email} · ${s.studentId || s.id}`
+    : (s.studentId || s.id);
+  document.getElementById('identityRole').textContent = s.role || 'student';
   const unlock = DLab.getUnlock();
   const numUnlocked = Object.values(unlock).filter(Boolean).length;
   document.getElementById('statUnlocked').textContent = numUnlocked;

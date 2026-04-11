@@ -16,6 +16,47 @@
     }
     .assign-header h1 { margin: 0 0 6px; font-size: 1.5rem; }
     .assign-header p  { margin: 0; opacity: .8; font-size: .9375rem; }
+    .assign-identity {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.14);
+    }
+    .assign-identity-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .assign-identity-label {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.62);
+    }
+    .assign-identity-name {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .assign-identity-meta {
+      font-size: .84rem;
+      color: rgba(255,255,255,.72);
+    }
+    .assign-identity-role {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
+    }
 
     .assign-section {
       background: var(--card);
@@ -119,6 +160,14 @@
     <div class="assign-header">
       <h1>FIA 401 — Assignments</h1>
       <p>Work through each problem set. Your attempts are recorded for participation credit. Show all steps and check your answers before submitting.</p>
+      <div class="assign-identity">
+        <div class="assign-identity-copy">
+          <div class="assign-identity-label">Current roster identity</div>
+          <div class="assign-identity-name" id="assignIdentityName">Student</div>
+          <div class="assign-identity-meta" id="assignIdentityMeta">Attempts will be linked to your signed-in student record.</div>
+        </div>
+        <div class="assign-identity-role" id="assignIdentityRole">Student</div>
+      </div>
     </div>
 
     <!-- Progress tracker -->
@@ -538,13 +587,19 @@
 <script src="app.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  DLab.requireSession();
+  const s = DLab.requireSession();
+  if (!s) return;
   DLab.renderNav('assignments.html');
   DLab.renderSidebar(null);
   DLab.setBreadcrumb([
     { label: 'Home', href: 'course.html' },
     { label: 'Assignments' }
   ]);
+  document.getElementById('assignIdentityName').textContent = DLab.getStudentLabel(s);
+  document.getElementById('assignIdentityMeta').textContent = s.email
+    ? `${s.email} · ${s.studentId || s.id}`
+    : (s.studentId || s.id);
+  document.getElementById('assignIdentityRole').textContent = s.role || 'student';
   DLab.initPractice('.practice-block');
   DLab.track('ASSIGNMENT_OPEN', {});
 
