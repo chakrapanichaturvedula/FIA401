@@ -202,10 +202,11 @@ const DLab = {
     const links = [
       { href: 'course.html', label: 'Home' },
       { href: 'course.html#module-map', label: 'Modules' },
-      { href: 'assignments.html', label: 'Practice' },
-      { href: 'tools.html', label: 'Labs' },
-      { href: 'price-discovery.html', label: 'Market Games' },
-      { href: 'course.html#resource-zone', label: 'More' },
+      { href: 'course.html#concept-checks', label: 'Concept Checks' },
+      { href: 'course.html#quizzes', label: 'Quizzes' },
+      { href: 'course.html#simulations', label: 'Simulations' },
+      { href: 'course.html#games', label: 'Games' },
+      { href: 'course.html#resources', label: 'Resources' },
     ];
     if (s && s.role === 'instructor') {
       links.push({ href: 'dashboard.html', label: 'Instructor' });

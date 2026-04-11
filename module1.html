@@ -400,7 +400,7 @@
     </div>
   </section>
 
-  <section class="section-card">
+  <section class="section-card" id="core-journey">
     <div class="section-header">
       <div>
         <h2>How Students Move Through Module 1</h2>
@@ -430,7 +430,7 @@
     </div>
   </section>
 
-  <section class="section-card">
+  <section class="section-card" id="session-journey">
     <div class="section-header">
       <div>
         <h2>Core Session Journey</h2>
@@ -441,7 +441,7 @@
     <div class="journey-grid" id="session-journey-grid"></div>
   </section>
 
-  <section class="section-card">
+  <section class="section-card" id="bridge-pages">
     <div class="section-header">
       <div>
         <h2>Bridges That Remove Confusion Early</h2>
@@ -465,11 +465,11 @@
           <span>Why forward language often feels more hold-to-expiry</span>
         </div>
         <div class="card-actions">
-          <a class="card-link is-muted" href="course.html#resource-zone">Add as bridge page</a>
+          <a class="card-link is-muted" href="#bridge-pages">Review bridge plan</a>
           <span class="duration-tag">Activity blueprint ready</span>
         </div>
       </article>
-      <article class="support-card">
+      <article class="support-card" id="concept-checks">
         <div class="card-topline">
           <div class="card-index">Checks</div>
           <div class="card-state">Consolidation</div>
@@ -484,14 +484,14 @@
           <span>Arbitrage versus speculation</span>
         </div>
         <div class="card-actions">
-          <a class="card-link is-muted" href="course.html#resource-zone">Build concept checks next</a>
+          <a class="card-link is-muted" href="#concept-checks">Review concept checks</a>
           <span class="duration-tag">Question banks ready</span>
         </div>
       </article>
     </div>
   </section>
 
-  <section class="section-card">
+  <section class="section-card" id="practical-track">
     <div class="section-header">
       <div>
         <h2>Practical Futures Track</h2>
@@ -502,7 +502,7 @@
     <div class="track-grid" id="futures-track-grid"></div>
   </section>
 
-  <section class="section-card">
+  <section class="section-card" id="next-steps">
     <div class="section-header">
       <div>
         <h2>What This Unlocks Next</h2>
@@ -544,9 +544,10 @@
 <script>
   (function () {
     const session = DLab.requireSession();
-    DLab.renderNav('course.html');
+    DLab.renderNav('course.html#module-map');
 
     const unlock = DLab.getUnlock();
+    const sessionTwoOpen = !!unlock['1.2'];
 
     const sessionCards = [
       {
@@ -574,8 +575,8 @@
         ],
         href: 's1-2.html',
         duration: 'Session page live',
-        isLocked: !(unlock.session >= 2 || unlock.module > 1),
-        action: unlock.session >= 2 || unlock.module > 1 ? 'Open session' : 'Unlock after Session 1'
+        isLocked: !sessionTwoOpen,
+        action: sessionTwoOpen ? 'Open session' : 'Unlock after Session 1'
       },
       {
         index: '1.3',
@@ -586,10 +587,10 @@
           'Same market move, different trader motive',
           'Bridge into the practical futures track'
         ],
-        href: 'course.html#resource-zone',
+        href: '#bridge-pages',
         duration: 'Content ready to build',
         isLocked: false,
-        action: 'Use as blueprint'
+        action: 'Review blueprint'
       }
     ];
 
@@ -603,10 +604,10 @@
           'Learn contract vocabulary in context',
           'Bridge from concept language to market screen literacy'
         ],
-        href: 'course.html#resource-zone',
+        href: '#practical-track',
         duration: 'Blueprint ready',
         isLocked: false,
-        action: 'Build page'
+        action: 'View track'
       },
       {
         index: 'Track B',
@@ -617,10 +618,10 @@
           'Open interest up, down, or unchanged',
           'Volume is not the same as open interest'
         ],
-        href: 'course.html#resource-zone',
+        href: '#practical-track',
         duration: 'Activity script ready',
         isLocked: false,
-        action: 'Build page'
+        action: 'View track'
       },
       {
         index: 'Track C',
@@ -631,10 +632,10 @@
           'Daily settlement logic',
           'Long versus short daily P&L'
         ],
-        href: 'course.html#resource-zone',
+        href: '#practical-track',
         duration: 'Activity script ready',
         isLocked: false,
-        action: 'Build page'
+        action: 'View track'
       },
       {
         index: 'Track D',
@@ -645,10 +646,10 @@
           'Maintenance margin trigger',
           'Add funds or close the open position'
         ],
-        href: 'course.html#resource-zone',
+        href: '#practical-track',
         duration: 'Activity script ready',
         isLocked: false,
-        action: 'Build page'
+        action: 'View track'
       }
     ];
 
@@ -690,3 +691,6 @@
 </script>
 </body>
 </html>
+
+
+
